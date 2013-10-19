@@ -1,0 +1,5 @@
+tags
+*.o
+*.a
+*.gcda
+*.gcno
