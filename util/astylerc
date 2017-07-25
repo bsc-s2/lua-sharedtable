@@ -1,0 +1,55 @@
+# copy to ~/.astylerc
+
+#Bracket style
+style=google
+
+#Tab
+#使用2个空格作为一个缩进单位
+indent=spaces=4
+
+#Indentation
+#缩进case本身
+indent-switches
+#缩进case内容
+indent-cases
+#缩进宏定义内容
+# indent-preproc-block
+# indent-preproc-cond
+# indent-preproc-define
+#缩进注释
+indent-col1-comments
+
+#Padding
+#操作符两端补空格
+pad-oper
+#if/for/while后面与小括号之间补空格
+pad-header
+#除上述两点外，都不补空格
+unpad-paren
+#声明指针时，*贴紧变量名
+align-pointer=name
+
+#Formatting
+#单行的分支循环块补充花括号
+add-brackets
+#凡是tab都替换成两个空格
+convert-tabs
+#单行最长100个字节
+max-code-length=100
+#单行长度超过100字节时根据条件逻辑进行切分换行
+break-after-logical
+#c/c++风格
+mode=c
+#保持一行代码的写法
+keep-one-line-blocks
+
+#Other
+#转化后的文件修改时间不变
+preserve-date
+#linux风格的换行符
+lineend=linux
+#show detail
+verbose
+
+# do not create backup
+suffix=none
