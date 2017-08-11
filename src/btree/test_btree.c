@@ -13,11 +13,11 @@ char *dump_mes = NULL;
         st_btu64_t name = {0};                                               \
         do {                                                                  \
             int rc = st_btu64_init( &name );                                 \
-            ass_eq( int, E_OK, rc, "init bt" );                               \
+            st_ut_eq(ST_OK, rc, "init bt" );                               \
         } while( 0 )
 
 #define bt_add_ks_u64( bt, ks )                                               \
-        bt_add_ks_n_u64( bt, ST_ARR_N( ks ), ks, dump_mes )
+        bt_add_ks_n_u64( bt, st_nelts( ks ), ks, dump_mes )
 
 #define bt_add_ks_n_u64( bt, n, ks, mes )                                     \
         do {                                                                  \
@@ -27,7 +27,7 @@ char *dump_mes = NULL;
                                                                               \
                 /* val for test is key + 1 */                                 \
                 rc = st_btu64_add( (bt), (ks)[ __i ], (ks)[ __i ] + 1 );     \
-                ass_eq( int, E_OK, rc, "add to btree: %llu", (ks)[ __i ] );   \
+                st_ut_eq(ST_OK, rc, "add to btree: %llu", (ks)[ __i ] );   \
                                                                               \
                 if ( (mes) != NULL ) {                                        \
                     (mes) += snprintf( (mes), 10240, "%llu, ", (ks)[ __i ] ); \
@@ -41,7 +41,7 @@ char *dump_mes = NULL;
             p = mes;                                                          \
             p += snprintf( p, mes_len,                                        \
                            mes_format ", case %d of %lu in [",                \
-                           ##__VA_ARGS__, icase, ST_ARR_N( cases )-1 );      \
+                           ##__VA_ARGS__, icase, st_nelts( cases )-1 );      \
             bt_add_ks_n_u64( &name,                                           \
                              (cases)[ icase ].n, (cases)[ icase ].ks, p );    \
             p += snprintf( p, mes_len - ( p-mes ), "]" );                     \
@@ -52,9 +52,9 @@ char *dump_mes = NULL;
 
 #define ass_bt_empty( bt )                                                    \
         do {                                                                  \
-            ass_eq( int, 0, (bt)->level,                                      \
+            st_ut_eq(0, (bt)->level,                                      \
                     "btree level is 0 %s", mes );                             \
-            ass_eq( int, 0, (bt)->root->n_keys,                               \
+            st_ut_eq(0, (bt)->root->n_keys,                               \
                     "no elts on root %s", mes );                              \
         } while ( 0 )
 
@@ -83,22 +83,22 @@ char *dump_mes = NULL;
                     continue;                                                 \
                 }                                                             \
                 kv = st_btiter_next( &it );                                  \
-                ass_ne( st_pointer, NULL, kv, "not NULL %s", (case_mes) );   \
+                st_ut_ne( NULL, kv, "not NULL %s", (case_mes) );   \
                                                                               \
-                ass_eq( uint64_t, k, kv->k,                                   \
+                st_ut_eq( k, kv->k,                                   \
                         "%d-th key iterator %s", ichk, (case_mes) );          \
             }                                                                 \
             kv = st_btiter_next( &it );                                      \
-            ass_eq( st_pointer, NULL, kv, "NULL after iter %s", (case_mes) );\
+            st_ut_eq( NULL, kv, "NULL after iter %s", (case_mes) );\
         } while ( 0 )
 
 #define ass_node_ks( bt, nd, ks )                                             \
         do {                                                                  \
             int n = sizeof( (ks) ) / sizeof( (ks)[ 0 ] );                     \
             int i;                                                            \
-            ass_eq( int, n, (nd)->n_keys, "nr of keys" );                     \
+            st_ut_eq( n, (nd)->n_keys, "nr of keys" );                     \
             for ( i = 0; i < n; i++ ) {                                       \
-                ass_eq( uint64_t, (ks)[ i ],                                  \
+                st_ut_eq( (ks)[ i ],                                  \
                         (nd)->keys[ i ],                                      \
                         "check key: %d", i );                                 \
             }                                                                 \
@@ -110,7 +110,7 @@ char *dump_mes = NULL;
             st_btu64_rst_t rst;                                              \
                                                                               \
             rc = st_btu64_search( (bt), (key), (val), (flag), &rst );        \
-            ass_eq( int, E_NOTFOUND, rc,                                      \
+            st_ut_eq( ST_NOT_FOUND, rc,                                      \
                     "not found search %s for (%llu, %llu); %s",               \
                     st_bt_flagstr( flag ),                                   \
                     (st_btu64_key_t)(key), (st_btu64_val_t)(val), (mes) );  \
@@ -125,7 +125,7 @@ char *dump_mes = NULL;
                 ST_BT_LAST,                                                  \
                 ST_BT_LAST | ST_BT_CMP_VAL,                                 \
             };                                                                \
-            for ( i = 0; i < ST_ARR_N( flags ); i++ ) {                      \
+            for ( i = 0; i < st_nelts( flags ); i++ ) {                      \
                 ass_search_kv_notfound( (bt), (key), 0,                       \
                                         flags[ i ], (mes) );                  \
                 ass_search_kv_notfound( (bt), (key), (key)+1,                 \
@@ -140,17 +140,17 @@ char *dump_mes = NULL;
                                                                                    \
             rc = st_btu64_search( (bt), (key), (val), (flag), &rst );             \
                                                                                    \
-            ass_eq( int, E_OK, rc,                                                 \
+            st_ut_eq( ST_OK, rc,                                                 \
                     "found, search %s (%llu, %llu); %s",                           \
                     st_bt_flagstr( flag ), (key), (st_btu64_val_t)(val), (mes) );\
-            ass_ne( int, -1, rst.i,                                                \
+            st_ut_ne( -1, rst.i,                                                \
                     "i should not be -1, %s", (mes) );                             \
                                                                                    \
-            ass_eq( uint64_t, (key), rst.node->keys[ rst.i ],                      \
+            st_ut_eq( (key), rst.node->keys[ rst.i ],                      \
                     "found key %s", (mes) );                                       \
                                                                                    \
             if ( (flag) & ST_BT_CMP_VAL ) {                                       \
-                 ass_eq( uint64_t, (val), rst.node->vals[ rst.i ],                 \
+                 st_ut_eq( (val), rst.node->vals[ rst.i ],                 \
                          "found val %s", (mes)  );                                 \
             }                                                                      \
         } while ( 0 )
@@ -163,7 +163,7 @@ char *dump_mes = NULL;
                 ST_BT_LAST                                                   \
             };                                                                \
                                                                               \
-            for ( i = 0; i < ST_ARR_N( flags ); i++ ) {                      \
+            for ( i = 0; i < st_nelts( flags ); i++ ) {                      \
                                                                               \
                 ass_search_kv_found( (bt), (key), 0,                          \
                                      flags[i], (mes) );                       \
@@ -187,8 +187,7 @@ cmp_u64(const void *a, const void *b) {
     return x > y ? 1 : (x < y ? -1 : 0);
 }
 
-static int
-test_align() {
+st_test(btree, align) {
     struct case_s {
         int v;
         int align;
@@ -231,84 +230,74 @@ test_align() {
 
     for (i = 0; i < n; i++) {
         cs = &cases[ i ];
-        rst = ST_ALIGN(cs->v, cs->align);
-        ass_eq(int, cs->rst, rst, "case %d of %d", i, n - 1);
+        rst = st_align(cs->v, cs->align);
+        st_ut_eq(cs->rst, rst, "case %d of %d", i, n - 1);
     }
-
-    return 0;
 }
 
-static int
-test_node_alloc() {
+st_test(btree, node_alloc) {
     st_btu64_node_t *nd;
     int i;
 
     bt_declare(bt);
 
     nd = st_btu64_allocnode(&bt, 0);
-    ass_ne(st_pointer, NULL, nd, "alloc");
-    ass_eq(int, 0, nd->n_keys, "n_keys is 0");
+    st_ut_ne(NULL, nd, "alloc");
+    st_ut_eq(0, nd->n_keys, "n_keys is 0");
 
     for (i = 0; i < nd->n_keys; i++) {
-        ass_eq(uint64_t, 0, nd->keys[ i ], "key is zero");
-        ass_eq(uint64_t, 0, nd->vals[ i ], "val is zero");
+        st_ut_eq(0, nd->keys[ i ], "key is zero");
+        st_ut_eq(0, nd->vals[ i ], "val is zero");
     }
     st_free(nd);
 
     nd = st_btu64_allocnode(&bt, 1);
     for (i = 0; i < nd->n_keys; i++) {
-        ass_eq(uint64_t, 0, nd->keys[ i ], "key is zero");
-        ass_eq(uint64_t, 0, nd->vals[ i ], "val is zero");
-        ass_eq(st_pointer, NULL, nd->children[ i ], "child is NULL");
+        st_ut_eq(0, nd->keys[ i ], "key is zero");
+        st_ut_eq(0, nd->vals[ i ], "val is zero");
+        st_ut_eq(NULL, nd->children[ i ], "child is NULL");
     }
-    ass_eq(st_pointer, NULL, nd->children[ i ], "child is NULL");
+    st_ut_eq(NULL, nd->children[ i ], "child is NULL");
 
     st_free(nd);
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_init_free() {
+st_test(btree, init_free) {
     int             rc;
     st_btu64_node_t *root;
     st_btu64_t        bt   = { 0 };
 
     rc = st_btu64_init(NULL);
-    ass_eq(int, E_INVALID_ARG, rc, "init NULL");
+    st_ut_eq(ST_ARG_INVALID, rc, "init NULL");
 
     rc = st_btu64_init(&bt);
-    ass_eq(int, E_OK, rc, "valid init");
+    st_ut_eq(ST_OK, rc, "valid init");
 
     rc = st_btu64_init(&bt);
-    ass_eq(int, E_INVALID_ARG, rc, "re-inited");
+    st_ut_eq(ST_ARG_INVALID, rc, "re-inited");
 
-    ass_eq(int, 15, ST_BT_MAX_N_KEYS, "max n");
-    ass_eq(int, 7, ST_BT_MIN_N_KEYS, "min n");
-    ass_eq(int, 0, bt.level, "bt.level");
+    st_ut_eq(15, ST_BT_MAX_N_KEYS, "max n");
+    st_ut_eq(7, ST_BT_MIN_N_KEYS, "min n");
+    st_ut_eq(0, bt.level, "bt.level");
 
-    ass_eq(st_pointer, &bt, bt.origin, "bt.origin");
+    st_ut_eq(&bt, bt.origin, "bt.origin");
 
     root = bt.root;
-    ass_ne(st_pointer, NULL, root, "root is not NULL");
-    ass_eq(int, 0, root->n_keys, "root nr keys");
+    st_ut_ne(NULL, root, "root is not NULL");
+    st_ut_eq(0, root->n_keys, "root nr keys");
 
     st_btu64_free(&bt);
-    ass_eq(st_pointer, NULL, bt.root, "root is NULL after free");
+    st_ut_eq(NULL, bt.root, "root is NULL after free");
 
     /* TODO test st_btu64_free() frees sub nodes */
-
-    return 0;
 }
 
-static int
-test_free_deep() {
-    return 0;
+st_test(btree, free_deep) {
 }
 
-static int
-test_binsearch() {
+st_test(btree, binsearch) {
     int               i;
     int               j;
     int               n;
@@ -436,27 +425,26 @@ test_binsearch() {
         k = cs->tosearch;
 
         st_btu64_binsearch(&bt, k, 0, cs->flag, &rst);
-        ass_eq(int, cs->rst.i, rst.i, "rst.i, without val %s", mes);
+        st_ut_eq(cs->rst.i, rst.i, "rst.i, without val %s", mes);
 
         st_btu64_binsearch(&bt, k, k + 1, cs->flag | ST_BT_CMP_VAL, &rst);
-        ass_eq(int, cs->rst.i, rst.i, "rst.i, with val %s", mes);
+        st_ut_eq(cs->rst.i, rst.i, "rst.i, with val %s", mes);
 
         st_btu64_binsearch(&bt, k, k + 2, cs->flag | ST_BT_CMP_VAL, &rst);
-        ass_eq(int, -1, rst.i, "rst.i, incorrect val %s", mes);
+        st_ut_eq(-1, rst.i, "rst.i, incorrect val %s", mes);
 
         st_btu64_binsearch(&bt, k, k + 1, cs->flag, &rst);
-        ass_eq(int, cs->rst.i, rst.i, "rst.i, %s", mes);
-        ass_eq(int, cs->rst.left, rst.left, "rst.left, %s", mes);
-        ass_eq(int, cs->rst.right, rst.right, "rst.right, %s", mes);
+        st_ut_eq(cs->rst.i, rst.i, "rst.i, %s", mes);
+        st_ut_eq(cs->rst.left, rst.left, "rst.left, %s", mes);
+        st_ut_eq(cs->rst.right, rst.right, "rst.right, %s", mes);
 
     }
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_search() {
+st_test(btree, search) {
+
     struct case_s {
         int      n;
         uint64_t ks[ MAX_KEYS ];
@@ -477,7 +465,7 @@ test_search() {
 
     };
 
-    for (i = 0; i < ST_ARR_N(cases); i++) {
+    for (i = 0; i < st_nelts(cases); i++) {
 
         cs = &cases[ i ];
 
@@ -499,12 +487,9 @@ test_search() {
 
         st_btu64_free(&bt);
     }
-
-    return 0;
 }
 
-static int
-test_xx() {
+st_test(btree, xx) {
     int           i;
     int           n;
     st_btu64_key_t k;
@@ -518,15 +503,13 @@ test_xx() {
         dd("add: %llu", k);
         st_btu64_add(&bt, k, 0);
     }
-    ass_ne(int, 0, bt.level, "level is not 0");
+    st_ut_ne(0, bt.level, "level is not 0");
     st_btu64_dd(&bt, 0);
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_add_ascent() {
+st_test(btree, add_ascent) {
     int           i;
     int           n;
     st_btu64_kv_t   *kvp;
@@ -539,23 +522,21 @@ test_add_ascent() {
     for (i = 0; i < n; i++) {
         st_btu64_add(&bt, i, i);
     }
-    ass_ne(int, 0, bt.level, "level is not 0");
+    st_ut_ne(0, bt.level, "level is not 0");
     st_btu64_dd(&bt, 0);
 
     i = 0;
     st_btiter_init(&bt, &it);
     while ((kvp = st_btiter_next(&it)) != NULL) {
-        ass_eq(int, i, kvp->k, "%d-th key", i);
+        st_ut_eq(i, kvp->k, "%d-th key", i);
         i++;
     }
-    ass_eq(int, n, i, "all kv iterated");
+    st_ut_eq(n, i, "all kv iterated");
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_add_random() {
+st_test(btree, add_random) {
     int            i;
     int            n;
     st_btu64_kv_t    *kvp;
@@ -573,32 +554,30 @@ test_add_random() {
         st_btu64_add(&bt, k, i);
         rset[ k ] = 1;
     }
-    ass_ne(int, 0, bt.level, "level is not 0");
+    st_ut_ne(0, bt.level, "level is not 0");
     st_btu64_dd(&bt, 0);
 
     st_btiter_init(&bt, &it);
     while ((kvp = st_btiter_next(&it)) != NULL) {
-        ass_eq(int, 1, rset[ kvp->k ] > 0 ? 1 : 0,
+        st_ut_eq(1, rset[ kvp->k ] > 0 ? 1 : 0,
                "iter get only key added %llu", kvp->k);
         rset[ kvp->k ] = 2;
 
         if (prev > 0) {
-            ass_eq(int, 1, prev <= kvp->k ? 1 : 0,
+            st_ut_eq(1, prev <= kvp->k ? 1 : 0,
                    "prev: %llu <= cur: %llu", prev, kvp->k);
         }
 
         prev = kvp->k;
     }
     for (i = 0; i < 4096; i++) {
-        ass_ne(int, 1, rset[ i ], "every key added iterated");
+        st_ut_ne(1, rset[ i ], "every key added iterated");
     }
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_add_same_k() {
+st_test(btree, add_same_k) {
     uint64_t ks[] = {
         1, 2, 3, 3, 3, 5, 5,
         5,
@@ -608,7 +587,7 @@ test_add_same_k() {
 
     bt_declare(bt);
 
-    bt_add_ks_n_u64(&bt, ST_ARR_N(ks), ks, dump_mes);
+    bt_add_ks_n_u64(&bt, st_nelts(ks), ks, dump_mes);
     st_btu64_dd(&bt, 0);
 
     {
@@ -630,11 +609,9 @@ test_add_same_k() {
     }
 
     st_btu64_free(&bt);
-    return 0;
 }
 
-static int
-test_add_same_k_iter_all() {
+st_test(btree, add_same_k_iter_all) {
     struct case_s {
         int n;
         uint64_t ks[ MAX_KEYS ];
@@ -672,19 +649,17 @@ test_add_same_k_iter_all() {
         for (j = 0; j < cs->n; j++) {
             k = cs->ks[ j ];
             kv = st_btiter_next(&it);
-            ass_ne(st_pointer, NULL, kv, "not NULL");
+            st_ut_ne(NULL, kv, "not NULL");
 
-            ass_eq(uint64_t, k, kv->k, "%d-th key iterator %s", j, mes);
+            st_ut_eq(k, kv->k, "%d-th key iterator %s", j, mes);
         }
 
         st_btu64_free(&bt);
     }
 
-    return 0;
 }
 
-static int
-test_iter() {
+st_test(btree, iter) {
     struct case_s {
         int n;
         uint64_t ks[ MAX_KEYS ];
@@ -701,7 +676,7 @@ test_iter() {
         { .n = 10, .ks = { 1, 3, 5, 7, 9, 11, 13, 15, 17, 19 }, },
     };
 
-    for (i = 0; i < ST_ARR_N(cases); i++) {
+    for (i = 0; i < st_nelts(cases); i++) {
 
         cs = &cases[ i ];
 
@@ -713,7 +688,6 @@ test_iter() {
         st_btu64_free(&bt);
     }
 
-    return 0;
 }
 
 static int
@@ -729,8 +703,7 @@ index_of(int *a, int n, int tosearch) {
 
 /* TODO st_btu64_del accept NULL as its 4th argument */
 
-static int
-test_delmin() {
+st_test(btree, delmin) {
     struct case_s {
         int      n;
         uint64_t ks[ MAX_KEYS ];
@@ -809,7 +782,7 @@ test_delmin() {
         },
     };
 
-    for (i = 0; i < ST_ARR_N(cases); i++) {
+    for (i = 0; i < st_nelts(cases); i++) {
 
         cs = &cases[ i ];
 
@@ -821,12 +794,12 @@ test_delmin() {
 
             rc = st_btu64_delmin(&bt, idel, &deleted);
             if (idel == cs->ndel - 1) {
-                ass_eq(int, E_NOTFOUND, rc,
+                st_ut_eq(ST_NOT_FOUND, rc,
                        "delmin not found %s", mes);
             } else {
-                ass_eq(int, E_OK, rc,
+                st_ut_eq(ST_OK, rc,
                        "delmin ok %s", mes);
-                ass_eq(uint64_t, cs->todel[ idel + 1 ], deleted.k,
+                st_ut_eq(cs->todel[ idel + 1 ], deleted.k,
                        "deleted key %s", mes);
             }
 
@@ -835,11 +808,9 @@ test_delmin() {
         }
     }
 
-    return 0;
 }
 
-static int
-test_del() {
+st_test(btree, del) {
     struct case_s {
         int n;
         uint64_t ks[ MAX_KEYS ];
@@ -880,7 +851,7 @@ test_del() {
 
     /* TODO test deletion key-value */
 
-    for (i = 0; i < ST_ARR_N(cases); i++) {
+    for (i = 0; i < st_nelts(cases); i++) {
 
         cs = &cases[ i ];
 
@@ -893,17 +864,17 @@ test_del() {
             k = cs->ks[ idel ] - 1;
 
             rc = st_btu64_del(&bt, k, 0, ST_BT_FIRST, &deleted);
-            ass_eq(int, E_NOTFOUND, rc,
+            st_ut_eq(ST_NOT_FOUND, rc,
                    "delete first not found %s", mes);
 
             rc = st_btu64_del(&bt, k, 0, ST_BT_LAST, &deleted);
-            ass_eq(int, E_NOTFOUND, rc,
+            st_ut_eq(ST_NOT_FOUND, rc,
                    "delete last not found %s", mes);
 
             k = cs->ks[ idel ];
 
             rc = st_btu64_del(&bt, k, 0, ST_BT_FIRST, &deleted);
-            ass_eq(int, E_OK, rc,
+            st_ut_eq(ST_OK, rc,
                    "delete ok %s", mes);
 
             st_btu64_dd(&bt, 0);
@@ -922,17 +893,17 @@ test_del() {
 
             flag = ST_BT_FIRST | ST_BT_CMP_VAL;
             rc = st_btu64_del(&bt, k, V(k) - 1, flag, &deleted);
-            ass_eq(int, E_NOTFOUND, rc,
+            st_ut_eq(ST_NOT_FOUND, rc,
                    "delete with incorrect val not found: %s %s", st_bt_flagstr(flag), mes);
 
             flag = ST_BT_LAST | ST_BT_CMP_VAL;
             rc = st_btu64_del(&bt, k, V(k) - 1, flag, &deleted);
-            ass_eq(int, E_NOTFOUND, rc,
+            st_ut_eq(ST_NOT_FOUND, rc,
                    "delete incorrect val not found: %s %s", st_bt_flagstr(flag), mes);
 
             flag = ST_BT_FIRST | ST_BT_CMP_VAL;
             rc = st_btu64_del(&bt, k, V(k), flag, &deleted);
-            ass_eq(int, E_OK, rc,
+            st_ut_eq(ST_OK, rc,
                    "delete ok %s", mes);
 
             st_btu64_dd(&bt, 0);
@@ -951,7 +922,7 @@ test_del() {
                 k = cs->ks[ idel ];
 
                 rc = st_btu64_del(&bt, k, 0, ST_BT_FIRST, &deleted);
-                ass_eq(int, E_OK, rc,
+                st_ut_eq(ST_OK, rc,
                        "delete ok %s", mes);
 
                 dd("after deleting %llu:", k);
@@ -983,7 +954,7 @@ test_del() {
                 k = cs->ks[ ii ];
 
                 rc = st_btu64_del(&bt, k, 0, ST_BT_FIRST, &deleted);
-                ass_eq(int, E_OK, rc,
+                st_ut_eq(ST_OK, rc,
                        "delete ok %s", mes);
 
                 dd("after deleting %llu:", k);
@@ -995,11 +966,9 @@ test_del() {
         }
     }
 
-    return 0;
 }
 
-static int
-test_pop() {
+st_test(btree, pop) {
     int n;
     int i;
     int j;
@@ -1026,7 +995,7 @@ test_pop() {
             kv.k = cs->nums[ j ];                                             \
                     kv.v = cs->nums[ j ];                                     \
                     rc = st_btu64_add( &bt, cs->nums[ j ], 1 );                 \
-                    ass_eq( int, E_OK, rc, "add %llu", kv.k );                \
+                    st_ut_eq( ST_OK, rc, "add %llu", kv.k );                \
         }                                                                     \
     } while ( 0 )
 
@@ -1041,12 +1010,10 @@ test_pop() {
         }
     }
 
-    return 0;
 #   undef add_all
 }
 
-static int
-bench_binsearch(void *data, int n) {
+st_ben(btree, binsearch, 2) {
     int         i;
     st_btu64_key_t k;
     st_btu64_node_t ns[ 100 ];
@@ -1073,11 +1040,9 @@ bench_binsearch(void *data, int n) {
 
     st_btu64_free(&bt);
 
-    return 0;
 }
 
-static int
-bench_add(void *data, int n) {
+st_ben(btree, add, 2) {
     int           i;
 
     bt_declare(bt);
@@ -1094,7 +1059,6 @@ bench_add(void *data, int n) {
          );
 
     st_btu64_free(&bt);
-    return 0;
 }
 
 static void *
@@ -1114,17 +1078,16 @@ _make_bt_1m(int n) {
     return bt;
 }
 
-static void *
+static void
 _free_bt(void *data) {
     st_btu64_t *bt;
     bt = data;
     st_btu64_free(bt);
     free(bt);
-    return NULL;
 }
 
-static int
-bench_search(void *data, int n) {
+
+st_bench(btree, search, _make_bt_1m, _free_bt, 2) {
     int              i;
     st_btu64_key_t  k;
     st_btu64_t     *bt;
@@ -1137,66 +1100,6 @@ bench_search(void *data, int n) {
         st_btu64_search(bt, k, 0, ST_BT_FIRST, &rst);
     }
 
-    return 0;
 }
 
-int
-main(int argc, char **argv) {
-    int rc;
-    UNUSED(rc);
-
-#if 0
-    rc = 0
-         && test_init_free() == 0
-         && test_node_alloc() == 0
-         && test_binsearch() == 0
-         && test_iter() == 0
-         && test_add_ascent() == 0
-         && test_add_random() == 0
-         && test_add_same_k() == 0
-         && test_search() == 0
-         && test_add_same_k_iter_all() == 0
-         && test_align() == 0
-         && test_delmin() == 0
-         && test_del() == 0
-         ;
-
-    rc = test_binsearch() == 0;
-#else
-    rc = 1
-         && test_init_free() == 0
-         && test_node_alloc() == 0
-         && test_binsearch() == 0
-         && test_iter() == 0
-         && test_add_ascent() == 0
-         && test_add_random() == 0
-         && test_add_same_k() == 0
-         && test_search() == 0
-         && test_add_same_k_iter_all() == 0
-         && test_align() == 0
-         && test_delmin() == 0
-         && test_del() == 0
-         ;
-#endif
-
-    if (rc) {
-        dinfo("ALL tests passed");
-    } else {
-        return 1;
-    }
-
-    rc = 0
-         && test_free_deep() == 0
-         && test_xx() == 0
-         && test_pop() == 0
-         ;
-
-    if (st_is_bench(argc, argv)) {
-
-        ben_(bench_binsearch, 3);
-        ben_(bench_add, 3);
-        bench_(_make_bt_1m, bench_search, _free_bt, 3);
-    }
-
-    return 0;
-}
+st_ut_main;

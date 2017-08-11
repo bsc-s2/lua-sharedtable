@@ -4,7 +4,7 @@
 int
 st_btu64_init(st_btu64_t *bt) {
     if (bt == NULL || bt->root != NULL) {
-        return E_INVALID_ARG;
+        return ST_ARG_INVALID;
     }
 
     bt->level = 0;
@@ -12,7 +12,7 @@ st_btu64_init(st_btu64_t *bt) {
 
     bt->st = st_malloc(sizeof(st_bt_stat_t));
     if (bt->st == NULL) {
-        return E_OUTOFMEM;
+        return ST_OUT_OF_MEMORY;
     }
     memset(bt->st, 0, sizeof(*bt->st));
 
@@ -21,10 +21,10 @@ st_btu64_init(st_btu64_t *bt) {
 
     if (bt->root == NULL) {
         st_free(bt->st);
-        return E_OUTOFMEM;
+        return ST_OUT_OF_MEMORY;
     }
 
-    return E_OK;
+    return ST_OK;
 }
 
 int
@@ -35,14 +35,14 @@ st_btu64_new_root(st_btu64_t *bt) {
 
     newroot = st_btu64_allocnode(bt, bt->level + 1);
     if (newroot == NULL) {
-        return E_OUTOFMEM;
+        return ST_OUT_OF_MEMORY;
     }
 
     newroot->children[ 0 ] = bt->root;
 
     bt->root = newroot;
     bt->level++;
-    return E_OK;
+    return ST_OK;
 }
 
 int
@@ -100,7 +100,7 @@ st_btu64_add(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v) {
 
 int
 st_btu64_pop(st_btu64_t *bt, st_btu64_flag_t flag) {
-    return E_OK;
+    return ST_OK;
 }
 
 int
@@ -126,7 +126,7 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
             bt->level--;
             st_free(node);
         } else {
-            return E_NOTFOUND;
+            return ST_NOT_FOUND;
         }
     }
 
@@ -163,9 +163,9 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
                     st_btu64_merge(&b, rst->right);
                 } else {
                     dd("not found, rotate");
-                    if (st_btu64_rotateleft(&b, rst->right) == E_INVALID_ARG) {
+                    if (st_btu64_rotateleft(&b, rst->right) == ST_ARG_INVALID) {
                         rc = st_btu64_rotateright(&b, rst->left);
-                        assert(rc == E_OK);
+                        assert(rc == ST_OK);
                     }
                     st_btu64_dd(bt, 0);
                 }
@@ -187,14 +187,14 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
                 b.root = b.root->children[ ifound ];
                 ifound = ii;
 
-            } else if (st_btu64_rotateleft(&b, ifound) == E_OK) {
+            } else if (st_btu64_rotateleft(&b, ifound) == ST_OK) {
                 dd("after rotate left:");
                 st_btu64_dd(bt, 0);
 
                 b.root = b.root->children[ ifound ];
                 ifound = b.root->n_keys - 1;
                 dd("after rotate left, ifound=%d", ifound);
-            } else if (st_btu64_rotateright(&b, ifound) == E_OK) {
+            } else if (st_btu64_rotateright(&b, ifound) == ST_OK) {
                 b.root = b.root->children[ ifound + 1 ];
                 ifound = 0;
             } else {
@@ -204,7 +204,7 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
                 deleted->v = b.root->vals[ ifound ];
 
                 rc = st_btu64_delmin(&b, ifound, &minkv);
-                if (rc != E_OK) {
+                if (rc != ST_OK) {
                     return rc;
                 }
 
@@ -213,7 +213,7 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
 
                 bt->origin->st->n_entry--;
 
-                return E_OK;
+                return ST_OK;
             }
         }
     }
@@ -229,7 +229,7 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
     }
 
     if (ifound == -1) {
-        return E_NOTFOUND;
+        return ST_NOT_FOUND;
     }
 
     deleted->k = b.root->keys[ ifound ];
@@ -238,7 +238,7 @@ st_btu64_del(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
 
     bt->origin->st->n_entry--;
 
-    return E_OK;
+    return ST_OK;
 }
 
 int
@@ -271,9 +271,9 @@ st_btu64_search(st_btu64_t *bt, st_btu64_key_t k, st_btu64_val_t v,
 
     if (r.node != NULL) {
         *rst = r;
-        return E_OK;
+        return ST_OK;
     } else {
-        return E_NOTFOUND;
+        return ST_NOT_FOUND;
     }
 }
 
@@ -286,7 +286,7 @@ st_btiter_init(st_btu64_t *bt, st_btu64_iter_t *it) {
     it->nodes[ it->level ] = bt->root;
     it->indexes[ it->level ] = -1;
 
-    return E_OK;
+    return ST_OK;
 }
 
 st_btu64_kv_t *
@@ -349,7 +349,7 @@ st_btu64_add_to_node(st_btu64_t *b, int at,
 
     st_btu64_node_shiftright(b, at, 1);
     st_btu64_setentry(b, at, k, v, child);
-    return E_OK;
+    return ST_OK;
 }
 
 /* set k, v and its right child if it is non-leaf node */
@@ -382,7 +382,7 @@ st_btu64_split_child(st_btu64_t *b, int32_t ichild) {
 
     nd = st_btu64_allocnode(b, b->level - 1);
     if (nd == NULL) {
-        return E_OUTOFMEM;
+        return ST_OUT_OF_MEMORY;
     }
 
     mid = ST_BT_MIN_N_KEYS;
@@ -414,7 +414,7 @@ st_btu64_split_child(st_btu64_t *b, int32_t ichild) {
     dd("after split:");
     st_btu64_dd(b, 0);
 
-    return E_OK;
+    return ST_OK;
 }
 
 st_btu64_node_t *
@@ -505,7 +505,7 @@ st_btu64_binsearch(st_btu64_t *b, st_btu64_key_t k, st_btu64_val_t v,
 
     rst->left = l;
     rst->right = l + 1;
-    return E_OK;
+    return ST_OK;
 }
 
 int32_t
@@ -631,7 +631,7 @@ st_btu64_delmin(st_btu64_t *b, int i_after_which, st_btu64_kv_t *deleted) {
 
     i = i_after_which;
     if (i >= b->root->n_keys) {
-        return E_NOTFOUND;
+        return ST_NOT_FOUND;
     }
 
     for (b2 = *b; b2.level > 0; b2.level--) {
@@ -645,7 +645,7 @@ st_btu64_delmin(st_btu64_t *b, int i_after_which, st_btu64_kv_t *deleted) {
                 st_btu64_merge(&b2, i + 1);
             } else {
                 rc = st_btu64_rotateleft(&b2, i + 1);
-                assert(rc == E_OK && "rotate left must success");
+                assert(rc == ST_OK && "rotate left must success");
             }
         }
 
@@ -660,9 +660,9 @@ st_btu64_delmin(st_btu64_t *b, int i_after_which, st_btu64_kv_t *deleted) {
         deleted->v = b2.root->vals[ i ];
         st_btu64_node_shiftleft(&b2, i, 1);
 
-        return E_OK;
+        return ST_OK;
     } else {
-        return E_NOTFOUND;
+        return ST_NOT_FOUND;
     }
 }
 
@@ -696,7 +696,7 @@ st_btu64_rotateleft(st_btu64_t *b, int32_t i) {
     dd("BT-ROTATE-LEFT");
 
     if (i < 0 || i >= nd->n_keys) {
-        return E_INVALID_ARG;
+        return ST_ARG_INVALID;
     }
 
 
@@ -737,11 +737,11 @@ st_btu64_rotateleft(st_btu64_t *b, int32_t i) {
         dd("after rotate left:");
         st_btu64_dd(b, 0);
 
-        return E_OK;
+        return ST_OK;
 
     } else {
         /* not enough node on right or full on left */
-        return E_INVALID_ARG;
+        return ST_ARG_INVALID;
     }
 }
 
@@ -757,7 +757,7 @@ st_btu64_rotateright(st_btu64_t *b, int i) {
     nd = b->root;
 
     if (i < 0 || i >= nd->n_keys) {
-        return E_INVALID_ARG;
+        return ST_ARG_INVALID;
     }
 
     l = b->root->children[ i ];
@@ -784,11 +784,11 @@ st_btu64_rotateright(st_btu64_t *b, int i) {
         nd->vals[ i ] = l->vals[ l->n_keys - 1 ];
 
         l->n_keys--;
-        return E_OK;
+        return ST_OK;
 
     } else {
         /* not enough node on left or full on right */
-        return E_INVALID_ARG;
+        return ST_ARG_INVALID;
     }
 }
 
