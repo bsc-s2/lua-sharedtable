@@ -121,7 +121,7 @@ char *st_ut_get_tostring_buf();
         st_ut_assert_(__rst _operator 0,                                     \
              "Expected: '%s' " #_operator " '%s' " fmt,                       \
              st_ut_print_func_(_e)(_e),                                    \
-             st_ut_print_func_(_a)(_a),                                    \
+             st_ut_print_func_(_e)(_a),                                    \
              ##__VA_ARGS__ );                                                 \
     } while (0)
 
