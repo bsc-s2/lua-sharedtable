@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <inttypes.h>
 
 #include "inc/log.h"
 #include "inc/util.h"

@@ -27,10 +27,10 @@ char *dump_mes = NULL;
                                                                               \
                 /* val for test is key + 1 */                                 \
                 rc = st_btu64_add( (bt), (ks)[ __i ], (ks)[ __i ] + 1 );     \
-                st_ut_eq(ST_OK, rc, "add to btree: %llu", (ks)[ __i ] );   \
+                st_ut_eq(ST_OK, rc, "add to btree: %"PRIu64"", (ks)[ __i ] );   \
                                                                               \
                 if ( (mes) != NULL ) {                                        \
-                    (mes) += snprintf( (mes), 10240, "%llu, ", (ks)[ __i ] ); \
+                    (mes) += snprintf( (mes), 10240, "%"PRIu64", ", (ks)[ __i ] ); \
                 }                                                             \
             }                                                                 \
         } while ( 0 )
@@ -111,7 +111,7 @@ char *dump_mes = NULL;
                                                                               \
             rc = st_btu64_search( (bt), (key), (val), (flag), &rst );        \
             st_ut_eq( ST_NOT_FOUND, rc,                                      \
-                    "not found search %s for (%llu, %llu); %s",               \
+                    "not found search %s for (%"PRIu64", %"PRIu64"); %s",               \
                     st_bt_flagstr( flag ),                                   \
                     (st_btu64_key_t)(key), (st_btu64_val_t)(val), (mes) );  \
         } while ( 0 )
@@ -141,7 +141,7 @@ char *dump_mes = NULL;
             rc = st_btu64_search( (bt), (key), (val), (flag), &rst );             \
                                                                                    \
             st_ut_eq( ST_OK, rc,                                                 \
-                    "found, search %s (%llu, %llu); %s",                           \
+                    "found, search %s (%"PRIu64", %"PRIu64"); %s",                           \
                     st_bt_flagstr( flag ), (key), (st_btu64_val_t)(val), (mes) );\
             st_ut_ne( -1, rst.i,                                                \
                     "i should not be -1, %s", (mes) );                             \
@@ -410,7 +410,7 @@ st_test(btree, binsearch) {
 
         p = mes;
         p += snprintf(p, 10240, "case %d of %d,"
-                      " search %s for %llu in [",
+                      " search %s for %"PRIu64" in [",
                       i, n - 1, st_bt_flagstr(cs->flag), cs->tosearch);
 
         for (j = 0; j < cs->n; j++) {
@@ -418,7 +418,7 @@ st_test(btree, binsearch) {
             bt.root->keys[ j ] = cs->ks[ j ];
             bt.root->vals[ j ] = cs->ks[ j ] + 1;
 
-            p += snprintf(p, 10240, "%llu, ", cs->ks[ j ]);
+            p += snprintf(p, 10240, "%"PRIu64", ", cs->ks[ j ]);
         }
         p += snprintf(p, 10240, "]");
 
@@ -500,7 +500,7 @@ st_test(btree, xx) {
 
     for (i = 0; i < n; i++) {
         k = fib_hash16(i);
-        dd("add: %llu", k);
+        dd("add: %"PRIu64"", k);
         st_btu64_add(&bt, k, 0);
     }
     st_ut_ne(0, bt.level, "level is not 0");
@@ -560,12 +560,12 @@ st_test(btree, add_random) {
     st_btiter_init(&bt, &it);
     while ((kvp = st_btiter_next(&it)) != NULL) {
         st_ut_eq(1, rset[ kvp->k ] > 0 ? 1 : 0,
-               "iter get only key added %llu", kvp->k);
+               "iter get only key added %"PRIu64"", kvp->k);
         rset[ kvp->k ] = 2;
 
         if (prev > 0) {
             st_ut_eq(1, prev <= kvp->k ? 1 : 0,
-                   "prev: %llu <= cur: %llu", prev, kvp->k);
+                   "prev: %"PRIu64" <= cur: %"PRIu64"", prev, kvp->k);
         }
 
         prev = kvp->k;
@@ -859,7 +859,7 @@ st_test(btree, del) {
         for (idel = 0; idel < cs->n; idel++) {
 
             bt_declare(bt);
-            bt_case_init(bt, cases, i, "del %d-th key %llu", idel, cs->ks[ idel ]);
+            bt_case_init(bt, cases, i, "del %d-th key %"PRIu64"", idel, cs->ks[ idel ]);
 
             k = cs->ks[ idel ] - 1;
 
@@ -887,7 +887,7 @@ st_test(btree, del) {
         for (idel = 0; idel < cs->n; idel++) {
 
             bt_declare(bt);
-            bt_case_init(bt, cases, i, "del %d-th key-value %llu", idel, cs->ks[ idel ]);
+            bt_case_init(bt, cases, i, "del %d-th key-value %"PRIu64"", idel, cs->ks[ idel ]);
 
             k = cs->ks[ idel ];
 
@@ -925,7 +925,7 @@ st_test(btree, del) {
                 st_ut_eq(ST_OK, rc,
                        "delete ok %s", mes);
 
-                dd("after deleting %llu:", k);
+                dd("after deleting %"PRIu64":", k);
                 st_btu64_dd(&bt, 0);
             }
 
@@ -957,7 +957,7 @@ st_test(btree, del) {
                 st_ut_eq(ST_OK, rc,
                        "delete ok %s", mes);
 
-                dd("after deleting %llu:", k);
+                dd("after deleting %"PRIu64":", k);
                 st_btu64_dd(&bt, 0);
             }
 
@@ -995,7 +995,7 @@ st_test(btree, pop) {
             kv.k = cs->nums[ j ];                                             \
                     kv.v = cs->nums[ j ];                                     \
                     rc = st_btu64_add( &bt, cs->nums[ j ], 1 );                 \
-                    st_ut_eq( ST_OK, rc, "add %llu", kv.k );                \
+                    st_ut_eq( ST_OK, rc, "add %"PRIu64"", kv.k );                \
         }                                                                     \
     } while ( 0 )
 
@@ -1014,9 +1014,10 @@ st_test(btree, pop) {
 }
 
 st_ben(btree, binsearch, 2) {
-    int         i;
-    st_btu64_key_t k;
-    st_btu64_node_t ns[ 100 ];
+
+    int              i;
+    st_btu64_key_t   k;
+    st_btu64_node_t  ns[ 100 ];
     st_btu64_node_t *old;
 
     bt_declare(bt);
@@ -1027,8 +1028,8 @@ st_ben(btree, binsearch, 2) {
     old = bt.root;
     bt.root = &ns[ 0 ];
 
-    for (i = 0; i < 64; i++) {
-        bt.root->keys[ i ] = i;
+    for (i = 0; i < ST_BT_MAX_N_KEYS; i++) {
+        bt.root->keys[ i ] = (uint64_t)i;
     }
 
     k = 37;
@@ -1051,7 +1052,7 @@ st_ben(btree, add, 2) {
         st_btu64_add(&bt, fib_hash64(i), i);
     }
     st_btu64_dd(&bt, 0);
-    dinfo("st: n=%llu, node_create=%llu, node_merge=%llu, entry/node=%llu",
+    dinfo("st: n=%"PRIu64", node_create=%"PRIu64", node_merge=%"PRIu64", entry/node=%"PRIu64"",
           bt.origin->st->n_entry,
           bt.origin->st->n_node_create,
           bt.origin->st->n_node_merge,
@@ -1071,6 +1072,7 @@ _make_bt_1m(int n) {
     bt->root = NULL;
 
     rc = st_btu64_init(bt);
+    (void)rc;
 
     for (i = 0; i < 1024 * 1024; i++) {
         st_btu64_add(bt, i, i);
