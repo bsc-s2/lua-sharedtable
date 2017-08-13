@@ -32,14 +32,14 @@ typedef struct st_ut_case_t st_ut_case_t;
 typedef struct st_ut_bench_t st_ut_bench_t;
 
 extern st_ut_case_t *st_ut_cases_;
-extern int64_t st_ut_case_n_;
-extern int64_t st_ut_case_capacity_;
-extern int st_ut_ret__;
+extern int64_t       st_ut_case_n_;
+extern int64_t       st_ut_case_capacity_;
+extern int           st_ut_ret__;
 
 extern st_ut_bench_t *st_ut_benches_;
-extern int64_t st_ut_bench_n_;
-extern int64_t st_ut_bench_capacity_;
-extern int st_ut_ret__;
+extern int64_t        st_ut_bench_n_;
+extern int64_t        st_ut_bench_capacity_;
+extern int            st_ut_ret__;
 
 typedef void (*st_ut_case_f)();
 
@@ -65,11 +65,11 @@ char *st_ut_get_tostring_buf();
 
 
 /* define test */
-#define st_test(case_, func_)                                                \
-    static void st_ut_case_##case_##_##func_();                              \
+#define st_test(case_, func_)                                                 \
+    static void st_ut_case_##case_##_##func_();                               \
     __attribute__((constructor))                                              \
-    void st_ut_case_##case_##_##func_##_constructor_() {                     \
-        st_ut_add_case(#case_ "::" #func_, st_ut_case_##case_##_##func_);   \
+    void st_ut_case_##case_##_##func_##_constructor_() {                      \
+        st_ut_add_case(#case_ "::" #func_, st_ut_case_##case_##_##func_);     \
     }                                                                         \
     static void st_ut_case_##case_##_##func_()
 
@@ -77,18 +77,18 @@ char *st_ut_get_tostring_buf();
 #define st_ben(name_, func_, n_sec) \
         st_bench(name_, func_, NULL, NULL, n_sec)
 
-#define st_bench(name_, func_, init_func, clean_func, n_sec)                 \
-    static void st_ut_bench_##name_##_##func_(void*data, int64_t n);         \
+#define st_bench(name_, func_, init_func, clean_func, n_sec)                  \
+    static void st_ut_bench_##name_##_##func_(void*data, int64_t n);          \
     __attribute__((constructor))                                              \
-    void st_ut_bench_##name_##_##func_##_constructor_() {                    \
-        st_ut_add_bench(#name_ "::" #func_, st_ut_bench_##name_##_##func_,  \
+    void st_ut_bench_##name_##_##func_##_constructor_() {                     \
+        st_ut_add_bench(#name_ "::" #func_, st_ut_bench_##name_##_##func_,    \
                          init_func, clean_func, n_sec);                       \
     }                                                                         \
     static void st_ut_bench_##name_##_##func_(void*data, int64_t n)
 
-#define st_ut_return_fail()                                                  \
+#define st_ut_return_fail()                                                   \
         do {                                                                  \
-            if (st_ut_does_fail()) {                                         \
+            if (st_ut_does_fail()) {                                          \
                 return;                                                       \
             }                                                                 \
         } while(0)
