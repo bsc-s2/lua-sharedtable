@@ -3,6 +3,9 @@
 
 It requires gcc 4.9+ and c11 standard.
 
+For now the latest centos still has no gcc-4.9 included.
+We need to install gcc-4.9 with devtoolset-3.
+
 To install gcc 4.9 on centos:
 
 ```
