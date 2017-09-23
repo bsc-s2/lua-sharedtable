@@ -58,7 +58,7 @@ test: $(test_exec)
 
 $(test_exec): $(test_objs)
 	@for dep in $(deps); do ( cd $(BASE_DIR)/$$dep && echo make $$dep && $(MAKE) test; ) done
-	$(CC) $(CFLAGS) $(libs:%=-l% ) -o $@ $^ $(deps_a)
+	$(CC) $(CFLAGS) $(cflags) $(libs:%=-l% ) -o $@ $^ $(deps_a)
 
 $(objs): $(BASE_DIR)/inc/*.h
 
@@ -69,6 +69,6 @@ $(test_objs): $(BASE_DIR)/inc/*.h $(BASE_DIR)/unittest/*.h
 	ar -rcs $@ $(objs)
 
 .c.o:
-	$(CC) $(CFLAGS) $(UNITTEST_FLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) $(cflags) $(UNITTEST_FLAGS) -o $@ -c $<
 
 .h.c:
