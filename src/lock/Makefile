@@ -1,6 +1,8 @@
 
-src = robustlock.c
-target = robustlock.a
+src       = robustlock.c
+target    = robustlock.a
+libs      = pthread
+cflags    = -pthread
 
 test_exec = test_robustlock
 
