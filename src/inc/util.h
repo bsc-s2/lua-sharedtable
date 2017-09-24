@@ -131,6 +131,8 @@
       }                                                                       \
   } while (0)
 
+/* must and assert works only in debug mode. */
+
 #ifdef ST_DEBUG
 #   define st_dmust(expr, ...) st_must(expr, ##__VA_ARGS__)
 #   define st_dassert(expr) st_assert(expr)
