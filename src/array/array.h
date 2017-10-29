@@ -27,8 +27,6 @@ struct st_array_s {
 
 #define ST_ARRAY_MIN_SIZE 64
 
-#define arg2(xx, x, ...) (x)
-
 
 static inline int st_array_is_empty(st_array_t *array) {
     return array->current_cnt == 0;
@@ -56,19 +54,19 @@ int st_array_destroy(st_array_t *array);
 
 
 #define st_array_insert(array, idx, elts, ...) \
-        st_array_insert_many(array, idx, elts, arg2(xx, ##__VA_ARGS__, 1))
+        st_array_insert_many(array, idx, elts, st_arg2(xx, ##__VA_ARGS__, 1))
 
 int st_array_insert_many(st_array_t *array, size_t index, void * elements, size_t cnt);
 
 
 #define st_array_remove(array, idx, ...) \
-        st_array_remove_many(array, idx, arg2(xx, ##__VA_ARGS__, 1))
+        st_array_remove_many(array, idx, st_arg2(xx, ##__VA_ARGS__, 1))
 
 int st_array_remove_many(st_array_t *array, size_t index, size_t cnt);
 
 
 #define st_array_append(array, elts, ...) \
-        st_array_append_many(array, elts, arg2(xx, ##__VA_ARGS__, 1))
+        st_array_append_many(array, elts, st_arg2(xx, ##__VA_ARGS__, 1))
 
 int st_array_append_many(st_array_t *array, void * elements, size_t cnt);
 
