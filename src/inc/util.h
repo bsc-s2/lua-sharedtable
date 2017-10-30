@@ -136,4 +136,28 @@
 #   define st_dassert(expr)
 #endif /* ST_DEBUG */
 
+
+#if 1
+
+#define st_malloc malloc
+#define st_free free
+
+#else
+    static inline void*
+st_malloc( size_t size )
+{
+    void *r;
+    r = malloc( size );
+    dd( "MALLOC: %p", r );
+    return r;
+}
+
+    static inline void
+st_free( void* pnt )
+{
+    dd( "FREE: %p", pnt );
+    free( pnt );
+}
+#endif
+
 #endif /* __INC__UTIL_H__ */

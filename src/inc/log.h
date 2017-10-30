@@ -26,29 +26,4 @@
 #define derrno( _fmt, ... ) derr( _fmt " errno: %s", ##__VA_ARGS__, \
                                   strerror( errno ) )
 
-#if 1
-
-#define st_malloc malloc
-#define st_free free
-
-#else
-    static inline void*
-st_malloc( size_t size )
-{
-    void *r;
-    r = malloc( size );
-    dd( "MALLOC: %p", r );
-    return r;
-}
-
-    static inline void
-st_free( void* pnt )
-{
-    dd( "FREE: %p", pnt );
-    free( pnt );
-}
-#endif
-
-
-
 #endif /* __INC__LOG_H__ */
