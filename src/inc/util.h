@@ -114,17 +114,17 @@
 
 /* argument checking */
 
-#define st_must(expr, ...) do {                                              \
+#define st_must(expr, ...) do {                                               \
       if (! (expr)) {                                                         \
           derr("arg check fail: "#expr);                                      \
           return (void)0, ##__VA_ARGS__;                                      \
       }                                                                       \
   } while (0)
 
-#define st_assert(expr) do {                                                 \
+#define st_assert(expr) do {                                                  \
       if (! (expr)) {                                                         \
           derr("assertion fail: "#expr);                                      \
-          st_bug("assertion fail: "#expr);                                   \
+          st_bug("assertion fail: "#expr);                                    \
       }                                                                       \
   } while (0)
 
@@ -140,6 +140,8 @@
 #if 1
 
 #define st_malloc malloc
+#define st_memcpy memcpy
+#define st_memcmp memcmp
 #define st_free free
 
 #else
