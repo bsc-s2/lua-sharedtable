@@ -200,32 +200,34 @@ st_ut_run_bench(st_ut_bench_t *b) {
     }
 }
 
-#define st_ut_compare_func_(v) _Generic((v),                                 \
-        char:       st_cmp_char,                                             \
-        int8_t:     st_cmp_int8,                                             \
-        int16_t:    st_cmp_int16,                                            \
-        int32_t:    st_cmp_int32,                                            \
-        int64_t:    st_cmp_int64,                                            \
-        uint8_t:    st_cmp_uint8,                                            \
-        uint16_t:   st_cmp_uint16,                                           \
-        uint32_t:   st_cmp_uint32,                                           \
-        uint64_t:   st_cmp_uint64,                                           \
-        default:    st_cmp_void_ptr,                                         \
-        void*:      st_cmp_void_ptr                                          \
+#define st_ut_compare_func_(v) _Generic((v),                                  \
+        char:       st_cmp_char,                                              \
+        int8_t:     st_cmp_int8,                                              \
+        int16_t:    st_cmp_int16,                                             \
+        int32_t:    st_cmp_int32,                                             \
+        int64_t:    st_cmp_int64,                                             \
+        uint8_t:    st_cmp_uint8,                                             \
+        uint16_t:   st_cmp_uint16,                                            \
+        uint32_t:   st_cmp_uint32,                                            \
+        uint64_t:   st_cmp_uint64,                                            \
+        size_t:     st_cmp_uint64,                                            \
+        void*:      st_cmp_void_ptr,                                          \
+        default:    st_cmp_void_ptr                                           \
 )
 
-#define st_ut_print_func_(v) _Generic((v),                                   \
-                                       char:       st_print_char,            \
-                                       int8_t:     st_print_int8,            \
-                                       int16_t:    st_print_int16,           \
-                                       int32_t:    st_print_int32,           \
-                                       int64_t:    st_print_int64,           \
-                                       uint8_t:    st_print_uint8,           \
-                                       uint16_t:   st_print_uint16,          \
-                                       uint32_t:   st_print_uint32,          \
-                                       uint64_t:   st_print_uint64,          \
-                                       default:    st_print_void_ptr,        \
-                                       void*:      st_print_void_ptr         \
+#define st_ut_print_func_(v) _Generic((v),                                    \
+        char:       st_print_char,                                            \
+        int8_t:     st_print_int8,                                            \
+        int16_t:    st_print_int16,                                           \
+        int32_t:    st_print_int32,                                           \
+        int64_t:    st_print_int64,                                           \
+        uint8_t:    st_print_uint8,                                           \
+        uint16_t:   st_print_uint16,                                          \
+        uint32_t:   st_print_uint32,                                          \
+        uint64_t:   st_print_uint64,                                          \
+        size_t:     st_print_uint64,                                          \
+        void*:      st_print_void_ptr,                                        \
+        default:    st_print_void_ptr                                         \
 )
 
 
