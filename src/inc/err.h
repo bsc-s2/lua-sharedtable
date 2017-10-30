@@ -9,6 +9,7 @@
 #define _errs                    \
   (ST_ERR),                   \
                                  \
+  (ST_BUG_UNINITED),          \
   (ST_AGAIN),                 \
   (ST_CHKSUM),                \
   (ST_DUP),                   \
