@@ -37,6 +37,10 @@ err_return:
 int
 st_str_init_0(st_str_t *s, int64_t len) {
 
+    st_must(s != NULL, ST_ARG_INVALID);
+    st_must(len >= 0, ST_ARG_INVALID);
+    st_must(s->bytes_owned == 0, ST_INITTWICE);
+
     int ret = st_str_init(s, len + 1);
 
     if (ret != ST_OK) {
@@ -44,9 +48,8 @@ st_str_init_0(st_str_t *s, int64_t len) {
     }
 
     s->len = len;
-    s->bytes[s->len] = 0;
 
-    return ret;
+    return ST_OK;
 }
 
 
@@ -70,6 +73,7 @@ int
 st_str_ref(st_str_t *s, const st_str_t *target) {
     st_must(s != NULL, ST_ARG_INVALID);
     st_must(s->bytes_owned == 0, ST_INITTWICE);
+    st_must(s != target, ST_ARG_INVALID);
     st_must(target != NULL, ST_ARG_INVALID);
 
     int ret = ST_OK;
@@ -156,6 +160,20 @@ st_str_copy_cstr(st_str_t *str, const char *s) {
     return ST_OK;
 }
 
+int
+st_str_seize(st_str_t *str, st_str_t *from) {
+
+    st_must(str != NULL, ST_ARG_INVALID);
+    st_must(str->bytes_owned == 0, ST_INITTWICE);
+    st_must(from != NULL, ST_ARG_INVALID);
+    st_must(str != from, ST_ARG_INVALID);
+
+    *str = *from;
+    from->bytes_owned = 0;
+
+    return ST_OK;
+}
+
 /*
  * int st_str_to_str(const st_str_t *ptr, char *buf, const int64_t len, int64_t *pos) {
  *   st_must_be(ptr && ptr->inited_ && buf && len > 0 && pos, ST_ERR_INVALID_ARG);
@@ -167,7 +185,8 @@ st_str_copy_cstr(st_str_t *str, const char *s) {
  * }
  */
 
-int st_str_cmp(const st_str_t *a, const st_str_t *b) {
+int
+st_str_cmp(const st_str_t *a, const st_str_t *b) {
 
     st_must(a != NULL, ST_ARG_INVALID);
     st_must(b != NULL, ST_ARG_INVALID);

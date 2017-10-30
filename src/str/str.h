@@ -38,6 +38,9 @@ static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t*)"";
 #define st_str_empty              {.left=NULL, .len=0,           .capacity=1,            .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
 
 #define st_str_equal(a, b)                                                    \
+        st_str_equal_((st_str_t*)(a), (st_str_t*)(b))
+
+#define st_str_equal_(a, b)                                                   \
   ((a) != NULL                                                                \
    && (b) != NULL                                                             \
    && (a)->bytes != NULL                                                      \
@@ -106,17 +109,8 @@ int st_str_copy_cstr(st_str_t *str, const char *s);
  */
 
 /* take ownership of bytes from another st_str_t 'from'. */
-static inline void st_str_seize(st_str_t *str, st_str_t *from) {
+int st_str_seize(st_str_t *str, st_str_t *from);
 
-  if (str == NULL || from == NULL || str == from) {
-    return;
-  }
-
-  st_str_destroy(str);
-
-  *str = *from;
-  from->bytes_owned = 0;
-}
 
 // thread_safe: no
 int st_str_cmp(const st_str_t *a, const st_str_t *b);

@@ -14,7 +14,7 @@
     uint32_t:  a "%"PRIu32 b ,                                                \
     uint64_t:  a "%"PRIu64 b ,                                                \
     void*:     a "%p"      b ,                                                \
-    default:   a "%x"      b                                                  \
+    default:   a "%p"      b                                                  \
 )
 
 
