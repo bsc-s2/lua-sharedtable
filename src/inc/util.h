@@ -14,12 +14,10 @@
 #define st_unused(x) (void)(x)
 
 /* upto must be powers of 2 */
-#define st_align(i, upto)                                                    \
-        ( (upto) == 0 ?                                                       \
-          (i) :                                                               \
-          ( ((i) + (upto) - 1)                                                \
-            & ( ~((upto) - 1) )                                               \
-          )                                                                   \
+#define st_align(i, upto)                                                     \
+        ((upto) == 0                                                          \
+         ? (i)                                                                \
+         : (((i) + (upto) - 1) & (~((upto) - 1)))                             \
         )
 
 #define st_offsetof(tp, field) ( (size_t)&((tp*)NULL)->field )
@@ -28,6 +26,11 @@
 
 #define st_min(a, b) ( (a) < (b) ? (a) : (b) )
 #define st_max(a, b) ( (a) > (b) ? (a) : (b) )
+#define st_cmp(a, b) ((a) > (b)                                               \
+                      ? 1                                                     \
+                      : ((a) < (b)                                            \
+                         ? -1                                                 \
+                         : 0))
 
 #define st_return_if(cond, val)                                              \
         do {                                                                  \
