@@ -203,15 +203,16 @@ st_ut_run_bench(st_ut_bench_t *b) {
 #define st_ut_compare(a, b) st_ut_norm_cmp(a, b)
 
 #define st_ut_print_func_(v) _Generic((v),                                    \
-        char               : st_print_char        ,                           \
-        int                : st_print_int         ,                           \
-        long               : st_print_long        ,                           \
-        long long          : st_print_longlong    ,                           \
+                 char      : st_print_char        ,                           \
+                 int       : st_print_int         ,                           \
+                 long      : st_print_long        ,                           \
+                 long long : st_print_longlong    ,                           \
+        unsigned char      : st_print_uchar       ,                           \
         unsigned int       : st_print_uint        ,                           \
         unsigned long      : st_print_ulong       ,                           \
         unsigned long long : st_print_ulonglong   ,                           \
-        void*              : st_print_void_ptr    ,                           \
-        default            : st_print_void_ptr                                \
+                 void*     : st_print_void_ptr    ,                           \
+                 default   : st_print_void_ptr                                \
 )
 
 
@@ -231,6 +232,7 @@ static inline char *st_print_char      (char               a) { st_ut_print_("%c
 static inline char *st_print_int       (int                a) { st_ut_print_("%d",   a); }
 static inline char *st_print_long      (long               a) { st_ut_print_("%ld",  a); }
 static inline char *st_print_longlong  (long long          a) { st_ut_print_("%lld", a); }
+static inline char *st_print_uchar     (unsigned char      a) { st_ut_print_("%u",   a); }
 static inline char *st_print_uint      (unsigned int       a) { st_ut_print_("%u",   a); }
 static inline char *st_print_ulong     (unsigned long      a) { st_ut_print_("%lu",  a); }
 static inline char *st_print_ulonglong (unsigned long long a) { st_ut_print_("%llu", a); }
