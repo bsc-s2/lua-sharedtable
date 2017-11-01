@@ -114,15 +114,15 @@ char *st_ut_get_tostring_buf();
 #define st_ut_lt(expected, actual, fmt, ...)                                    \
     st_ut_assert_cmp_(<,  expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_assert_cmp_(_operator, __e, __a, fmt, ...)                     \
+#define st_ut_assert_cmp_(_operator, __e, __a, fmt, ...)                      \
     do {                                                                      \
-        st_typeof(__e) _e = (__e); \
-        st_typeof(__a) _a = (__a); \
-        int __rst = st_ut_compare_func_(_e)(_e, _a);                      \
-        st_ut_assert_(__rst _operator 0,                                     \
-             "Expected: '%s' " #_operator " '%s' " fmt,                       \
-             st_ut_print_func_(_e)(_e),                                    \
-             st_ut_print_func_(_e)(_a),                                    \
+        st_typeof(__e) _e = (__e);                                            \
+        st_typeof(__a) _a = (__a);                                            \
+        int __rst = st_ut_compare(_e, _a);                                    \
+        st_ut_assert_(__rst _operator 0,                                      \
+             "Expected: '%s' " #_operator " '%s'; " fmt,                      \
+             st_ut_print_func_(_e)(_e),                                       \
+             st_ut_print_func_(_e)(_a),                                       \
              ##__VA_ARGS__ );                                                 \
     } while (0)
 
@@ -200,50 +200,24 @@ st_ut_run_bench(st_ut_bench_t *b) {
     }
 }
 
-#define st_ut_compare_func_(v) _Generic((v),                                  \
-        char:       st_cmp_char,                                              \
-        int8_t:     st_cmp_int8,                                              \
-        int16_t:    st_cmp_int16,                                             \
-        int32_t:    st_cmp_int32,                                             \
-        int64_t:    st_cmp_int64,                                             \
-        uint8_t:    st_cmp_uint8,                                             \
-        uint16_t:   st_cmp_uint16,                                            \
-        uint32_t:   st_cmp_uint32,                                            \
-        uint64_t:   st_cmp_uint64,                                            \
-        size_t:     st_cmp_uint64,                                            \
-        void*:      st_cmp_void_ptr,                                          \
-        default:    st_cmp_void_ptr                                           \
-)
+#define st_ut_compare(a, b) st_ut_norm_cmp(a, b)
 
 #define st_ut_print_func_(v) _Generic((v),                                    \
-        char:       st_print_char,                                            \
-        int8_t:     st_print_int8,                                            \
-        int16_t:    st_print_int16,                                           \
-        int32_t:    st_print_int32,                                           \
-        int64_t:    st_print_int64,                                           \
-        uint8_t:    st_print_uint8,                                           \
-        uint16_t:   st_print_uint16,                                          \
-        uint32_t:   st_print_uint32,                                          \
-        uint64_t:   st_print_uint64,                                          \
-        size_t:     st_print_uint64,                                          \
-        void*:      st_print_void_ptr,                                        \
-        default:    st_print_void_ptr                                         \
+        char               : st_print_char        ,                           \
+        int                : st_print_int         ,                           \
+        long               : st_print_long        ,                           \
+        long long          : st_print_longlong    ,                           \
+        unsigned int       : st_print_uint        ,                           \
+        unsigned long      : st_print_ulong       ,                           \
+        unsigned long long : st_print_ulonglong   ,                           \
+        void*              : st_print_void_ptr    ,                           \
+        default            : st_print_void_ptr                                \
 )
 
 
-#define st_ut_norm_cmp(a, b) ((a)>(b) ? 1 : (((a)<(b)) ? -1 : 0))
-
-static inline int st_cmp_char(char      a, char      b) { return st_ut_norm_cmp(a, b); }
-
-static inline int st_cmp_int8(int8_t    a, int8_t    b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_int16(int16_t   a, int16_t   b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_int32(int32_t   a, int32_t   b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_int64(int64_t   a, int64_t   b) { return st_ut_norm_cmp(a, b); }
-
-static inline int st_cmp_uint8(uint8_t   a, uint8_t   b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_uint16(uint16_t  a, uint16_t  b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_uint32(uint32_t  a, uint32_t  b) { return st_ut_norm_cmp(a, b); }
-static inline int st_cmp_uint64(uint64_t  a, uint64_t  b) { return st_ut_norm_cmp(a, b); }
+/* force type conversion */
+#define st_ut_norm_cmp(a, b) st_ut_norm_cmp_(a, (st_typeof(a))b)
+#define st_ut_norm_cmp_(a, b) ((a)>(b) ? 1 : (((a)<(b)) ? -1 : 0))
 
 static inline int st_cmp_void_ptr(void  *a, void *b) { return st_ut_norm_cmp(a, b); }
 
@@ -253,19 +227,14 @@ static inline int st_cmp_void_ptr(void  *a, void *b) { return st_ut_norm_cmp(a, 
         return __buf; \
     } while(0)
 
-static inline char *st_print_char(char      a) { st_ut_print_("%c",   a); }
-
-static inline char *st_print_int8(int8_t    a) { st_ut_print_("%d",   a); }
-static inline char *st_print_int16(int16_t   a) { st_ut_print_("%d",   a); }
-static inline char *st_print_int32(int32_t   a) { st_ut_print_("%d",   a); }
-static inline char *st_print_int64(int64_t   a) { st_ut_print_("%lld", a); }
-
-static inline char *st_print_uint8(uint8_t   a) { st_ut_print_("%u",   a); }
-static inline char *st_print_uint16(uint16_t  a) { st_ut_print_("%u",   a); }
-static inline char *st_print_uint32(uint32_t  a) { st_ut_print_("%u",   a); }
-static inline char *st_print_uint64(uint64_t  a) { st_ut_print_("%llu", a); }
-
-static inline char *st_print_void_ptr(void *p) { st_ut_print_("%p", p); }
+static inline char *st_print_char      (char               a) { st_ut_print_("%c",   a); }
+static inline char *st_print_int       (int                a) { st_ut_print_("%d",   a); }
+static inline char *st_print_long      (long               a) { st_ut_print_("%ld",  a); }
+static inline char *st_print_longlong  (long long          a) { st_ut_print_("%lld", a); }
+static inline char *st_print_uint      (unsigned int       a) { st_ut_print_("%u",   a); }
+static inline char *st_print_ulong     (unsigned long      a) { st_ut_print_("%lu",  a); }
+static inline char *st_print_ulonglong (unsigned long long a) { st_ut_print_("%llu", a); }
+static inline char *st_print_void_ptr  (void*              a) { st_ut_print_("%p",   a); }
 
 static inline int st_ut_is_bench(int argc, char **argv) {
     return (argc >= 2)
