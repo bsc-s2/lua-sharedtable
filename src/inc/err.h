@@ -23,6 +23,7 @@
   (ST_NOT_READY),             \
   (ST_OUT_OF_ORDER),          \
   (ST_OUT_OF_MEMORY),         \
+  (ST_OUT_OF_RANGE),          \
   (ST_TIMEOUT),               \
   (ST_UNSUPPORTED),           \
   (ST_UNINITED),              \
