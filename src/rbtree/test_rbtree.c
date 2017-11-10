@@ -156,21 +156,21 @@ st_test(rbtree, search) {
 
         tmp.key = c.key;
 
-        obj = (test_object *)s3_rbtree_search_eq(&tree,  &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_eq(&tree,  &tmp.rb_node);
         if (c.equal_key == -1) {
             st_ut_eq(NULL, obj, "");
         } else {
             st_ut_eq(c.equal_key, obj->key, "");
         }
 
-        obj = (test_object *)s3_rbtree_search_le(&tree,  &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_le(&tree,  &tmp.rb_node);
         if (c.smaller_key == -1) {
             st_ut_eq(NULL, obj, "");
         } else {
             st_ut_eq(c.smaller_key, obj->key, "");
         }
 
-        obj = (test_object *)s3_rbtree_search_ge(&tree,  &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_ge(&tree,  &tmp.rb_node);
         if (c.bigger_key == -1) {
             st_ut_eq(NULL, obj, "");
         } else {
@@ -189,7 +189,7 @@ st_test(rbtree, search_times) {
     st_rbtree_init(&tree, rbtree_cmp);
 
     tmp.key = 11;
-    obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+    obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
     st_ut_eq(NULL, obj, "tree is empty");
 
     for (int i = 0; i < 1000; i++) {
@@ -197,7 +197,7 @@ st_test(rbtree, search_times) {
         // not add same key in rbtree
         while (1) {
             tmp.key = random() % 100000;
-            obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
             if (obj == NULL) {
                 break;
             }
@@ -209,12 +209,12 @@ st_test(rbtree, search_times) {
 
     for (int i = 0; i < 1000; i++) {
         tmp.key = objects[i].key;
-        obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
         st_ut_eq(&objects[i], obj, "found object");
     }
 
     tmp.key = 100000 + 1;
-    obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+    obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
     st_ut_eq(NULL, obj, "not found key");
 }
 
@@ -237,7 +237,7 @@ void test_insert_with_search(int object_num) {
         for (int j = 0; j <= i; j++) {
             tmp.key = objects[j].key;
 
-            obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
 
             st_ut_eq(&objects[j], obj, "search object is right");
         }
@@ -270,19 +270,19 @@ void test_delete_with_search(int object_num) {
 
     for (int i = object_num-1; i >= 0; i--) {
         tmp.key = objects[i].key;
-        obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
         st_ut_eq(&objects[i], obj, "search object is right");
 
         node = &objects[i].rb_node;
         st_rbtree_delete(&tree, node);
         st_ut_eq(0, st_rbtree_node_is_inited(node), "");
 
-        obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
         st_ut_eq(NULL, obj, "object has been deleted");
 
         for (int j = 0; j <= i-1; j++) {
             tmp.key = objects[j].key;
-            obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
             st_ut_eq(&objects[j], obj, "search object is right");
         }
     }
@@ -335,10 +335,10 @@ void test_add_with_delete(int object_num, int average_add, int average_delete) {
 
             // check the node wether has been deleted
             if (j >= start && j < end) {
-                obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+                obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
                 st_ut_eq(&objects[j], obj, "found object");
             } else {
-                obj = (test_object *)s3_rbtree_search_eq(&tree, &tmp.rb_node);
+                obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
                 st_ut_eq(NULL, obj, "object has been deleted");
             }
         }

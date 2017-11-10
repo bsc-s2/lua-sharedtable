@@ -436,7 +436,7 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node)
     return ST_OK;
 }
 
-st_rbtree_node_t *s3_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
+st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
 {
 
     st_must(tree != NULL, NULL);
@@ -462,7 +462,7 @@ st_rbtree_node_t *s3_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
     return NULL;
 }
 
-st_rbtree_node_t *s3_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
+st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
 {
 
     st_must(tree != NULL, NULL);
@@ -491,7 +491,7 @@ st_rbtree_node_t *s3_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
     return curr != sentinel ? curr: smaller;
 }
 
-st_rbtree_node_t *s3_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
+st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
 {
 
     st_must(tree != NULL, NULL);

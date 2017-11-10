@@ -44,6 +44,10 @@ static inline void * st_array_get(st_array_t *array, size_t index) {
     return array->start_addr + array->element_size * index;
 }
 
+static inline size_t st_array_current_cnt(st_array_t *array) {
+    return array->current_cnt;
+}
+
 int st_array_init_static(st_array_t *array, size_t element_size,
         void *start_addr, size_t total_cnt, st_array_compare_f compare);
 

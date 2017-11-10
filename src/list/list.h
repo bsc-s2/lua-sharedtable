@@ -76,7 +76,7 @@ static inline void st_list_move_tail(st_list_t *node, st_list_t *head) {
             node = next, next = node->next)
 
 #define st_list_entry(node, type, member)                                             \
-    (type *) ((u_char *)(node) - offsetof(type, member))
+    (type *) ((uint8_t *)(node) - offsetof(type, member))
 
 #define st_list_first_entry(head, type, member)                                       \
     st_list_empty(head) ? NULL : st_list_entry((head)->next, type, member)
@@ -89,7 +89,7 @@ static inline void st_list_move_tail(st_list_t *node, st_list_t *head) {
             &object->member != (head);                                                \
             object = st_list_entry(object->member.next, __typeof__(*object), member))
 
-#define s3_list_for_each_entry_safe(object, next, head, member)                       \
+#define st_list_for_each_entry_safe(object, next, head, member)                       \
     for (object = st_list_entry((head)->next, __typeof__(*object), member),           \
             next = st_list_entry(object->member.next, __typeof__(*object), member);   \
             &object->member != (head);                                                \

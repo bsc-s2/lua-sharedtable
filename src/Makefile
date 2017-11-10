@@ -5,7 +5,7 @@
 BASE_DIR := $(CURDIR)
 export BASE_DIR
 
-submod = binary btree robustlock list rbtree array bitmap region
+submod = binary btree robustlock list rbtree array bitmap region pagepool
 
 test:
 	for mod in $(submod); do ( cd $$mod && $(MAKE) test; ) done

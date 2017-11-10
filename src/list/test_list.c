@@ -257,7 +257,7 @@ st_test(list, for_each_entry_safe) {
 
     init_list_with_objects(&head, objects, 10);
 
-    s3_list_for_each_entry_safe(prt, next, &head, node) {
+    st_list_for_each_entry_safe(prt, next, &head, node) {
         st_ut_eq(prt, objects + i, "object is right");
         st_list_remove(&(prt->node));
         i++;

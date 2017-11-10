@@ -96,6 +96,15 @@ int st_robustlock_unlock(pthread_mutex_t *lock)
     return ret;
 }
 
+void st_robustlock_unlock_err_abort(pthread_mutex_t *lock)
+{
+    int ret = st_robustlock_unlock(lock);
+    if (ret != ST_OK) {
+        derr("pthread_mutex_unlock ret: %d, pid:%d, address: %p\n", ret, getpid(), lock);
+        abort();
+    }
+}
+
 int st_robustlock_destroy(pthread_mutex_t *lock)
 {
     st_must(lock != NULL, ST_ARG_INVALID);
