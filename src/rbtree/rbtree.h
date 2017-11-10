@@ -30,7 +30,10 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node);
 
 st_rbtree_node_t * st_rbtree_left_most(st_rbtree_t *tree);
 st_rbtree_node_t * st_rbtree_right_most(st_rbtree_t *tree);
-st_rbtree_node_t *s3_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *node);
+
+st_rbtree_node_t *s3_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node);
+st_rbtree_node_t *s3_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node);
+st_rbtree_node_t *s3_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node);
 
 static inline void st_rbtree_red(st_rbtree_node_t *node) {
     node->color = 1;
@@ -62,6 +65,14 @@ static inline int st_rbtree_is_left_child(st_rbtree_node_t *node) {
 
 static inline int st_rbtree_is_right_child(st_rbtree_node_t *node) {
     return node == node->parent->right;
+}
+
+static inline int st_rbtree_node_is_inited(st_rbtree_node_t *node) {
+    int ret;
+
+    ret = node->parent == NULL && node->right == NULL && node->left == NULL;
+
+    return !ret;
 }
 
 #endif /* _RBTREE_H_INCLUDED_ */

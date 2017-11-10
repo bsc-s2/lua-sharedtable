@@ -436,10 +436,15 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node)
     return ST_OK;
 }
 
-st_rbtree_node_t *s3_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *node) {
+st_rbtree_node_t *s3_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
+{
+
+    st_must(tree != NULL, NULL);
+    st_must(node != NULL, NULL);
 
     st_rbtree_node_t *curr = tree->root;
     st_rbtree_node_t *sentinel = &tree->sentinel;
+
     int ret;
 
     while (curr != sentinel) {
@@ -455,4 +460,62 @@ st_rbtree_node_t *s3_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *node) {
     }
 
     return NULL;
+}
+
+st_rbtree_node_t *s3_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
+{
+
+    st_must(tree != NULL, NULL);
+    st_must(node != NULL, NULL);
+
+    st_rbtree_node_t *curr = tree->root;
+    st_rbtree_node_t *sentinel = &tree->sentinel;
+
+    st_rbtree_node_t *smaller = NULL;
+
+    int ret;
+
+    while (curr != sentinel) {
+
+        ret = tree->cmp(node, curr);
+        if (ret < 0) {
+            curr = curr->left;
+        } else if (ret > 0) {
+            smaller = curr;
+            curr = curr->right;
+        } else {
+            break;
+        }
+    }
+
+    return curr != sentinel ? curr: smaller;
+}
+
+st_rbtree_node_t *s3_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
+{
+
+    st_must(tree != NULL, NULL);
+    st_must(node != NULL, NULL);
+
+    st_rbtree_node_t *curr = tree->root;
+    st_rbtree_node_t *sentinel = &tree->sentinel;
+
+    st_rbtree_node_t *bigger = NULL;
+
+    int ret;
+
+    while (curr != sentinel) {
+
+        ret = tree->cmp(node, curr);
+        if (ret < 0) {
+            bigger = curr;
+            curr = curr->left;
+        } else if (ret > 0) {
+            curr = curr->right;
+        } else {
+            break;
+        }
+    }
+
+    return curr != sentinel ? curr : bigger;
 }

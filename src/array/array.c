@@ -3,7 +3,7 @@
 static int st_array_extend_when_needed(st_array_t *array, size_t incr_cnt);
 
 int st_array_init_static(st_array_t *array, size_t element_size,
-        void *start_addr, size_t total_cnt)
+        void *start_addr, size_t total_cnt, st_array_compare_f compare)
 {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(start_addr != NULL, ST_ARG_INVALID);
@@ -14,13 +14,14 @@ int st_array_init_static(st_array_t *array, size_t element_size,
     array->element_size = element_size;
     array->current_cnt = 0;
     array->total_cnt = total_cnt;
+    array->compare = compare;
     array->inited = 1;
 
     return ST_OK;
 }
 
 int st_array_init_dynamic(st_array_t *array, size_t element_size,
-        st_callback_memory_t callback)
+        st_callback_memory_t callback, st_array_compare_f compare)
 {
     int ret;
     st_must(array != NULL, ST_ARG_INVALID);
@@ -32,6 +33,7 @@ int st_array_init_dynamic(st_array_t *array, size_t element_size,
     array->current_cnt = 0;
     array->total_cnt = 0;
     array->callback = callback;
+    array->compare = compare;
 
     ret = st_array_extend_when_needed(array, ST_ARRAY_MIN_SIZE);
     if (ret != ST_OK) {
@@ -137,44 +139,100 @@ int st_array_remove_many(st_array_t *array, size_t index, size_t cnt)
     return ST_OK;
 }
 
-int st_array_sort(st_array_t *array, st_array_compare_f compare_func)
+int st_array_sort(st_array_t *array, st_array_compare_f compare)
 {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
-    st_must(compare_func != NULL, ST_ARG_INVALID);
 
-    qsort(array->start_addr, array->current_cnt, array->element_size, compare_func);
+    st_array_compare_f cmp = compare != NULL ? compare : array->compare;
+    st_must(cmp != NULL, ST_ARG_INVALID);
+
+    qsort(array->start_addr, array->current_cnt, array->element_size, cmp);
 
     return ST_OK;
 }
 
-void * st_array_bsearch(st_array_t *array, void *element, st_array_compare_f compare_func)
+int st_array_indexof(st_array_t *array, void *element,
+        st_array_compare_f compare, size_t *idx)
 {
+    st_must(array != NULL, ST_ARG_INVALID);
+    st_must(array->inited == 1, ST_UNINITED);
+    st_must(element != NULL, ST_ARG_INVALID);
 
-    st_must(array != NULL, NULL);
-    st_must(array->inited == 1, NULL);
-    st_must(element != NULL, NULL);
-    st_must(compare_func != NULL, NULL);
+    st_array_compare_f cmp = compare != NULL ? compare : array->compare;
+    st_must(cmp != NULL, ST_ARG_INVALID);
 
-    return bsearch(element, array->start_addr, array->current_cnt, array->element_size, compare_func);
-}
+    for (size_t i = 0; i < array->current_cnt; i++) {
 
-void * st_array_indexof(st_array_t *array, void *element, st_array_compare_f compare_func)
-{
-    st_must(array != NULL, NULL);
-    st_must(array->inited == 1, NULL);
-    st_must(element != NULL, NULL);
-    st_must(compare_func != NULL, NULL);
-
-    void *curr;
-
-    for (int i = 0; i < array->current_cnt; i++) {
-        curr = st_array_get(array, i);
-
-        if (compare_func(curr, element) == 0) {
-            return curr;
+        if (cmp(element, st_array_get(array, i)) == 0) {
+            *idx = i;
+            return ST_OK;
         }
     }
 
-    return NULL;
+    return ST_NOT_FOUND;
+}
+
+int st_array_bsearch_left(st_array_t *array, void *element,
+        st_array_compare_f compare, size_t *idx)
+{
+    st_must(array != NULL, ST_ARG_INVALID);
+    st_must(array->inited == 1, ST_UNINITED);
+    st_must(element != NULL, ST_ARG_INVALID);
+
+    st_array_compare_f cmp = compare != NULL ? compare : array->compare;
+    st_must(cmp != NULL, ST_ARG_INVALID);
+
+    int ret;
+    size_t mid, start, end;
+
+    start = 0;
+    end = array->current_cnt;
+
+    while (start < end) {
+        mid = (start + end) / 2;
+
+        ret = cmp(element, st_array_get(array, mid));
+        if (ret > 0) {
+            start = mid + 1;
+        } else {
+            end = mid;
+        }
+    }
+
+    *idx = start;
+
+    return ST_OK;
+}
+
+int st_array_bsearch_right(st_array_t *array, void *element,
+        st_array_compare_f compare, size_t *idx)
+{
+    st_must(array != NULL, ST_ARG_INVALID);
+    st_must(array->inited == 1, ST_UNINITED);
+    st_must(element != NULL, ST_ARG_INVALID);
+
+    st_array_compare_f cmp = compare != NULL ? compare : array->compare;
+    st_must(cmp != NULL, ST_ARG_INVALID);
+
+    int ret;
+    size_t mid, start, end;
+
+    start = 0;
+    end = array->current_cnt;
+
+    while (start < end) {
+        mid = (start + end) / 2;
+
+        ret = cmp(element, st_array_get(array, mid));
+        if (ret < 0) {
+            end = mid;
+        } else {
+            start = mid + 1;
+        }
+    }
+
+    *idx = start;
+
+    return ST_OK;
 }
