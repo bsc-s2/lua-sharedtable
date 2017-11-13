@@ -53,7 +53,7 @@ bench: $(test_exec)
 	./$(test_exec) bench
 
 # test: $(target) $(test_exec)
-test: $(test_exec)
+test: $(test_exec) $(target)
 	./$(test_exec) test
 
 $(test_exec): $(test_objs)
