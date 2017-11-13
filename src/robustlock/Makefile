@@ -1,6 +1,6 @@
 
 src       = robustlock.c
-target    = lock.a
+target    = robustlock.a
 libs      = pthread
 cflags    = -pthread
 
