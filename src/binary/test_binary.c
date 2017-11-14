@@ -17,26 +17,26 @@ void test_bin_varint(uint64_t i) {
     rbuflen = bin_vu64_size(i);
 
     r = bin_vu64_put(buf, 10, i);
-    st_ge(r, 0, "i=%llu", i);
-    st_eq(rbuflen, r, "i=%llu", i);
+    st_ut_ge(r, 0, "i=%lu", i);
+    st_ut_eq(rbuflen, r, "i=%lu", i);
 
     /* test buf error */
 
     buflen = r;
 
     r = bin_vu64_put(buf, buflen - 1, i);
-    st_eq(ST_BUF_OVERFLOW, r, "i=%llu", i);
+    st_ut_eq(ST_BUF_OVERFLOW, r, "i=%lu", i);
 
     r = bin_vu64_load(buf, buflen - 1, &j);
-    st_eq(ST_BUF_NOT_ENOUGH, r, "i=%llu", i);
+    st_ut_eq(ST_BUF_NOT_ENOUGH, r, "i=%lu", i);
 
     /* test load */
 
     rbuflen = bin_vu64_load(buf, 10, &j);
-    st_gt(rbuflen, 0, "i=%llu", i);
+    st_ut_gt(rbuflen, 0, "i=%lu", i);
 
-    st_eq(i, j, "i=%llu", i);
-    st_eq(buflen, rbuflen, "i=%llu", i);
+    st_ut_eq(i, j, "i=%lu", i);
+    st_ut_eq(buflen, rbuflen, "i=%lu", i);
 }
 
 st_test(binary, varint) {
