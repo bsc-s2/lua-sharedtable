@@ -434,16 +434,17 @@ st_test(array, bsearch_left_right) {
         int value;
         int left;
         int right;
+        int found;
     } cases[] = {
-        {1, 0, 0},
-        {2, 0, 1},
-        {5, 1, 2},
-        {10, 2, 6},
-        {13, 6, 6},
-        {14, 6, 7},
-        {19, 7, 8},
-        {43, 9, 10},
-        {45, 10, 10},
+        {1,  0,  0,  ST_NOT_FOUND },
+        {2,  0,  1,  ST_OK        },
+        {5,  1,  2,  ST_OK        },
+        {10, 2,  6,  ST_OK        },
+        {13, 6,  6,  ST_NOT_FOUND },
+        {14, 6,  7,  ST_OK        },
+        {19, 7,  8,  ST_OK        },
+        {43, 9,  10, ST_OK        },
+        {45, 10, 10, ST_NOT_FOUND },
     };
 
     size_t idx;
@@ -457,11 +458,11 @@ st_test(array, bsearch_left_right) {
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
 
-        st_ut_eq(ST_OK, st_array_bsearch_left(&array, &c.value, NULL, &idx), "");
-        st_ut_eq(c.left, idx, "bsearch left ok");
+        st_ut_eq(c.found, st_array_bsearch_left(&array, &c.value, NULL, &idx), "");
+        st_ut_eq(c.left, idx, "bsearch left");
 
-        st_ut_eq(ST_OK, st_array_bsearch_right(&array, &c.value, NULL, &idx), "");
-        st_ut_eq(c.right, idx, "bsearch left ok");
+        st_ut_eq(c.found, st_array_bsearch_right(&array, &c.value, NULL, &idx), "");
+        st_ut_eq(c.right, idx, "bsearch right");
 
     }
 

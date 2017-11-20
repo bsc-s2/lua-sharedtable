@@ -176,6 +176,11 @@ int st_array_indexof(st_array_t *array, void *element,
 int st_array_bsearch_left(st_array_t *array, void *element,
         st_array_compare_f compare, size_t *idx)
 {
+    /*
+     * If found, it returns ST_OK and idx is set to the first elt == `element`.
+     * If not found, it returns ST_NOT_FOUND and idx is set to the first elt > `element`.
+     */
+
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
     st_must(element != NULL, ST_ARG_INVALID);
@@ -183,7 +188,8 @@ int st_array_bsearch_left(st_array_t *array, void *element,
     st_array_compare_f cmp = compare != NULL ? compare : array->compare;
     st_must(cmp != NULL, ST_ARG_INVALID);
 
-    int ret;
+    int cret;
+    int ret = ST_NOT_FOUND;
     size_t mid, start, end;
 
     start = 0;
@@ -192,22 +198,31 @@ int st_array_bsearch_left(st_array_t *array, void *element,
     while (start < end) {
         mid = (start + end) / 2;
 
-        ret = cmp(element, st_array_get(array, mid));
-        if (ret > 0) {
+        cret = cmp(element, st_array_get(array, mid));
+        if (cret > 0) {
             start = mid + 1;
         } else {
+            if (cret == 0) {
+                ret = ST_OK;
+            }
             end = mid;
         }
     }
 
     *idx = start;
 
-    return ST_OK;
+    return ret;
 }
 
 int st_array_bsearch_right(st_array_t *array, void *element,
         st_array_compare_f compare, size_t *idx)
 {
+    /*
+     * If found, it returns ST_OK and idx is set to the position AFTER the last elt == `element`.
+     * If not found, it returns ST_NOT_FOUND and idx is set to the first elt > `element`.
+     * Thus st_array_get(x, idx) never equals `element`.
+     */
+
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
     st_must(element != NULL, ST_ARG_INVALID);
@@ -215,7 +230,8 @@ int st_array_bsearch_right(st_array_t *array, void *element,
     st_array_compare_f cmp = compare != NULL ? compare : array->compare;
     st_must(cmp != NULL, ST_ARG_INVALID);
 
-    int ret;
+    int cret;
+    int ret = ST_NOT_FOUND;
     size_t mid, start, end;
 
     start = 0;
@@ -224,15 +240,18 @@ int st_array_bsearch_right(st_array_t *array, void *element,
     while (start < end) {
         mid = (start + end) / 2;
 
-        ret = cmp(element, st_array_get(array, mid));
-        if (ret < 0) {
+        cret = cmp(element, st_array_get(array, mid));
+        if (cret < 0) {
             end = mid;
         } else {
+            if (cret == 0) {
+                ret = ST_OK;
+            }
             start = mid + 1;
         }
     }
 
     *idx = start;
 
-    return ST_OK;
+    return ret;
 }
