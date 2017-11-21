@@ -32,9 +32,9 @@
                          ? -1                                                 \
                          : 0))
 
-#define st_return_if(cond, val)                                              \
+#define st_return_if(cond, val)                                               \
         do {                                                                  \
-            if (cond) {                                                     \
+            if (cond) {                                                       \
                 return (val);                                                 \
             }                                                                 \
         } while (0);

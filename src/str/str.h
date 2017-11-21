@@ -29,13 +29,13 @@ struct st_str_s {
 struct st_MemPool;
 static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t*)"";
 
-#define st_str_const(s)           {.left=NULL, .len=sizeof(s)-1, .capacity=sizeof(s),    .bytes_owned=0, .bytes=(uint8_t*)(s)}
-#define st_str_var(_len)          {.left=NULL, .len=(_len),      .capacity=(_len),       .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
-#define st_str_wrap(_str, _len)   {.left=NULL, .len=(_len),      .capacity=(_len),       .bytes_owned=0, .bytes=(uint8_t*)(_str)}
-#define st_str_wrap_0(_str, _len) {.left=NULL, .len=(_len),      .capacity=(_len) + 1,   .bytes_owned=0, .bytes=(uint8_t*)(_str)}
-#define st_str_wrap_chars(b)      {.left=NULL, .len=sizeof(b),   .capacity=sizeof(b),    .bytes_owned=0, .bytes=(uint8_t*)(b)}
-#define st_str_null               {.left=NULL, .len=0,           .capacity=0,            .bytes_owned=0, .bytes=NULL}
-#define st_str_empty              {.left=NULL, .len=0,           .capacity=1,            .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
+#define st_str_const(s)               {.left=NULL, .len=sizeof(s)-1,    .capacity=sizeof(s),      .bytes_owned=0, .bytes=(uint8_t*)(s)}
+#define st_str_var(_len)              {.left=NULL, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
+#define st_str_wrap(_charptr, _len)   {.left=NULL, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
+#define st_str_wrap_0(_charptr, _len) {.left=NULL, .len=(_len),         .capacity=(_len) + 1,     .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
+#define st_str_wrap_chars(_chars)     {.left=NULL, .len=sizeof(_chars), .capacity=sizeof(_chars), .bytes_owned=0, .bytes=(uint8_t*)(_chars)}
+#define st_str_null                   {.left=NULL, .len=0,              .capacity=0,              .bytes_owned=0, .bytes=NULL}
+#define st_str_empty                  {.left=NULL, .len=0,              .capacity=1,              .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
 
 #define st_str_equal(a, b)                                                    \
         st_str_equal_((st_str_t*)(a), (st_str_t*)(b))
