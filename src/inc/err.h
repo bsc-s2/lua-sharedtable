@@ -6,9 +6,9 @@
 #define _as_str(q, ...)   #q,
 #define _as_const(q, ...)  q,
 
-#define _errs                    \
+#define _errs                 \
   (ST_ERR),                   \
-                                 \
+                              \
   (ST_BUG_UNINITED),          \
   (ST_AGAIN),                 \
   (ST_CHKSUM),                \
@@ -21,6 +21,7 @@
   (ST_IO),                    \
   (ST_NOT_FOUND),             \
   (ST_NOT_READY),             \
+  (ST_NOT_EQUAL),             \
   (ST_OUT_OF_ORDER),          \
   (ST_OUT_OF_MEMORY),         \
   (ST_OUT_OF_RANGE),          \

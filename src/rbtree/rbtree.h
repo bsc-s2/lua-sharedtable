@@ -24,6 +24,13 @@ struct st_rbtree_s {
     st_rbtree_compare_pt cmp;
 };
 
+#define st_rbtree_node_empty { \
+    .left   = NULL,            \
+    .right  = NULL,            \
+    .parent = NULL,            \
+    .color  = 0,               \
+}
+
 int st_rbtree_init(st_rbtree_t *tree, st_rbtree_compare_pt cmp);
 int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node);
 int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node);
@@ -34,6 +41,16 @@ st_rbtree_node_t * st_rbtree_right_most(st_rbtree_t *tree);
 st_rbtree_node_t *s3_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *s3_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *s3_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node);
+
+/** Note:
+ *    there is no check for original node,
+ *    caller have to guarantee it is in tree.
+ *
+ *    if success, original node would be cleared.
+ */
+int st_rbtree_replace(st_rbtree_t *tree,
+                      st_rbtree_node_t *original,
+                      st_rbtree_node_t *new);
 
 static inline void st_rbtree_red(st_rbtree_node_t *node) {
     node->color = 1;

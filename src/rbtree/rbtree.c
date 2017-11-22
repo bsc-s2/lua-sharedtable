@@ -519,3 +519,55 @@ st_rbtree_node_t *s3_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
 
     return curr != sentinel ? curr : bigger;
 }
+
+int
+st_rbtree_replace(st_rbtree_t *tree,
+                  st_rbtree_node_t *original,
+                  st_rbtree_node_t *replacement)
+{
+    st_must(tree != NULL, ST_ARG_INVALID);
+    st_must(tree->root != &tree->sentinel, ST_ARG_INVALID);
+
+    st_must(original != NULL, ST_ARG_INVALID);
+    st_must(replacement != NULL, ST_ARG_INVALID);
+    st_must(original != &tree->sentinel, ST_ARG_INVALID);
+    st_must(replacement != &tree->sentinel, ST_ARG_INVALID);
+
+    /**
+     * keep simple, replacement node must be uninitialized
+     */
+    if (st_rbtree_node_is_inited(replacement)) {
+        return ST_ARG_INVALID;
+    }
+
+    if (tree->cmp(original, replacement) != 0) {
+        return ST_NOT_EQUAL;
+    }
+
+    *replacement = *original;
+
+    if (tree->root == original) {
+        tree->root = replacement;
+
+    } else {
+        if (st_rbtree_is_left_child(original)) {
+            original->parent->left = replacement;
+
+        } else {
+            original->parent->right = replacement;
+
+        }
+    }
+
+    if (original->left != &tree->sentinel) {
+        original->left->parent = replacement;
+    }
+
+    if (original->right != &tree->sentinel) {
+        original->right->parent = replacement;
+    }
+
+    *original = (st_rbtree_node_t) st_rbtree_node_empty;
+
+    return ST_OK;
+}

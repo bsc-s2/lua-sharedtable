@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "unittest/unittest.h"
 #include "rbtree.h"
 
@@ -363,6 +366,143 @@ st_test(rbtree, add_with_delete) {
         st_typeof(cases[0]) c = cases[i];
         test_add_with_delete(c.obj_num, c.average_add, c.average_delete);
     }
+}
+
+#define CHECK_SAME_NODE_VALUES(backup, original) do {                          \
+    st_typeof(backup) nptr1 = backup;                                          \
+    st_typeof(original) nptr2 = original;                                      \
+                                                                               \
+    st_ut_eq(nptr1->parent, nptr2->parent, "falsely set parent of original");  \
+    st_ut_eq(nptr1->left, nptr2->left, "falsely set left of original");        \
+    st_ut_eq(nptr1->right, nptr2->right, "falsely set right of original");     \
+    st_ut_eq(nptr1->color, nptr2->color, "falsely set color of original");     \
+} while(0)
+
+st_test(rbtree, replace) {
+    st_rbtree_t tree;
+    st_rbtree_node_t *original, *replacement;
+
+    /** test: NULL values */
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(NULL, NULL, NULL),
+             "failed to handle NULL tree");
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(&tree, NULL, NULL),
+             "failed to handle NULL original");
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(&tree, original, NULL),
+             "failed to handle NULL replacement");
+
+    st_rbtree_init(&tree, rbtree_cmp);
+
+    /** test: replace node in empty tree */
+    int ret = st_rbtree_replace(&tree, NULL, NULL);
+    st_ut_eq(ST_ARG_INVALID, ret, "failed to replace empty tree");
+
+    /** add nodes in tree */
+    test_object nodes[] = {
+        {.key = 10},
+        {.key = 20},
+        {.key = 20},
+        {.key = 20},
+        {.key = 30},
+        {.key = 40},
+        {.key = 50},
+    };
+
+    for (int i = 0; i < st_nelts(nodes); i++) {
+        st_rbtree_insert(&tree, &nodes[i].rb_node);
+    }
+
+    /** test: replace sentinel */
+    replacement = &tree.sentinel;
+    original    = &tree.sentinel;
+
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(&tree, original, replacement),
+             "failed to handle sentinel original");
+    original = &nodes[0].rb_node;
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(&tree, original, replacement),
+             "failed to handle sentinel replacement");
+
+    /** test: nodes not equal */
+    test_object obj         = { .key = 100, .rb_node = {NULL, NULL, NULL} };
+    replacement             = &obj.rb_node;
+    original                = &nodes[0].rb_node;
+    st_rbtree_node_t backup = *original;
+
+    st_ut_eq(ST_NOT_EQUAL,
+             st_rbtree_replace(&tree, original, replacement),
+             "failed to handle non-equal nodes");
+    CHECK_SAME_NODE_VALUES(&backup, original);
+
+    /** test: replacement node initialized */
+    replacement = &nodes[3].rb_node;
+    original    = &nodes[2].rb_node;
+    backup      = *original;
+
+    st_ut_eq(ST_ARG_INVALID,
+             st_rbtree_replace(&tree, original, replacement),
+             "failed to handle replacement not in tree");
+    CHECK_SAME_NODE_VALUES(&backup, original);
+
+    /** test: replace every node in tree */
+    test_object *new_nodes= (test_object *)malloc(sizeof(nodes));
+    memset(new_nodes, 1, sizeof(nodes));
+    for (int i = 0; i < st_nelts(nodes); i++) {
+        int is_root       = 0;
+        int is_left_child = 0;
+        new_nodes[i].key  = nodes[i].key;
+        replacement       = &new_nodes[i].rb_node;
+        *replacement      = (st_rbtree_node_t) st_rbtree_node_empty;
+        original          = &nodes[i].rb_node;
+        backup            = *original;
+
+        if (tree.root == original) {
+            is_root = 1;
+        }
+        else if (st_rbtree_is_left_child(original)) {
+            is_left_child = 1;
+        }
+
+        /** test: check replacement */
+        st_ut_eq(ST_OK,
+                 st_rbtree_replace(&tree, original, replacement),
+                 "failed to replace node");
+        st_ut_eq(backup.color, replacement->color, "failed to set replacement color");
+        st_ut_eq(backup.left, replacement->left, "failed to set replacement left");
+        st_ut_eq(backup.right, replacement->right, "failed to set replacement right");
+        st_ut_eq(backup.parent, replacement->parent, "failed to set replacement parent");
+
+        if (is_root) {
+            st_ut_eq(replacement, tree.root, "failed to set tree root");
+        } else if (is_left_child) {
+            st_ut_eq(replacement, backup.parent->left, "failed to set left child");
+        } else {
+            st_ut_eq(replacement, backup.parent->right, "failed to set right child");
+        }
+
+        if (backup.left != &tree.sentinel) {
+            st_ut_eq(replacement,
+                     backup.left->parent,
+                     "failed to set parent of left child");
+        }
+
+        if (backup.right != &tree.sentinel) {
+            st_ut_eq(replacement,
+                     backup.right->parent,
+                     "failed to set parent of right child");
+        }
+
+        /** test: original node would be cleared */
+        st_ut_eq(NULL, original->parent, "failed to set parent of original");
+        st_ut_eq(NULL, original->left, "failed to set left of original");
+        st_ut_eq(NULL, original->right, "failed to set right of original");
+        st_ut_eq(0, original->color, "failed to set color of original");
+    }
+
+    free(new_nodes);
 }
 
 st_ut_main;
