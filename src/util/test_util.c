@@ -72,6 +72,38 @@ st_test(util, cmp) {
     }
 }
 
+st_test(util, switcher_get) {
+
+#define st_foomode_small 5
+#define st_foomode_normal 2
+#define st_foomode_extra 100
+
+#define FOO small
+#define st_foomode st_switcher_get(st_foomode_, FOO)
+
+#if st_foomode == st_foomode_small
+#else
+    st_ut_fail("FOO should be small");
+#endif
+
+#if st_foomode == st_foomode_normal
+    st_ut_fail("FOO should not be normal");
+#endif
+
+#if st_foomode == st_foomode_extra
+    st_ut_fail("FOO should not be extra");
+#endif
+
+#if st_foomode == st_foo_xx
+    st_ut_fail("FOO should not be xx");
+#endif
+
+#undef FOO
+#undef st_foomode_small
+#undef st_foomode_normal
+
+}
+
 /*
  * TODO
  *     offset

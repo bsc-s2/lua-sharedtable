@@ -96,23 +96,26 @@ char *st_ut_get_tostring_buf();
 #define st_ut_does_fail() (st_ut_ret__ != 0)
 
 /* assertions */
-#define st_ut_eq(expected, actual, fmt, ...)                                    \
-    st_ut_assert_cmp_(==, expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_eq(expected, actual, fmt, ...)                                  \
+        st_ut_assert_cmp_(==, expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_ne(expected, actual, fmt, ... )                                   \
-    st_ut_assert_cmp_(!=, expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_ne(expected, actual, fmt, ... )                                 \
+        st_ut_assert_cmp_(!=, expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_ge(expected, actual, fmt, ...)                                    \
-    st_ut_assert_cmp_(>=, expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_ge(expected, actual, fmt, ...)                                  \
+        st_ut_assert_cmp_(>=, expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_gt(expected, actual, fmt, ...)                                    \
-    st_ut_assert_cmp_(>,  expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_gt(expected, actual, fmt, ...)                                  \
+        st_ut_assert_cmp_(>,  expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_le(expected, actual, fmt, ...)                                    \
-    st_ut_assert_cmp_(<=, expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_le(expected, actual, fmt, ...)                                  \
+        st_ut_assert_cmp_(<=, expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_lt(expected, actual, fmt, ...)                                    \
-    st_ut_assert_cmp_(<,  expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_lt(expected, actual, fmt, ...)                                  \
+        st_ut_assert_cmp_(<,  expected, actual, fmt, ##__VA_ARGS__)
+
+#define st_ut_fail(mes, ...)                                      \
+        st_ut_assert_(0, mes, ##__VA_ARGS__)
 
 #define st_ut_assert_cmp_(_operator, __e, __a, fmt, ...)                      \
     do {                                                                      \

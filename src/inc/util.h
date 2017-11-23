@@ -48,6 +48,31 @@
 #define st_arg3(a1, a2, a3, ...) a3
 #define st_shift(a, ...) __VA_ARGS__
 
+#define st_concat(a, b) a ## b
+#define st_concat3(a, b, c) a ## b ## c
+
+#define st_call(x, ...) x __VA_ARGS__
+
+/*
+ * Evaluation of `k` must be deferred:
+ * E.g.: deferred and non-deferred expansion:
+ *
+ * #define MEM small
+ *
+ * st_switcher_get(st_memmode_, MEM)
+ * --> st_call(st_concat, (st_memmode_, MEM)
+ * --> st_concat(st_memmode_, small)
+ * --> st_memmode_ ## small
+ * --> st_memmode_small
+ *
+ * st_concat(st_memmode_, MEM)
+ * --> st_memmode_ ## MEM
+ * --> st_memmode_MEM
+ */
+
+#define st_switcher_get(value_prefix, k) st_call(st_concat, (value_prefix, k))
+
+
 /* macro-for-each */
 
 #define EVAL(...)  EVAL1(EVAL1(EVAL1(__VA_ARGS__)))
