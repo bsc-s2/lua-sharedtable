@@ -55,6 +55,7 @@ ifeq ($(findstring $(mem), small normal),)
 $(error invalid debug value $(mem), valid value: small normal)
 endif
 
+
 BUILD_EXTRA_CFLAGS += $(DEBUG_FLAGS_$(debug))
 BUILD_EXTRA_CFLAGS += $(UNITTEST_FLAGS_$(debug_unittest))
 BUILD_EXTRA_CFLAGS += $(MEM_FLAGS_$(mem))
