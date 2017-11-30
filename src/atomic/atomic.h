@@ -40,8 +40,13 @@
 #define st_atomic_fetch_add(p, val, ...) __atomic_fetch_add((p), (val), st_atomic_default_(, ## __VA_ARGS__))
 #define st_atomic_add(p, val, ...) __atomic_add_fetch((p), (val), st_atomic_default_(, ## __VA_ARGS__))
 
+#define st_atomic_fetch_sub(p, val, ...) __atomic_fetch_sub((p), (val), st_atomic_default_(, ## __VA_ARGS__))
+#define st_atomic_sub(p, val, ...) __atomic_sub_fetch((p), (val), st_atomic_default_(, ## __VA_ARGS__))
+
 #define st_atomic_swap(p, val, ...) __atomic_exchange_n((p), (val), st_atomic_default_(, ## __VA_ARGS__))
 
+#define st_atomic_inc(p, ...) __atomic_add_fetch(p, 1, st_atomic_default_(, ## __VA_ARGS__))
+#define st_atomic_dec(p, ...) __atomic_sub_fetch(p, 1, st_atomic_default_(, ## __VA_ARGS__))
 
 #define st_atomic_cas(p, expected_p, val, ...) \
         __atomic_compare_exchange_n((p), (expected_p), (val), \
