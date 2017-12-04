@@ -1,7 +1,6 @@
 #include "rbtree.h"
 
-int st_rbtree_init(st_rbtree_t *tree, st_rbtree_compare_pt cmp)
-{
+int st_rbtree_init(st_rbtree_t *tree, st_rbtree_compare_pt cmp) {
     st_must(tree != NULL, ST_ARG_INVALID);
     st_must(cmp != NULL, ST_ARG_INVALID);
 
@@ -15,8 +14,7 @@ int st_rbtree_init(st_rbtree_t *tree, st_rbtree_compare_pt cmp)
     return ST_OK;
 }
 
-st_rbtree_node_t * st_rbtree_left_most(st_rbtree_t *tree)
-{
+st_rbtree_node_t *st_rbtree_left_most(st_rbtree_t *tree) {
     st_rbtree_node_t *node = NULL;
     st_rbtree_node_t *sentinel = &tree->sentinel;
 
@@ -33,8 +31,7 @@ st_rbtree_node_t * st_rbtree_left_most(st_rbtree_t *tree)
     return node;
 }
 
-st_rbtree_node_t * st_rbtree_right_most(st_rbtree_t *tree)
-{
+st_rbtree_node_t *st_rbtree_right_most(st_rbtree_t *tree) {
     st_rbtree_node_t *node = NULL;
     st_rbtree_node_t *sentinel = &tree->sentinel;
 
@@ -52,8 +49,7 @@ st_rbtree_node_t * st_rbtree_right_most(st_rbtree_t *tree)
 }
 
 static void st_rbtree_left_rotate(st_rbtree_node_t **root, st_rbtree_node_t *sentinel,
-        st_rbtree_node_t *node)
-{
+                                  st_rbtree_node_t *node) {
     st_rbtree_node_t  *child;
 
     /*
@@ -88,8 +84,7 @@ static void st_rbtree_left_rotate(st_rbtree_node_t **root, st_rbtree_node_t *sen
 }
 
 static void st_rbtree_right_rotate(st_rbtree_node_t **root, st_rbtree_node_t *sentinel,
-        st_rbtree_node_t *node)
-{
+                                   st_rbtree_node_t *node) {
     st_rbtree_node_t  *child;
 
     child = node->left;
@@ -115,8 +110,7 @@ static void st_rbtree_right_rotate(st_rbtree_node_t **root, st_rbtree_node_t *se
     node->parent = child;
 }
 
-static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node) {
     st_rbtree_node_t *curr = tree->root;
     st_rbtree_node_t  **p = NULL;
     st_rbtree_node_t *sentinel = &tree->sentinel;
@@ -157,8 +151,7 @@ static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node)
     return 1;
 }
 
-int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node) {
     st_rbtree_node_t  **root, *uncle, *sentinel;
     int need_rebalance;
 
@@ -224,7 +217,7 @@ int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node)
     return ST_OK;
 }
 
-static st_rbtree_node_t * get_left_most(st_rbtree_node_t *node, st_rbtree_node_t *sentinel) {
+static st_rbtree_node_t *get_left_most(st_rbtree_node_t *node, st_rbtree_node_t *sentinel) {
 
     while (node->left != sentinel) {
         node = node->left;
@@ -233,8 +226,7 @@ static st_rbtree_node_t * get_left_most(st_rbtree_node_t *node, st_rbtree_node_t
     return node;
 }
 
-static st_rbtree_node_t * delete_node(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+static st_rbtree_node_t *delete_node(st_rbtree_t *tree, st_rbtree_node_t *node) {
     uint8_t red;
     st_rbtree_node_t **root, *successor, *child;
     st_rbtree_node_t *sentinel = &tree->sentinel;
@@ -352,8 +344,7 @@ static st_rbtree_node_t * delete_node(st_rbtree_t *tree, st_rbtree_node_t *node)
     return child;
 }
 
-int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node) {
     st_rbtree_node_t **root, *brother, *rebalance, *sentinel;
 
     st_must(tree != NULL, ST_ARG_INVALID);
@@ -436,8 +427,7 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node)
     return ST_OK;
 }
 
-st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node) {
 
     st_must(tree != NULL, NULL);
     st_must(node != NULL, NULL);
@@ -462,8 +452,7 @@ st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node)
     return NULL;
 }
 
-st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node) {
 
     st_must(tree != NULL, NULL);
     st_must(node != NULL, NULL);
@@ -488,11 +477,10 @@ st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node)
         }
     }
 
-    return curr != sentinel ? curr: smaller;
+    return curr != sentinel ? curr : smaller;
 }
 
-st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
-{
+st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node) {
 
     st_must(tree != NULL, NULL);
     st_must(node != NULL, NULL);
@@ -523,8 +511,7 @@ st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
 int
 st_rbtree_replace(st_rbtree_t *tree,
                   st_rbtree_node_t *original,
-                  st_rbtree_node_t *replacement)
-{
+                  st_rbtree_node_t *replacement) {
     st_must(tree != NULL, ST_ARG_INVALID);
     st_must(tree->root != &tree->sentinel, ST_ARG_INVALID);
 

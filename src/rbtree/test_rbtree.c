@@ -268,7 +268,7 @@ void test_delete_with_search(int object_num) {
         st_rbtree_insert(&tree, &objects[i].rb_node);
     }
 
-    for (int i = object_num-1; i >= 0; i--) {
+    for (int i = object_num - 1; i >= 0; i--) {
         tmp.key = objects[i].key;
         obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
         st_ut_eq(&objects[i], obj, "search object is right");
@@ -280,7 +280,7 @@ void test_delete_with_search(int object_num) {
         obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
         st_ut_eq(NULL, obj, "object has been deleted");
 
-        for (int j = 0; j <= i-1; j++) {
+        for (int j = 0; j <= i - 1; j++) {
             tmp.key = objects[j].key;
             obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
             st_ut_eq(&objects[j], obj, "search object is right");
@@ -352,13 +352,13 @@ st_test(rbtree, add_with_delete) {
         int average_add;
         int average_delete;
     } cases[] = {
-        {100*10, 100, 1},
-        {100*10, 100, 50},
-        {100*10, 100, 99},
+        {100 * 10, 100, 1},
+        {100 * 10, 100, 50},
+        {100 * 10, 100, 99},
 
-        {10*100, 10, 1},
-        {10*100, 10, 5},
-        {10*100, 10, 9},
+        {10 * 100, 10, 1},
+        {10 * 100, 10, 5},
+        {10 * 100, 10, 9},
     };
 
 
@@ -448,7 +448,7 @@ st_test(rbtree, replace) {
     CHECK_SAME_NODE_VALUES(&backup, original);
 
     /** test: replace every node in tree */
-    test_object *new_nodes= (test_object *)malloc(sizeof(nodes));
+    test_object *new_nodes = (test_object *)malloc(sizeof(nodes));
     memset(new_nodes, 1, sizeof(nodes));
     for (int i = 0; i < st_nelts(nodes); i++) {
         int is_root       = 0;
@@ -461,8 +461,7 @@ st_test(rbtree, replace) {
 
         if (tree.root == original) {
             is_root = 1;
-        }
-        else if (st_rbtree_is_left_child(original)) {
+        } else if (st_rbtree_is_left_child(original)) {
             is_left_child = 1;
         }
 

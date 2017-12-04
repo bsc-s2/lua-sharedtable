@@ -9,7 +9,7 @@
 
 typedef struct st_rbtree_node_s  st_rbtree_node_t;
 typedef struct st_rbtree_s  st_rbtree_t;
-typedef int (*st_rbtree_compare_pt) (st_rbtree_node_t *a, st_rbtree_node_t *b);
+typedef int (*st_rbtree_compare_pt)(st_rbtree_node_t *a, st_rbtree_node_t *b);
 
 struct st_rbtree_node_s {
     st_rbtree_node_t *left;
@@ -35,8 +35,8 @@ int st_rbtree_init(st_rbtree_t *tree, st_rbtree_compare_pt cmp);
 int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node);
 int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node);
 
-st_rbtree_node_t * st_rbtree_left_most(st_rbtree_t *tree);
-st_rbtree_node_t * st_rbtree_right_most(st_rbtree_t *tree);
+st_rbtree_node_t *st_rbtree_left_most(st_rbtree_t *tree);
+st_rbtree_node_t *st_rbtree_right_most(st_rbtree_t *tree);
 
 st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node);
