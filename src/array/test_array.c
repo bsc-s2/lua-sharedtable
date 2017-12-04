@@ -5,20 +5,18 @@
                               .realloc = _realloc,\
                               .free = _free,}
 
-int compare(const void *a, const void *b)
-{
+int compare(const void *a, const void *b) {
     int m = *(int *) a;
     int n = *(int *) b;
 
-    return m-n;
+    return m - n;
 }
 
-int compare_reverse(const void *a, const void *b)
-{
+int compare_reverse(const void *a, const void *b) {
     int m = *(int *) a;
     int n = *(int *) b;
 
-    return n-m;
+    return n - m;
 }
 
 st_test(array, static_array_init) {

@@ -3,8 +3,7 @@
 static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt);
 
 int st_array_init_static(st_array_t *array, ssize_t element_size,
-        void *start_addr, ssize_t total_cnt, st_array_compare_f compare)
-{
+                         void *start_addr, ssize_t total_cnt, st_array_compare_f compare) {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(start_addr != NULL, ST_ARG_INVALID);
     st_must(total_cnt > 0, ST_ARG_INVALID);
@@ -21,8 +20,7 @@ int st_array_init_static(st_array_t *array, ssize_t element_size,
 }
 
 int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
-        st_callback_memory_t callback, st_array_compare_f compare)
-{
+                          st_callback_memory_t callback, st_array_compare_f compare) {
     int ret;
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(callback.free != NULL && callback.realloc != NULL, ST_ARG_INVALID);
@@ -45,8 +43,7 @@ int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
     return ST_OK;
 }
 
-int st_array_destroy(st_array_t *array)
-{
+int st_array_destroy(st_array_t *array) {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
 
@@ -60,8 +57,7 @@ int st_array_destroy(st_array_t *array)
     return ST_OK;
 }
 
-static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt)
-{
+static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt) {
     void *addr;
     ssize_t capacity;
 
@@ -83,8 +79,7 @@ static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt)
     return ST_OK;
 }
 
-int st_array_insert_many(st_array_t *array, ssize_t idx, void *elements, ssize_t cnt)
-{
+int st_array_insert_many(st_array_t *array, ssize_t idx, void *elements, ssize_t cnt) {
     int ret;
 
     st_must(array != NULL, ST_ARG_INVALID);
@@ -107,7 +102,7 @@ int st_array_insert_many(st_array_t *array, ssize_t idx, void *elements, ssize_t
         memmove(st_array_get(array, idx + cnt),
                 st_array_get(array, idx),
                 array->element_size * (array->current_cnt - idx)
-                );
+               );
     }
 
     memcpy(st_array_get(array, idx), elements, array->element_size * cnt);
@@ -116,13 +111,11 @@ int st_array_insert_many(st_array_t *array, ssize_t idx, void *elements, ssize_t
     return ST_OK;
 }
 
-int st_array_append_many(st_array_t *array, void *elements, ssize_t cnt)
-{
+int st_array_append_many(st_array_t *array, void *elements, ssize_t cnt) {
     return st_array_insert_many(array, array->current_cnt, elements, cnt);
 }
 
-int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt)
-{
+int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt) {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
     st_must(idx >= 0 && idx + cnt <= array->current_cnt, ST_INDEX_OUT_OF_RANGE);
@@ -131,7 +124,7 @@ int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt)
         memmove(st_array_get(array, idx),
                 st_array_get(array, idx + cnt),
                 array->element_size * (array->current_cnt - (idx + cnt))
-                );
+               );
     }
 
     array->current_cnt -= cnt;
@@ -139,8 +132,7 @@ int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt)
     return ST_OK;
 }
 
-int st_array_sort(st_array_t *array, st_array_compare_f compare)
-{
+int st_array_sort(st_array_t *array, st_array_compare_f compare) {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
 
@@ -153,8 +145,7 @@ int st_array_sort(st_array_t *array, st_array_compare_f compare)
 }
 
 int st_array_indexof(st_array_t *array, void *element,
-        st_array_compare_f compare, ssize_t *idx)
-{
+                     st_array_compare_f compare, ssize_t *idx) {
     st_must(array != NULL, ST_ARG_INVALID);
     st_must(array->inited == 1, ST_UNINITED);
     st_must(element != NULL, ST_ARG_INVALID);
@@ -174,8 +165,7 @@ int st_array_indexof(st_array_t *array, void *element,
 }
 
 int st_array_bsearch_left(st_array_t *array, void *element,
-        st_array_compare_f compare, ssize_t *idx)
-{
+                          st_array_compare_f compare, ssize_t *idx) {
     /*
      * If found, it returns ST_OK and idx is set to the first elt == `element`.
      * If not found, it returns ST_NOT_FOUND and idx is set to the first elt > `element`.
@@ -215,8 +205,7 @@ int st_array_bsearch_left(st_array_t *array, void *element,
 }
 
 int st_array_bsearch_right(st_array_t *array, void *element,
-        st_array_compare_f compare, ssize_t *idx)
-{
+                           st_array_compare_f compare, ssize_t *idx) {
     /*
      * If found, it returns ST_OK and idx is set to the position AFTER the last elt == `element`.
      * If not found, it returns ST_NOT_FOUND and idx is set to the first elt > `element`.

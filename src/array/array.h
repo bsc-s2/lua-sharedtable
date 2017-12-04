@@ -10,7 +10,7 @@
 
 typedef struct st_array_s st_array_t;
 
-typedef int (*st_array_compare_f) (const void *a, const void *b);
+typedef int (*st_array_compare_f)(const void *a, const void *b);
 
 struct st_array_s {
     void *start_addr;
@@ -49,10 +49,10 @@ static inline ssize_t st_array_current_cnt(st_array_t *array) {
 }
 
 int st_array_init_static(st_array_t *array, ssize_t element_size,
-        void *start_addr, ssize_t total_cnt, st_array_compare_f compare);
+                         void *start_addr, ssize_t total_cnt, st_array_compare_f compare);
 
 int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
-        st_callback_memory_t callback, st_array_compare_f compare);
+                          st_callback_memory_t callback, st_array_compare_f compare);
 
 int st_array_destroy(st_array_t *array);
 
@@ -83,6 +83,6 @@ int st_array_bsearch_right(st_array_t *array, void *element,
                            st_array_compare_f compare, ssize_t *idx);
 
 int st_array_bsearch_left(st_array_t *array, void *element,
-                           st_array_compare_f compare, ssize_t *idx);
+                          st_array_compare_f compare, ssize_t *idx);
 
 #endif /* _ARRAY_H_INCLUDED_ */
