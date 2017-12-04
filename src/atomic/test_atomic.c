@@ -21,8 +21,7 @@
 #define ST_ATOMIC_DEC        5
 
 #ifdef _SEM_SEMUN_UNDEFINED
-union semun
-{
+union semun {
     int val;
     struct semid_ds *buf;
     unsigned short *array;
@@ -30,18 +29,15 @@ union semun
 };
 #endif
 
-void *alloc_buf(ssize_t size)
-{
+void *alloc_buf(ssize_t size) {
     return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 }
 
-void free_buf(void *addr, ssize_t size)
-{
+void free_buf(void *addr, ssize_t size) {
     munmap(addr, size);
 }
 
-void set_process_to_cpu(int cpu_id)
-{
+void set_process_to_cpu(int cpu_id) {
     int cpu_count = sysconf(_SC_NPROCESSORS_CONF);
 
     cpu_set_t set;
@@ -219,8 +215,7 @@ st_test(atomic, st_atomic_cas) {
     free_buf(expect_v, sizeof(int64_t));
 }
 
-int block_all_children(int sem_id)
-{
+int block_all_children(int sem_id) {
     union semun sem_args;
     sem_args.val = 0;
 
@@ -232,8 +227,7 @@ int block_all_children(int sem_id)
     return ST_OK;
 }
 
-int wakeup_all_children(int sem_id, int children_num)
-{
+int wakeup_all_children(int sem_id, int children_num) {
     struct sembuf sem = {.sem_num = 0, .sem_op = children_num, .sem_flg = SEM_UNDO};
 
     int ret = semop(sem_id, &sem, 1);
@@ -244,8 +238,7 @@ int wakeup_all_children(int sem_id, int children_num)
     return ST_OK;
 }
 
-int wait_sem(int sem_id)
-{
+int wait_sem(int sem_id) {
     struct sembuf sem = {.sem_num = 0, .sem_op = -1, .sem_flg = SEM_UNDO};
 
     int ret = semop(sem_id, &sem, 1);
@@ -256,13 +249,12 @@ int wait_sem(int sem_id)
     return ST_OK;
 }
 
-int test_add_sub_in_process(int64_t init_v, int64_t step_v, int op)
-{
+int test_add_sub_in_process(int64_t init_v, int64_t step_v, int op) {
     int ret;
     int child;
     int pids[10] = {0};
 
-    int sem_id = semget(5678, 1, 06666|IPC_CREAT);
+    int sem_id = semget(5678, 1, 06666 | IPC_CREAT);
     if (sem_id == -1) {
         return ST_ERR;
     }
@@ -388,7 +380,7 @@ st_test(atomic, store_load_in_multi_process) {
     int64_t *value = alloc_buf(sizeof(int64_t));
     *value = store_values[0];
 
-    int sem_id = semget(6789, 1, 06666|IPC_CREAT);
+    int sem_id = semget(6789, 1, 06666 | IPC_CREAT);
     st_ut_ne(-1, sem_id, "");
 
     st_ut_eq(ST_OK, block_all_children(sem_id), "");
@@ -455,7 +447,7 @@ st_test(atomic, swap_in_multi_process) {
     int64_t *value = alloc_buf(sizeof(int64_t));
     *value = 0;
 
-    int sem_id = semget(7890, 1, 06666|IPC_CREAT);
+    int sem_id = semget(7890, 1, 06666 | IPC_CREAT);
     st_ut_ne(-1, sem_id, "");
 
     st_ut_eq(ST_OK, block_all_children(sem_id), "");
