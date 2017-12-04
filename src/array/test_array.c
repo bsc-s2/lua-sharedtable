@@ -58,7 +58,7 @@ st_test(array, static_array_init) {
     }
 }
 
-void *_realloc(void *pool, void *ptr, ssize_t size) {
+void *_realloc(void *pool, void *ptr, size_t size) {
     return realloc(ptr, size);
 }
 
