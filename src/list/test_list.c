@@ -10,21 +10,21 @@ void init_list_with_objects(st_list_t *head, test_object *objects, int num) {
     st_list_t *node;
 
     for (int i = 0; i < num; i++) {
-        node = &((objects+i)->node);
+        node = &((objects + i)->node);
 
         st_list_init(node);
         st_list_insert_last(head, node);
     }
 }
 
-void init_list_with_nodes(st_list_t *head, st_list_t*nodes, int num, int tail) {
+void init_list_with_nodes(st_list_t *head, st_list_t *nodes, int num, int tail) {
 
     for (int i = 0; i < num; i++) {
-        st_list_init(nodes+i);
+        st_list_init(nodes + i);
         if (tail == 1) {
-            st_list_insert_last(head, nodes+i);
+            st_list_insert_last(head, nodes + i);
         } else {
-            st_list_insert_first(head, nodes+i);
+            st_list_insert_first(head, nodes + i);
         }
     }
 }
@@ -50,8 +50,8 @@ st_test(list, insert_tail) {
 
     prt = &head;
     for (int i = 0; i < 10; i++, prt = prt->next) {
-        st_ut_eq(prt->next, nodes+i, "list next equal insert node");
-        st_ut_eq((nodes+i)->prev, prt, "insert node prev equal last node");
+        st_ut_eq(prt->next, nodes + i, "list next equal insert node");
+        st_ut_eq((nodes + i)->prev, prt, "insert node prev equal last node");
     }
 
     st_ut_eq(prt->next, &head, "last node next equal head");
@@ -68,7 +68,7 @@ st_test(list, insert_head) {
     prt = &head;
     for (int i = 0; i < 10; i++, prt = prt->prev) {
         st_ut_eq(prt->prev, nodes + i, "list prev equal insert node");
-        st_ut_eq((nodes+i)->next, prt, "insert node next equal last node");
+        st_ut_eq((nodes + i)->next, prt, "insert node next equal last node");
     }
 
     st_ut_eq(prt->prev, &head, "first node prev equal head");
@@ -225,10 +225,10 @@ st_test(list, entry) {
     init_list_with_objects(&head, objects, 10);
 
     prt = st_list_first_entry(&head, test_object, node);
-    st_ut_eq(prt, objects+0, "first entry is right");
+    st_ut_eq(prt, objects + 0, "first entry is right");
 
     prt = st_list_last_entry(&head, test_object, node);
-    st_ut_eq(prt, objects+9, "last entry is right");
+    st_ut_eq(prt, objects + 9, "last entry is right");
 }
 
 st_test(list, for_each_entry) {

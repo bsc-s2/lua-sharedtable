@@ -17,19 +17,19 @@ static inline void st_list_init(st_list_t *node) {
     node->next = node;
 }
 
-static inline st_list_t * st_list_first(st_list_t *head) {
+static inline st_list_t *st_list_first(st_list_t *head) {
     return head->next;
 }
 
-static inline st_list_t * st_list_last(st_list_t *head) {
+static inline st_list_t *st_list_last(st_list_t *head) {
     return head->prev;
 }
 
-static inline st_list_t * st_list_next(st_list_t *node) {
+static inline st_list_t *st_list_next(st_list_t *node) {
     return node->next;
 }
 
-static inline st_list_t * st_list_prev(st_list_t *node) {
+static inline st_list_t *st_list_prev(st_list_t *node) {
     return node->prev;
 }
 
