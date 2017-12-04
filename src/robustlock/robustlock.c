@@ -1,7 +1,6 @@
 #include "robustlock.h"
 
-int st_robustlock_init(pthread_mutex_t *lock)
-{
+int st_robustlock_init(pthread_mutex_t *lock) {
     int ret = ST_ERR;
     pthread_mutexattr_t attr;
 
@@ -44,8 +43,7 @@ exit:
     return ret;
 }
 
-int st_robustlock_lock(pthread_mutex_t *lock)
-{
+int st_robustlock_lock(pthread_mutex_t *lock) {
     int ret = ST_ERR;
 
     st_must(lock != NULL, ST_ARG_INVALID);
@@ -82,8 +80,7 @@ int st_robustlock_lock(pthread_mutex_t *lock)
     return ret;
 }
 
-int st_robustlock_unlock(pthread_mutex_t *lock)
-{
+int st_robustlock_unlock(pthread_mutex_t *lock) {
     st_must(lock != NULL, ST_ARG_INVALID);
 
     int ret = pthread_mutex_unlock(lock);
@@ -96,8 +93,7 @@ int st_robustlock_unlock(pthread_mutex_t *lock)
     return ret;
 }
 
-void st_robustlock_unlock_err_abort(pthread_mutex_t *lock)
-{
+void st_robustlock_unlock_err_abort(pthread_mutex_t *lock) {
     int ret = st_robustlock_unlock(lock);
     if (ret != ST_OK) {
         derr("pthread_mutex_unlock ret: %d, pid:%d, address: %p\n", ret, getpid(), lock);
@@ -105,8 +101,7 @@ void st_robustlock_unlock_err_abort(pthread_mutex_t *lock)
     }
 }
 
-int st_robustlock_destroy(pthread_mutex_t *lock)
-{
+int st_robustlock_destroy(pthread_mutex_t *lock) {
     st_must(lock != NULL, ST_ARG_INVALID);
 
     return pthread_mutex_destroy(lock);

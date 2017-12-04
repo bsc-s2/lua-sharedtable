@@ -7,7 +7,7 @@
 #include "unittest/unittest.h"
 
 void *share_alloc(int size) {
-    return mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+    return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 }
 
 pthread_mutex_t *alloc_lock() {
