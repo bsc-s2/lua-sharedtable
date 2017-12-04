@@ -29,10 +29,20 @@ struct st_pagepool_page_s {
     union{
         struct {
             /* store slab chunk state */
-            int64_t bitmap[ST_PAGEPOOL_MAX_SLAB_CHUNK_CNT];
+            uint64_t bitmap[ST_PAGEPOOL_MAX_SLAB_CHUNK_CNT];
             int32_t chunk_size;
-            int32_t type; /* to identity alloc space from slab or pagepool */
-            pthread_mutex_t lock;
+            /**
+             * set value when slab alloc pages from pagepool.
+             * clear value when slab free pages to pagepool.
+             *
+             * master page: addr of slab group which it belongs to
+             * slave pages: addr of master page
+             *
+             * Note:
+             *    size of [rbnode] is smaller than [bitmap],
+             *    so [addr] is fully controlled by slab
+             */
+            void *addr;
         } slab; /* for slab module use */
 
         st_rbtree_node_t rbnode; /* pool free_pages tree node
@@ -70,7 +80,7 @@ struct st_pagepool_s {
     st_region_t region_cb;
 };
 
-int st_pagepool_init(st_pagepool_t *pool);
+int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size);
 
 int st_pagepool_destroy(st_pagepool_t *pool);
 

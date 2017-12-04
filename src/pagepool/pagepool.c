@@ -269,13 +269,17 @@ static int st_pagepool_get_free_pages(st_pagepool_t *pool, int cnt,
     return ST_OK;
 }
 
-int st_pagepool_init(st_pagepool_t *pool)
+int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size)
 {
     int ret;
 
     st_must(pool != NULL, ST_ARG_INVALID);
 
-    pool->page_size = pool->region_cb.page_size;
+    if (page_size <= 0 || page_size % 512 != 0) {
+        return ST_ARG_INVALID;
+    }
+
+    pool->page_size = page_size;
     pool->region_size = pool->region_cb.reg_size;
 
     pool->pages_per_region = pool->region_size /
