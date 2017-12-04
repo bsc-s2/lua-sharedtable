@@ -26,7 +26,7 @@ typedef struct st_pagepool_page_s st_pagepool_page_t;
 typedef struct st_pagepool_s st_pagepool_t;
 
 struct st_pagepool_page_s {
-    union{
+    union {
         struct {
             /* store slab chunk state */
             uint64_t bitmap[ST_PAGEPOOL_MAX_SLAB_CHUNK_CNT];
@@ -85,14 +85,14 @@ int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size);
 int st_pagepool_destroy(st_pagepool_t *pool);
 
 int st_pagepool_alloc_pages(st_pagepool_t *pool, int cnt,
-        st_pagepool_page_t **pages);
+                            st_pagepool_page_t **pages);
 
 int st_pagepool_free_pages(st_pagepool_t *pool, st_pagepool_page_t *pages);
 
 int st_pagepool_page_to_addr(st_pagepool_t *pool, st_pagepool_page_t *page,
-        uint8_t **addr);
+                             uint8_t **addr);
 
 int st_pagepool_addr_to_page(st_pagepool_t *pool, uint8_t *addr,
-        st_pagepool_page_t **page);
+                             st_pagepool_page_t **page);
 
 #endif /* _PAGEPOOL_H_INCLUDED_ */

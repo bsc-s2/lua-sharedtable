@@ -1,15 +1,13 @@
 #include "pagepool.h"
 
-static int st_pagepool_cmp_region_addr(const void *a, const void *b)
-{
+static int st_pagepool_cmp_region_addr(const void *a, const void *b) {
     uint8_t *reg_a_addr = *(uint8_t **)a;
     uint8_t *reg_b_addr = *(uint8_t **)b;
 
     return st_cmp(reg_a_addr, reg_b_addr);
 }
 
-static int st_pagepool_add_region(st_pagepool_t *pool, uint8_t *region)
-{
+static int st_pagepool_add_region(st_pagepool_t *pool, uint8_t *region) {
     ssize_t idx;
     int ret;
 
@@ -32,8 +30,7 @@ quit:
     return ret;
 }
 
-static int st_pagepool_remove_region(st_pagepool_t *pool, uint8_t *region)
-{
+static int st_pagepool_remove_region(st_pagepool_t *pool, uint8_t *region) {
     int ret;
     ssize_t idx;
 
@@ -54,8 +51,7 @@ quit:
     return ret;
 }
 
-static int st_pagepool_get_region(st_pagepool_t *pool, uint8_t *addr, uint8_t **region)
-{
+static int st_pagepool_get_region(st_pagepool_t *pool, uint8_t *addr, uint8_t **region) {
     uint8_t *reg;
     ssize_t idx;
     int ret;
@@ -90,16 +86,14 @@ quit:
     return ret;
 }
 
-static int st_pagepool_cmp_compound_page(st_rbtree_node_t *a, st_rbtree_node_t *b)
-{
+static int st_pagepool_cmp_compound_page(st_rbtree_node_t *a, st_rbtree_node_t *b) {
     st_pagepool_page_t *pa = st_owner(a, st_pagepool_page_t, rbnode);
     st_pagepool_page_t *pb = st_owner(b, st_pagepool_page_t, rbnode);
 
     return st_cmp(pa->compound_page_cnt, pb->compound_page_cnt);
 }
 
-static void st_pagepool_init_region(st_pagepool_t *pool, uint8_t *region)
-{
+static void st_pagepool_init_region(st_pagepool_t *pool, uint8_t *region) {
     st_pagepool_page_t *pages = (st_pagepool_page_t *)region;
 
     memset(pages, 0, sizeof(*pages) * pool->pages_per_region);
@@ -114,8 +108,7 @@ static void st_pagepool_init_region(st_pagepool_t *pool, uint8_t *region)
     pages[0].type = ST_PAGEPOOL_PAGE_MASTER;
 }
 
-static void st_pagepool_add_pages(st_pagepool_t *pool, st_pagepool_page_t *master)
-{
+static void st_pagepool_add_pages(st_pagepool_t *pool, st_pagepool_page_t *master) {
     st_rbtree_node_t *n;
 
     n = st_rbtree_search_eq(&pool->free_pages, &master->rbnode);
@@ -129,8 +122,7 @@ static void st_pagepool_add_pages(st_pagepool_t *pool, st_pagepool_page_t *maste
     }
 }
 
-static void st_pagepool_remove_pages(st_pagepool_t *pool, st_pagepool_page_t *master)
-{
+static void st_pagepool_remove_pages(st_pagepool_t *pool, st_pagepool_page_t *master) {
     st_pagepool_page_t *candidate;
 
     if (st_rbtree_node_is_inited(&master->rbnode) == 0) {
@@ -156,8 +148,7 @@ static void st_pagepool_remove_pages(st_pagepool_t *pool, st_pagepool_page_t *ma
 }
 
 static st_pagepool_page_t *st_pagepool_prev_pages(st_pagepool_t *pool,
-        st_pagepool_page_t *master)
-{
+        st_pagepool_page_t *master) {
     if ((uint8_t *)master == master->region) {
         return NULL;
     }
@@ -166,8 +157,7 @@ static st_pagepool_page_t *st_pagepool_prev_pages(st_pagepool_t *pool,
 }
 
 static st_pagepool_page_t *st_pagepool_next_pages(st_pagepool_t *pool,
-        st_pagepool_page_t *master)
-{
+        st_pagepool_page_t *master) {
 
     if (master + master->compound_page_cnt
             == (st_pagepool_page_t *)master->region + pool->pages_per_region) {
@@ -178,8 +168,7 @@ static st_pagepool_page_t *st_pagepool_next_pages(st_pagepool_t *pool,
 }
 
 static st_pagepool_page_t *st_pagepool_merge_pages(st_pagepool_t *pool,
-        st_pagepool_page_t *master)
-{
+        st_pagepool_page_t *master) {
     st_pagepool_page_t *prev, *next, *merge;
     int total = master->compound_page_cnt;
 
@@ -210,8 +199,7 @@ static st_pagepool_page_t *st_pagepool_merge_pages(st_pagepool_t *pool,
 }
 
 static st_pagepool_page_t *st_pagepool_split_pages(st_pagepool_page_t *pages,
-        int use_cnt)
-{
+        int use_cnt) {
     int i;
     st_pagepool_page_t *remain;
     int total_cnt = pages[0].compound_page_cnt;
@@ -237,8 +225,7 @@ static st_pagepool_page_t *st_pagepool_split_pages(st_pagepool_page_t *pages,
 }
 
 static int st_pagepool_get_free_pages(st_pagepool_t *pool, int cnt,
-        st_pagepool_page_t **pages)
-{
+                                      st_pagepool_page_t **pages) {
     st_rbtree_node_t *n;
     st_pagepool_page_t *found, *remain;
     st_pagepool_page_t tmp = {.compound_page_cnt = cnt};
@@ -269,8 +256,7 @@ static int st_pagepool_get_free_pages(st_pagepool_t *pool, int cnt,
     return ST_OK;
 }
 
-int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size)
-{
+int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size) {
     int ret;
 
     st_must(pool != NULL, ST_ARG_INVALID);
@@ -316,8 +302,7 @@ int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size)
     return ST_OK;
 }
 
-int st_pagepool_destroy(st_pagepool_t *pool)
-{
+int st_pagepool_destroy(st_pagepool_t *pool) {
     int ret, err = ST_OK;
 
     st_must(pool != NULL, ST_ARG_INVALID);
@@ -344,8 +329,7 @@ int st_pagepool_destroy(st_pagepool_t *pool)
 }
 
 int st_pagepool_alloc_pages(st_pagepool_t *pool, int cnt,
-        st_pagepool_page_t **pages)
-{
+                            st_pagepool_page_t **pages) {
     int ret;
     uint8_t *region;
 
@@ -389,8 +373,7 @@ quit:
     return ret;
 }
 
-int st_pagepool_free_pages(st_pagepool_t *pool, st_pagepool_page_t *pages)
-{
+int st_pagepool_free_pages(st_pagepool_t *pool, st_pagepool_page_t *pages) {
     st_pagepool_page_t *merge;
     int ret;
 
@@ -426,8 +409,7 @@ quit:
 }
 
 int st_pagepool_page_to_addr(st_pagepool_t *pool, st_pagepool_page_t *page,
-        uint8_t **addr)
-{
+                             uint8_t **addr) {
     st_must(pool != NULL, ST_ARG_INVALID);
     st_must(page != NULL, ST_ARG_INVALID);
     st_must(addr != NULL, ST_ARG_INVALID);
@@ -442,8 +424,7 @@ int st_pagepool_page_to_addr(st_pagepool_t *pool, st_pagepool_page_t *page,
 }
 
 int st_pagepool_addr_to_page(st_pagepool_t *pool, uint8_t *addr,
-        st_pagepool_page_t **page)
-{
+                             st_pagepool_page_t **page) {
     uint8_t *region, *base;
     int ret;
 

@@ -12,8 +12,7 @@
 #include <stdlib.h>
 
 #ifdef _SEM_SEMUN_UNDEFINED
-union semun
-{
+union semun {
     int val;
     struct semid_ds *buf;
     unsigned short *array;
@@ -21,18 +20,15 @@ union semun
 };
 #endif
 
-void *alloc_buf(ssize_t size)
-{
+void *alloc_buf(ssize_t size) {
     return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 }
 
-void free_buf(void *addr, ssize_t size)
-{
+void free_buf(void *addr, ssize_t size) {
     munmap(addr, size);
 }
 
-void set_process_to_cpu(int cpu_id)
-{
+void set_process_to_cpu(int cpu_id) {
     int cpu_count = sysconf(_SC_NPROCESSORS_CONF);
 
     cpu_set_t set;
@@ -44,12 +40,11 @@ void set_process_to_cpu(int cpu_id)
 }
 
 int init_pagepool(st_pagepool_t *pool, uint8_t *base,
-        ssize_t pool_size, ssize_t region_size)
-{
+                  ssize_t pool_size, ssize_t region_size) {
     int ret;
 
     ret = st_region_init(&pool->region_cb, base,
-                         region_size/4096, pool_size/region_size, 0);
+                         region_size / 4096, pool_size / region_size, 0);
     if (ret != ST_OK) {
         return ret;
     }
@@ -75,8 +70,7 @@ int wait_children(int *pids, int pid_cnt) {
     return err;
 }
 
-int check_pages(st_pagepool_page_t *pages, uint8_t *region, int cnt, int state)
-{
+int check_pages(st_pagepool_page_t *pages, uint8_t *region, int cnt, int state) {
 
     for (int i = 0; i < cnt; i++) {
         if (region != pages[i].region) {
@@ -105,8 +99,7 @@ int check_pages(st_pagepool_page_t *pages, uint8_t *region, int cnt, int state)
     return ST_OK;
 }
 
-int meta_use_page_count(ssize_t region_size)
-{
+int meta_use_page_count(ssize_t region_size) {
     int pages_per_region = region_size / (sizeof(st_pagepool_page_t) + 4096);
 
     int size = pages_per_region * sizeof(st_pagepool_page_t);
@@ -130,26 +123,26 @@ st_test(pagepool, init) {
         ssize_t page_size;
         int expect_ret;
     } cases[] = {
-        {2*4096,  4096, ST_OK},
-        {10*4096, 4096, ST_OK},
-        {30*4096, 4096, ST_OK},
-        {60*4096, 4096, ST_OK},
-        {100*4096, 4096, ST_OK},
-        {200*4096, 4096, ST_OK},
-        {300*4096, 4096, ST_OK},
+        {2 * 4096,  4096, ST_OK},
+        {10 * 4096, 4096, ST_OK},
+        {30 * 4096, 4096, ST_OK},
+        {60 * 4096, 4096, ST_OK},
+        {100 * 4096, 4096, ST_OK},
+        {200 * 4096, 4096, ST_OK},
+        {300 * 4096, 4096, ST_OK},
 
-        {20*4096, 0, ST_ARG_INVALID},
-        {20*4096, -10, ST_ARG_INVALID},
-        {20*4096, 64, ST_ARG_INVALID},
-        {20*4096, 511, ST_ARG_INVALID},
-        {20*4096, 1023, ST_ARG_INVALID},
+        {20 * 4096, 0, ST_ARG_INVALID},
+        {20 * 4096, -10, ST_ARG_INVALID},
+        {20 * 4096, 64, ST_ARG_INVALID},
+        {20 * 4096, 511, ST_ARG_INVALID},
+        {20 * 4096, 1023, ST_ARG_INVALID},
     };
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
 
         if (c.expect_ret == ST_OK) {
-            st_region_init(&pool.region_cb, buf, c.region_size/c.page_size, 6553600/c.region_size, 0);
+            st_region_init(&pool.region_cb, buf, c.region_size / c.page_size, 6553600 / c.region_size, 0);
         }
 
         st_ut_eq(c.expect_ret, st_pagepool_init(&pool, c.page_size), "");
@@ -177,7 +170,7 @@ st_test(pagepool, destroy) {
 
     st_ut_eq(ST_UNINITED, st_pagepool_destroy(&pool), "");
 
-    init_pagepool(&pool, buf, 20*4096, 16*4096);
+    init_pagepool(&pool, buf, 20 * 4096, 16 * 4096);
 
     st_ut_eq(ST_OK, st_pagepool_destroy(&pool), "");
 
@@ -212,7 +205,7 @@ st_test(pagepool, alloc) {
     };
 
     // 16 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 18*4096, 17*4096);
+    init_pagepool(&pool, buf, 18 * 4096, 17 * 4096);
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
@@ -234,7 +227,8 @@ st_test(pagepool, alloc) {
         tmp.compound_page_cnt = c.remain;
         st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
         st_pagepool_page_t *remain = st_owner(n, st_pagepool_page_t, rbnode);
-        st_ut_eq(ST_OK, check_pages(remain, pool.regions_array_data[0], c.remain, ST_PAGEPOOL_PAGE_FREE), "");
+        st_ut_eq(ST_OK, check_pages(remain, pool.regions_array_data[0], c.remain, ST_PAGEPOOL_PAGE_FREE),
+                 "");
 
         prev = pages;
     }
@@ -285,7 +279,7 @@ st_test(pagepool, free) {
     };
 
     // in one region 30 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 655360, 31*4096);
+    init_pagepool(&pool, buf, 655360, 31 * 4096);
 
     for (int i = 0; i < st_nelts(allocs); i++) {
         st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, allocs[i].cnt, &allocs[i].pages), "");
@@ -367,7 +361,7 @@ st_test(pagepool, free_and_alloc) {
     };
 
     // in one region 26 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 655360, 27*4096);
+    init_pagepool(&pool, buf, 655360, 27 * 4096);
 
     for (int i = 0; i < st_nelts(allocs); i++) {
         st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, allocs[i].cnt, &allocs[i].pages), "");
@@ -412,11 +406,11 @@ st_test(pagepool, free_same_page_cnt) {
     uint8_t *buf = alloc_buf(655360);
 
     // in one region 29 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 655360, 30*4096);
+    init_pagepool(&pool, buf, 655360, 30 * 4096);
 
     for (int i = 0; i < 19; i++) {
         if (i % 2 == 0) {
-            st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 2, &pages[i/2]), "");
+            st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 2, &pages[i / 2]), "");
         } else {
             st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 1, &page), "");
         }
@@ -453,11 +447,11 @@ st_test(pagepool, alloc_same_page_cnt) {
     st_pagepool_page_t *pages[10] = {0};
 
     // in one region 29 pages can use, another two pages use to store page_t
-    init_pagepool(&pool, buf, 655360, 30*4096);
+    init_pagepool(&pool, buf, 655360, 30 * 4096);
 
     for (int i = 0; i < 19; i++) {
         if (i % 2 == 0) {
-            st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 2, &pages[i/2]), "");
+            st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 2, &pages[i / 2]), "");
         } else {
             st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 1, &page), "");
         }
@@ -471,7 +465,7 @@ st_test(pagepool, alloc_same_page_cnt) {
 
     for (int i = 0; i < 10; i++) {
         st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 2, &page), "");
-        st_ut_eq(pages[9-i], page, "");
+        st_ut_eq(pages[9 - i], page, "");
     }
 
     free_buf(buf, 655360);
@@ -485,7 +479,7 @@ st_test(pagepool, alloc_in_multi_region) {
     uint8_t *buf = alloc_buf(655360);
 
     // in one region 15 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 655360, 16*4096);
+    init_pagepool(&pool, buf, 655360, 16 * 4096);
 
     for (int i = 0; i < 10; i++) {
         st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 10, &page), "");
@@ -520,7 +514,7 @@ st_test(pagepool, free_in_multi_region) {
     uint8_t *buf = alloc_buf(655360);
 
     // in one region 15 pages can use, another one use to store page_t
-    init_pagepool(&pool, buf, 655360, 16*4096);
+    init_pagepool(&pool, buf, 655360, 16 * 4096);
 
     for (int i = 0; i < 10; i++) {
         st_ut_eq(ST_OK, st_pagepool_alloc_pages(&pool, 10, &pages[i]), "");
@@ -532,9 +526,9 @@ st_test(pagepool, free_in_multi_region) {
         st_ut_eq(ST_OK, st_pagepool_free_pages(&pool, pages[i]), "");
         st_ut_eq(9 - i, st_array_current_cnt(&pool.regions), "");
 
-        for (int j = 0; j < 9-i; j++) {
+        for (int j = 0; j < 9 - i; j++) {
             //check remain regions order
-            st_ut_eq(buf + (i+1+j)*16*4096, pool.regions_array_data[j], "");
+            st_ut_eq(buf + (i + 1 + j) * 16 * 4096, pool.regions_array_data[j], "");
         }
 
         tmp.compound_page_cnt = 5;
@@ -543,7 +537,7 @@ st_test(pagepool, free_in_multi_region) {
 
         if (i < 9) {
             //check next region remain pages is the same pages list head
-            st_ut_eq(pages[i+1]+10, free_pages, "");
+            st_ut_eq(pages[i + 1] + 10, free_pages, "");
         } else {
             st_ut_eq(1, st_rbtree_is_empty(&pool.free_pages), "");
         }
@@ -560,7 +554,7 @@ st_test(pagepool, alloc_in_multi_process) {
     uint8_t *buf = alloc_buf(655360);
     st_pagepool_t *pool = alloc_buf(sizeof(st_pagepool_t));
 
-    int sem_id = semget(1234, 1, 06666|IPC_CREAT);
+    int sem_id = semget(1234, 1, 06666 | IPC_CREAT);
     st_ut_ne(-1, sem_id, "");
 
     union semun sem_args;
@@ -568,7 +562,7 @@ st_test(pagepool, alloc_in_multi_process) {
     st_ut_ne(-1, semctl(sem_id, 0, SETVAL, sem_args), "");
 
     // in one region 20 pages can use, another one use to store page_t
-    init_pagepool(pool, buf, 655360, 21*4096);
+    init_pagepool(pool, buf, 655360, 21 * 4096);
 
     for (int i = 0; i < 10; i++) {
 
@@ -613,7 +607,7 @@ st_test(pagepool, alloc_free_in_multi_process) {
     int child;
 
     // in one region 15 pages can use, another one use to store page_t
-    init_pagepool(pool, buf, 65536000, 16*4096);
+    init_pagepool(pool, buf, 65536000, 16 * 4096);
 
     for (int i = 0; i < 50; i++) {
 
@@ -624,7 +618,7 @@ st_test(pagepool, alloc_free_in_multi_process) {
             set_process_to_cpu(i);
 
             int alloc_cnt, ret;
-            st_pagepool_page_t* pages[10] = {0};
+            st_pagepool_page_t *pages[10] = {0};
 
             for (int j = 0; j < 1000; j++) {
                 alloc_cnt = rand() % 14 + 1;
@@ -634,7 +628,7 @@ st_test(pagepool, alloc_free_in_multi_process) {
                     exit(ret);
                 }
 
-                if ((j+1) % 10 == 0) {
+                if ((j + 1) % 10 == 0) {
                     for (int k = 0; k < 10; k++) {
                         ret = st_pagepool_free_pages(pool, pages[k]);
                         if (ret != ST_OK) {
@@ -663,7 +657,7 @@ st_test(pagepool, page_to_addr) {
     st_pagepool_page_t *pages;
     st_pagepool_t pool;
 
-    ssize_t region_size = 31*4096;
+    ssize_t region_size = 31 * 4096;
     uint8_t *region_end, *page_addr;
 
     uint8_t *buf = alloc_buf(655360);
@@ -676,7 +670,7 @@ st_test(pagepool, page_to_addr) {
     region_end = pool.regions_array_data[0] + region_size;
 
     for (int i = 0; i < 30; i++) {
-        st_ut_eq(ST_OK, st_pagepool_page_to_addr(&pool, &pages[29-i], &page_addr), "");
+        st_ut_eq(ST_OK, st_pagepool_page_to_addr(&pool, &pages[29 - i], &page_addr), "");
         st_ut_eq(region_end - 4096 * (i + 1), page_addr, "");
     }
 
@@ -692,7 +686,7 @@ st_test(pagepool, addr_to_page) {
     st_pagepool_page_t *page, *pages;
     st_pagepool_t pool;
 
-    ssize_t region_size = 31*4096;
+    ssize_t region_size = 31 * 4096;
     uint8_t *region_end, *page_addr;
 
     uint8_t *buf = alloc_buf(655360);
@@ -708,7 +702,7 @@ st_test(pagepool, addr_to_page) {
         page_addr = region_end - 4096 * (i + 1);
 
         st_ut_eq(ST_OK, st_pagepool_addr_to_page(&pool, page_addr, &page), "");
-        st_ut_eq(&pages[29-i], page, "");
+        st_ut_eq(&pages[29 - i], page, "");
     }
 
     st_ut_eq(ST_ARG_INVALID, st_pagepool_addr_to_page(NULL, page_addr, &page), "");
@@ -720,7 +714,7 @@ st_test(pagepool, addr_to_page) {
     st_ut_eq(ST_NOT_FOUND, st_pagepool_addr_to_page(&pool, pool.regions_array_data[0] - 1, &page), "");
     st_ut_eq(ST_NOT_FOUND, st_pagepool_addr_to_page(&pool, region_end + 4096, &page), "");
 
-    st_ut_eq(ST_OUT_OF_RANGE, st_pagepool_addr_to_page(&pool, region_end - 31*4096, &page), "");
+    st_ut_eq(ST_OUT_OF_RANGE, st_pagepool_addr_to_page(&pool, region_end - 31 * 4096, &page), "");
 
     free_buf(buf, 655360);
 }
