@@ -31,7 +31,7 @@ static uint64_t word_bits_value_(uint64_t *bitmap, uint32_t start, uint32_t end,
     }
 
     return reverse == 0 ? bitmap[w_idx] & mask_(start, end)
-                        : ~bitmap[w_idx] & mask_(start, end);
+           : ~bitmap[w_idx] & mask_(start, end);
 }
 
 static uint64_t word_bits_(uint64_t *bitmap, uint32_t start, uint32_t end) {
@@ -43,7 +43,7 @@ static uint64_t word_bits_reverse_(uint64_t *bitmap, uint32_t start, uint32_t en
 }
 
 int st_bitmap_get(uint64_t *bitmap, uint32_t idx) {
-    return word_bits_(bitmap, idx, idx + 1) ? 1: 0;
+    return word_bits_(bitmap, idx, idx + 1) ? 1 : 0;
 }
 
 void st_bitmap_set(uint64_t *bitmap, uint32_t idx) {
@@ -62,8 +62,7 @@ void st_bitmap_clear(uint64_t *bitmap, uint32_t idx) {
     bitmap[w_idx] &= ~mask_(idx, idx + 1);
 }
 
-int st_bitmap_are_all_cleared(uint64_t *bitmap, uint32_t nbits)
-{
+int st_bitmap_are_all_cleared(uint64_t *bitmap, uint32_t nbits) {
     st_must(bitmap != NULL, ST_ARG_INVALID);
 
     uint32_t idx = 0;
@@ -85,8 +84,7 @@ int st_bitmap_are_all_cleared(uint64_t *bitmap, uint32_t nbits)
     return 1;
 }
 
-int st_bitmap_are_all_set(uint64_t *bitmap, uint32_t nbits)
-{
+int st_bitmap_are_all_set(uint64_t *bitmap, uint32_t nbits) {
     st_must(bitmap != NULL, ST_ARG_INVALID);
 
     uint32_t idx = 0;
@@ -108,8 +106,7 @@ int st_bitmap_are_all_set(uint64_t *bitmap, uint32_t nbits)
     return 1;
 }
 
-int st_bitmap_equal(uint64_t *bitmap1, uint64_t *bitmap2, uint32_t nbits)
-{
+int st_bitmap_equal(uint64_t *bitmap1, uint64_t *bitmap2, uint32_t nbits) {
     st_must(bitmap1 != NULL, ST_ARG_INVALID);
     st_must(bitmap2 != NULL, ST_ARG_INVALID);
 
@@ -132,8 +129,7 @@ int st_bitmap_equal(uint64_t *bitmap1, uint64_t *bitmap2, uint32_t nbits)
     return 1;
 }
 
-int st_bitmap_find_next_bit(uint64_t *bitmap, uint32_t start, uint32_t end, int bit_value)
-{
+int st_bitmap_find_next_bit(uint64_t *bitmap, uint32_t start, uint32_t end, int bit_value) {
     st_must(bitmap != NULL, ST_ARG_INVALID);
     st_must(start < end, ST_INDEX_OUT_OF_RANGE);
     st_must(bit_value == 1 || bit_value == 0, ST_ARG_INVALID);

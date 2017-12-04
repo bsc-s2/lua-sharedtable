@@ -161,37 +161,45 @@ st_test(bitmap, equall) {
         uint32_t nbits;
         int is_equal;
     } cases[] = {
-        {{0xffffffffffffffff, 0xffffffffffffffff},
-         {0xffffffffffffffff, 0xffffffffffffffff},
-         128, 1},
+        {   {0xffffffffffffffff, 0xffffffffffffffff},
+            {0xffffffffffffffff, 0xffffffffffffffff},
+            128, 1
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x0000000000000000, 0x0000000000000000},
-         128, 1},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x0000000000000000, 0x0000000000000000},
+            128, 1
+        },
 
-        {{0x0001000000010000, 0x0001000000010000},
-         {0x0001000000010000, 0x0001000000010000},
-         64, 1},
+        {   {0x0001000000010000, 0x0001000000010000},
+            {0x0001000000010000, 0x0001000000010000},
+            64, 1
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x1111111111111111, 0x1111111111111111},
-         0, 1},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x1111111111111111, 0x1111111111111111},
+            0, 1
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x1111111111111111, 0x1111111111111111},
-         128, 0},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x1111111111111111, 0x1111111111111111},
+            128, 0
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x0000000000000000, 0x0000000000000001},
-         64, 1},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x0000000000000000, 0x0000000000000001},
+            64, 1
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x0000000000000000, 0x0000000000000001},
-         65, 0},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x0000000000000000, 0x0000000000000001},
+            65, 0
+        },
 
-        {{0x0000000000000000, 0x0000000000000000},
-         {0x0000000000000000, 0x0000000000000001},
-         128, 0},
+        {   {0x0000000000000000, 0x0000000000000000},
+            {0x0000000000000000, 0x0000000000000001},
+            128, 0
+        },
 
     };
 
@@ -244,20 +252,25 @@ st_test(bitmap, find_next_bit) {
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
 
-        st_ut_eq(c.find_idx, st_bitmap_find_set_bit(set_bitmap, c.start_idx, c.end_idx), "find set bit is right");
+        st_ut_eq(c.find_idx, st_bitmap_find_set_bit(set_bitmap, c.start_idx, c.end_idx),
+                 "find set bit is right");
 
-        st_ut_eq(c.find_idx, st_bitmap_find_clear_bit(clear_bitmap, c.start_idx, c.end_idx), "find clear bit is right");
+        st_ut_eq(c.find_idx, st_bitmap_find_clear_bit(clear_bitmap, c.start_idx, c.end_idx),
+                 "find clear bit is right");
     }
 
     uint64_t bitmap;
 
     st_ut_eq(ST_ARG_INVALID, st_bitmap_find_next_bit(NULL, 1, 2, 0), "bitmap is NULL");
 
-    st_ut_eq(ST_INDEX_OUT_OF_RANGE, st_bitmap_find_next_bit(&bitmap, 2, 2, 0), "bitmap start_index is out of range");
+    st_ut_eq(ST_INDEX_OUT_OF_RANGE, st_bitmap_find_next_bit(&bitmap, 2, 2, 0),
+             "bitmap start_index is out of range");
 
-    st_ut_eq(ST_INDEX_OUT_OF_RANGE, st_bitmap_find_next_bit(&bitmap, 3, 2, 0), "bitmap start_index is out of range");
+    st_ut_eq(ST_INDEX_OUT_OF_RANGE, st_bitmap_find_next_bit(&bitmap, 3, 2, 0),
+             "bitmap start_index is out of range");
 
-    st_ut_eq(ST_ARG_INVALID, st_bitmap_find_next_bit(&bitmap, 1, 2, 2), "bitmap start_index is out of range");
+    st_ut_eq(ST_ARG_INVALID, st_bitmap_find_next_bit(&bitmap, 1, 2, 2),
+             "bitmap start_index is out of range");
 }
 
 st_ut_main;
