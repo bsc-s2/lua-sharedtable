@@ -1,4 +1,9 @@
-# copy to ~/.astylerc
+# Usage:
+#   export ARTISTIC_STYLE_OPTIONS=$PWD/util/astylerc
+# Or
+#   copy to ~/.astylerc
+# Then
+#   astyle src/str/str.c
 
 #Bracket style
 style=google

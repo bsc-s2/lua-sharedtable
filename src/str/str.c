@@ -217,52 +217,52 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
 
 /*
  * int st_str_join_with_n(st_str_t *s, st_str_t *sep, int n, st_str_t **elts) {
- * 
+ *
  *   st_must_be(s != NULL, ST_ERR_INVALID_ARG);
  *   st_must_be(s->inited_ == 0, ST_ERR_INITTWICE);
- * 
+ *
  *   st_must_be(n > 0, ST_ERR_INVALID_ARG);
- * 
+ *
  *   st_must_be(sep != NULL, ST_ERR_INVALID_ARG);
  *   st_must_be(sep->inited_ == 1, ST_ERR_UNINITED);
- * 
+ *
  *   int ret = ST_FAIL;
  *   int64_t size = 0;
  *   st_str_t tmp = st_str_null;
  *   const st_str_t *elt = NULL;
  *   char *p = NULL;
- * 
+ *
  *   for (int i = 0; i < n; i++) {
  *     if (elts[i] == NULL || elts[i]->inited_ == 0) {
  *       return ST_ERR_INVALID_ARG;
  *     }
  *     size += sep->len + elts[i]->len;
  *   }
- * 
+ *
  *   size -= sep->len;
- * 
- * 
+ *
+ *
  *   ret = st_str_init_0(&tmp, size);
  *   st_check_ret(ret, "init str with size: %d", (int)size);
- * 
+ *
  *   p = tmp.bytes;
  *   for (int i = 0; i < n; i++) {
- * 
+ *
  *     elt = elts[i];
- * 
+ *
  *     st_memcpy(p, elt->bytes, elt->len);
  *     p += elt->len;
- * 
+ *
  *     if (i < n - 1) {
  *       st_memcpy(p, sep->bytes, sep->len);
  *       p += sep->len;
  *     }
  *   }
- * 
+ *
  *   *s = tmp;
- * 
+ *
  * exit:
- * 
+ *
  *   return ret;
  * }
  */
@@ -272,50 +272,50 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
  *   //4 is st_str_t len element size
  *   return ((st_str_t *)val)->len + 4;
  * }
- * 
+ *
  * int st_str_serialize(void *val, struct STBuf *buf) {
  *   st_str_t *str = val;
- * 
+ *
  *   st_must_be(str && buf, ST_ERR_INVALID_ARG);
  *   st_must_be(str->inited_, ST_ERR_INVALID_ARG);
- * 
+ *
  *   struct STBuf b = *buf;
- * 
+ *
  *   int ret = ST_FAIL;
  *   uint32_t len = str->len;
- * 
+ *
  *   //note str length just use 4 bytes, compatible with rpc length
  *   st_check_ret(ret = st_u32_serialize(&len, &b), "");
- * 
+ *
  *   st_check_ret(ret = st_encode_data(&b, str->bytes, str->len), "");
- * 
+ *
  *   *buf = b;
- * 
+ *
  * exit:
  *   return ret;
  * }
- * 
+ *
  * int st_str_deserialize(void *val, struct STBuf *buf) {
- * 
+ *
  *   st_str_t *str = val;
- * 
+ *
  *   st_must_be(str, ST_ERR_INVALID_ARG);
  *   st_must_be(str->inited_ == 0, ST_ERR_INVALID_ARG);
  *   st_must_be(buf, ST_ERR_INVALID_ARG);
- * 
+ *
  *   struct STBuf b = *buf;
  *   int ret = ST_FAIL;
  *   uint32_t len = 0;
- * 
+ *
  *   //note str length just use 4 bytes, compatible with rpc length
  *   st_check_ret(ret = st_u32_deserialize(&len, &b), "deserialize str.len: buf: %s", st_buf_to_cstr(&b));
- * 
+ *
  *   st_check_ret(ret = st_str_init(str, len), "init str: len=%llu", (long long unsigned)len);
- * 
+ *
  *   st_check_ret(ret = st_decode_data(&b, str->bytes, str->len), "buf: %s", st_buf_to_cstr(&b));
- * 
+ *
  *   *buf = b;
- * 
+ *
  * exit:
  *   if (ST_OK != ret) {
  *     st_str_destroy(str);
@@ -344,8 +344,8 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
  *   }
  *   return ret;
  * }
- * 
- * 
+ *
+ *
  * int st_str_to_double(const st_str_t* str, double* double_val) {
  *   st_must_be(str != NULL, ST_ERR_INVALID_ARG);
  *   st_must_be(str->inited_ == 1, ST_ERR_INVALID_ARG);
@@ -365,7 +365,7 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
  *   }
  *   return ret;
  * }
- * 
+ *
  * int st_str_to_float(const st_str_t* str, float* float_val) {
  *   st_must_be(str != NULL, ST_ERR_INVALID_ARG);
  *   st_must_be(str->inited_ == 1, ST_ERR_INVALID_ARG);
@@ -385,7 +385,7 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
  *   }
  *   return ret;
  * }
- * 
+ *
  * int st_str_to_bool(const struct st_str_t* str, int32_t* bool_val) {
  *   int64_t int_val;
  *   int ret = st_str_to_int(str, &int_val);

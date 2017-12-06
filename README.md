@@ -50,7 +50,7 @@ Features:
 
 #   Status
 
-This library is in beta phase.
+This library is in alpha phase.
 
 It has been used in our object storage service.
 
@@ -106,6 +106,30 @@ source /opt/rh/devtoolset-3/enable
 
 #   Configuration
 
+#   Contribute
+
+##  Code style
+
+-   Use [astyle][astyle] to format `.c` and `.h` source code.
+
+    There is an `astylerc` that defines code style for this project.
+
+    Usage:
+
+    1.  Using env variable to specify config file:
+
+        ```
+        export ARTISTIC_STYLE_OPTIONS=$PWD/util/astylerc
+        astyle src/str/str.c
+        ```
+
+    1.  Or copy it to home folder then astyle always use it.
+
+        ```
+        copy util/astylerc ~/.astylerc
+        astyle src/str/str.c
+        ```
+
 #   Test
 
 #   Author
@@ -113,3 +137,6 @@ source /opt/rh/devtoolset-3/enable
 - Zhang Yanpo (张炎泼) <xp@baishancloud.com>
 - Chen Chuang (陈闯) <chuang.chen@baishancloud.com>
 - Li Shulong (李树龙) <shulong.li@baishancloud.com>
+
+
+[astyle]: http://astyle.sourceforge.net/astyle.html

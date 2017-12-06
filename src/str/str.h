@@ -27,7 +27,7 @@ struct st_str_s {
 };
 
 struct st_MemPool;
-static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t*)"";
+static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
 
 #define st_str_const(s)               {.left=NULL, .len=sizeof(s)-1,    .capacity=sizeof(s),      .bytes_owned=0, .bytes=(uint8_t*)(s)}
 #define st_str_var(_len)              {.left=NULL, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
@@ -60,7 +60,7 @@ static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t*)"";
  * // Thus it is safe to use rst->bytes directly in posix API.
  * #define st_str_join_path(s, ...)      st_str_join_with_n((s), &(st_str_t)st_str_const("/"), st_str_n_arr_(__VA_ARGS__))
  * #define st_str_join_with(s, sep, ...) st_str_join_with_n((s), (sep), st_str_n_arr_(__VA_ARGS__))
- * 
+ *
  * int st_str_join_with_n(st_str_t *s, st_str_t *sep, int n, st_str_t **strs);
  */
 
@@ -89,15 +89,15 @@ int st_str_copy_cstr(st_str_t *str, const char *s);
 
 /*
  * static inline const char *st_str_to_cstring(const st_str_t *s) {
- * 
+ *
  *   if (s == NULL) {
  *     return st__LITERAL_NULL;
  *   }
- * 
+ *
  *   if (s->trailing_0) {
  *     return s->bytes;
  *   }
- * 
+ *
  *   char *buf = st_utility_get_tostring_buf();
  *   int64_t pos = 0;
  *   int ret = st_str_to_str(s, buf, st__TO_CSTRING_BUFFER_SIZE, &pos);
