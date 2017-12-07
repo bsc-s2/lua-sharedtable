@@ -60,19 +60,19 @@ It has been used in our object storage service.
 
 There is a `README.md` for each module.
 
-| name                           | description                                 |
-| :--                            | :--                                         |
-| [array](array)                 | dynamic and static array                    |
-| [atomic](atomic)               | atomic operation                            |
-| [btree](btree)                 | btree operation                             |
-| [binary](binary)               | binary operation                            |
-| [bitmap](bitmap)               | bitmap operation                            |
-| [list](list)                   | double linked list operation                |
-| [rbtree](rbtree)               | red–black tree operation                    |
-| [robustlock](robustlock)       | robustlock can avoid dead lock              |
-| [str](str)                     | string utility                              |
-| [region](region)               | manage system alloced big memory            |
-| [pagepool](pagepool)           | manage pages which split from region        |
+| name                               | description                             |
+| :--                                | :--                                     |
+| [array](src/array)                 | dynamic and static array                |
+| [atomic](src/atomic)               | atomic operation                        |
+| [btree](src/btree)                 | btree operation                         |
+| [binary](src/binary)               | binary operation                        |
+| [bitmap](src/bitmap)               | bitmap operation                        |
+| [list](src/list)                   | double linked list operation            |
+| [rbtree](src/rbtree)               | red–black tree operation                |
+| [robustlock](src/robustlock)       | robustlock can avoid dead lock          |
+| [str](src/str)                     | string utility                          |
+| [region](src/region)               | manage system alloced big memory        |
+| [pagepool](src/pagepool)           | manage pages which split from region    |
 
 
 # Install
