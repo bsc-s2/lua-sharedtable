@@ -114,7 +114,7 @@ char *st_ut_get_tostring_buf();
 #define st_ut_lt(expected, actual, fmt, ...)                                  \
         st_ut_assert_cmp_(<,  expected, actual, fmt, ##__VA_ARGS__)
 
-#define st_ut_fail(mes, ...)                                      \
+#define st_ut_fail(mes, ...)                                                  \
         st_ut_assert_(0, mes, ##__VA_ARGS__)
 
 #define st_ut_assert_cmp_(_operator, __e, __a, fmt, ...)                      \
@@ -129,15 +129,15 @@ char *st_ut_get_tostring_buf();
              ##__VA_ARGS__ );                                                 \
     } while (0)
 
-#define st_ut_assert_( to_be_true, mes, ... )                                \
+#define st_ut_assert_( to_be_true, mes, ... )                                 \
     do {                                                                      \
         if ( (to_be_true) ) {                                                 \
             OK_OUT( mes, ##__VA_ARGS__ );                                     \
-            st_ut_ret__ = 0;                                                 \
+            st_ut_ret__ = 0;                                                  \
         }                                                                     \
         else {                                                                \
             ERR_OUT( mes, ##__VA_ARGS__ );                                    \
-            st_ut_ret__ = -1;                                                \
+            st_ut_ret__ = -1;                                                 \
             return;                                                           \
         }                                                                     \
     } while ( 0 )
@@ -319,15 +319,15 @@ static inline int main_(int argc, char **argv) {
     return 0;
 }
 
-#define st_ut_main                                                           \
-    st_ut_case_t *st_ut_cases_;                                             \
-    int64_t st_ut_case_n_;                                                   \
-    int64_t st_ut_case_capacity_;                                            \
-    int st_ut_ret__;                                                         \
-    st_ut_bench_t *st_ut_benches_;                                          \
-    int64_t st_ut_bench_n_;                                                  \
-    int64_t st_ut_bench_capacity_;                                           \
-    char *st_ut_get_tostring_buf() {                                         \
+#define st_ut_main                                                            \
+    st_ut_case_t *st_ut_cases_;                                               \
+    int64_t st_ut_case_n_;                                                    \
+    int64_t st_ut_case_capacity_;                                             \
+    int st_ut_ret__;                                                          \
+    st_ut_bench_t *st_ut_benches_;                                            \
+    int64_t st_ut_bench_n_;                                                   \
+    int64_t st_ut_bench_capacity_;                                            \
+    char *st_ut_get_tostring_buf() {                                          \
         static __thread char buffers[128][64];                                \
         static __thread uint64_t i = 0;                                       \
         char *buffer = buffers[i++ % 128];                                    \

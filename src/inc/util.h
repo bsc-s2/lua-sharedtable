@@ -3,6 +3,7 @@
 
 #include <signal.h>
 #include <immintrin.h>
+#include "inc/bit.h"
 
 /* TODO  */
 /* #define st_pause() __asm__("pause\n") */
