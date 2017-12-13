@@ -63,7 +63,7 @@ BUILD_EXTRA_CFLAGS += $(MEM_FLAGS_$(mem))
 
 CC        = gcc
 BASE_DIR ?= ..
-CFLAGS   ?= -g -Wall -Werror -std=c11 -D _GNU_SOURCE $(BUILD_EXTRA_CFLAGS)
+CFLAGS   ?= -g -O2 -Wall -Werror -std=c11 -D _GNU_SOURCE $(BUILD_EXTRA_CFLAGS)
 
 C_INCLUDE_PATH = $(BASE_DIR):$(BASE_DIR)/inc
 export C_INCLUDE_PATH

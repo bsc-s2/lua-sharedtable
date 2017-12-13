@@ -1,9 +1,17 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+#include <sched.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <limits.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 #include "slab.h"
 #include "unittest/unittest.h"
@@ -20,7 +28,8 @@ typedef struct {
 #define PAGE_SIZE                        (1 << 12)
 #define ST_TEST_SLAB_HUGE_OBJ_SIZE       (PAGE_SIZE + 1)
 
-#define ST_TEST_SLAB_SHARED_SPACE_LENGTH (100 * 1024 * 1024)
+#define ST_TEST_SLAB_REGION_CNT          10
+#define ST_TEST_SLAB_SHARED_SPACE_LENGTH (1024 * 1024 * 200)
 
 #define CHECK_GROUP_FIELD(index, group, field, value) do {                 \
     st_ut_eq(value, group->field, "[%d] failed to update " #field, index); \
@@ -48,17 +57,19 @@ st_slab_setup(setup_info_t *info)
     info->data = (void *)(st_align((uintptr_t)info->base + sizeof(*info->slab_pool),
                                    PAGE_SIZE));
 
+    ssize_t cfg_len = (uintptr_t)info->data - (uintptr_t)info->base;
+    ssize_t data_len = ST_TEST_SLAB_SHARED_SPACE_LENGTH - cfg_len;
+
     ret = st_region_init(&info->slab_pool->page_pool.region_cb,
                          info->data,
-                         1024,
-                         20,
+                         data_len / PAGE_SIZE / ST_TEST_SLAB_REGION_CNT,
+                         ST_TEST_SLAB_REGION_CNT,
                          1);
     st_assert(ret == ST_OK);
 
     ret = st_pagepool_init(&info->slab_pool->page_pool, PAGE_SIZE);
     st_assert(ret == ST_OK);
 
-    memset(info->base, 0, sizeof(*info->base));
     ret = st_slab_pool_init(info->slab_pool);
     st_assert(ret == ST_OK);
 }
@@ -926,6 +937,284 @@ st_test(st_slab, obj_alloc_free_invalid)
     }
 
     st_slab_cleanup(&info, 0);
+}
+
+#define ST_BENCH_SLAB_MIN_SIZE   1
+#define ST_BENCH_SLAB_MAX_SIZE   (PAGE_SIZE * 4)
+#define ST_BENCH_SLAB_RESULT_DIR "profile"
+
+typedef struct {
+    setup_info_t slab_info;
+
+    ssize_t      th_cnt;     /** the number of thread */
+    ssize_t      proc_cnt;   /** the number of processes */
+    ssize_t      size_cnt;   /** the number of obj size to test */
+    ssize_t      run_times;  /** run times for each size */
+    ssize_t      data[0];    /** obj sizes to alloc and free */
+
+} st_slab_prof_t;
+
+static st_slab_prof_t *
+st_bench_slab_prof_setup(ssize_t th_cnt,
+                         ssize_t proc_cnt,
+                         ssize_t size_cnt,
+                         ssize_t run_times)
+{
+    ssize_t data_size    = sizeof(ssize_t) * size_cnt;
+    st_slab_prof_t *prof = (st_slab_prof_t *)malloc(sizeof(*prof) + data_size);
+    st_assert(prof != NULL);
+
+    prof->th_cnt    = th_cnt;
+    prof->proc_cnt  = proc_cnt;
+    prof->size_cnt  = size_cnt;
+    prof->run_times = run_times;
+
+    if (proc_cnt != 0) {
+        st_slab_setup(&prof->slab_info);
+    }
+
+    return prof;
+}
+
+static inline void
+st_bench_slab_prof_cleanup(st_slab_prof_t *prof)
+{
+    if (prof->proc_cnt != 0) {
+        st_slab_cleanup(&prof->slab_info, 1);
+    }
+
+    free(prof);
+}
+
+static void
+st_bench_generate_random_sizes(ssize_t *sizes,
+                               int num,
+                               ssize_t min_value,
+                               ssize_t max_value)
+{
+    st_assert(min_value < max_value);
+
+    uint32_t rdm;
+    int fd = open("/dev/urandom", O_RDONLY);
+
+    st_assert(fd != -1);
+
+    int cnt = 0;
+    while (cnt < num) {
+        if (sizeof(rdm) != read(fd, &rdm, sizeof(rdm))) {
+            continue;
+        }
+
+        sizes[cnt++] = (ssize_t)rdm % (max_value + 1 - min_value) + min_value;
+    }
+
+    close(fd);
+}
+
+static int
+set_self_cpu_affinity(int index)
+{
+    int np = sysconf(_SC_NPROCESSORS_ONLN);
+
+    cpu_set_t mask;
+
+    CPU_ZERO(&mask);
+    CPU_SET(index % np, &mask);
+
+    return sched_setaffinity(getpid(), sizeof(mask), &mask);
+}
+
+static void
+st_bench_slab_do_process_profiling(st_slab_prof_t *prof)
+{
+    int addr_num = 0;
+    void **addrs = (void **)malloc(sizeof(*addrs) * prof->size_cnt);
+    st_assert(addrs != NULL);
+
+    int is_alloc    = 1;
+    int alloc_times = 0;
+    ssize_t rdm_idx = 0;
+
+    for (int cnt = 0; cnt < prof->size_cnt; cnt += alloc_times) {
+        alloc_times = 0;
+        int ret     = ST_OK;
+        ssize_t rdm = prof->data[rdm_idx];
+
+        if (is_alloc) {
+            int times = st_min((rdm & 0xff) + 1, prof->size_cnt - cnt);
+            for (int num = 0; num < times; num++) {
+                ret = st_slab_obj_alloc(prof->slab_info.slab_pool,
+                                        prof->data[cnt + num],
+                                        &addrs[addr_num]);
+                st_assert(ret == ST_OK || ret == ST_OUT_OF_MEMORY);
+
+                if (ret == ST_OK) {
+                    alloc_times++;
+                    addr_num++;
+                } else {
+                    break;
+                }
+            }
+
+        } else {
+            int times = st_min((rdm & 0xff) + 1, addr_num);
+            for (int num = 0; num < times; num++) {
+                st_slab_obj_free(prof->slab_info.slab_pool, addrs[--addr_num]);
+            }
+
+        }
+
+        is_alloc = rdm % 2;
+        if (addr_num == 0) {
+            is_alloc = 1;
+        }
+        else if (ret == ST_OUT_OF_MEMORY) {
+            is_alloc = 0;
+        }
+
+        rdm_idx = (rdm_idx + 1) % prof->size_cnt;
+    }
+
+    /** free the rest */
+    for (int num = 0; num < addr_num; num++) {
+        st_slab_obj_free(prof->slab_info.slab_pool, addrs[num]);
+    }
+
+    free(addrs);
+}
+
+static void
+st_bench_slab_profiling_processes(st_slab_prof_t *prof)
+{
+    if (prof->proc_cnt == 0) {
+        return;
+    }
+
+    pid_t *children = (pid_t *)malloc(prof->proc_cnt * sizeof(*children));
+    st_assert(children != NULL);
+
+    for (int cnt = 0; cnt < prof->proc_cnt; cnt++) {
+        children[cnt] = fork();
+
+        if (children[cnt] == -1) {
+            derr("failed to fork process\n");
+        }
+        else if (children[cnt] == 0) {
+            /** child process, do test here */
+            set_self_cpu_affinity(cnt);
+
+            for (int num = 0; num < prof->run_times; num++) {
+                st_bench_slab_do_process_profiling(prof);
+            }
+
+            free(children);
+            _exit(0);
+        }
+    }
+
+    for (int cnt = 0; cnt < prof->proc_cnt; cnt++) {
+        if (children[cnt] != -1) {
+            waitpid(children[cnt], NULL, 0);
+        }
+    }
+
+    free(children);
+}
+
+static void * __attribute__((optimize("O0")))
+st_bench_slab_do_thread_profiling(void *arg)
+{
+    st_slab_prof_t *prof = (st_slab_prof_t *)arg;
+
+    volatile char *ptr = NULL;
+    for (int idx = 0; idx < prof->run_times; idx++) {
+        for (int cnt = 0; cnt < prof->size_cnt; cnt++) {
+            ptr = (char *)malloc(prof->data[cnt]);
+
+            free((char *)ptr);
+        }
+    }
+
+    return NULL;
+}
+
+static void
+st_bench_slab_profiling_threads(st_slab_prof_t *prof)
+{
+    if (prof->th_cnt == 0) {
+        return;
+    }
+
+    pthread_t *ths = (pthread_t *)malloc(prof->th_cnt * sizeof(*ths));
+    st_assert(ths != NULL);
+
+    for (int cnt = 0; cnt < prof->th_cnt; cnt++) {
+        int ret = pthread_create(&ths[cnt],
+                                 NULL,
+                                 st_bench_slab_do_thread_profiling,
+                                 prof);
+        if (ret != 0) {
+            derrno("failed to create thread\n");
+        }
+    }
+
+    for (int cnt = 0; cnt < prof->th_cnt; cnt++) {
+        pthread_join(ths[cnt], NULL);
+    }
+
+    free(ths);
+}
+
+static void
+st_bench_slab_profiling(st_slab_prof_t *prof)
+{
+    /** generate random test data */
+    st_bench_generate_random_sizes(prof->data,
+                                   prof->size_cnt,
+                                   ST_BENCH_SLAB_MIN_SIZE,
+                                   ST_BENCH_SLAB_MAX_SIZE);
+
+    /** fork processes to run profiling st_slab_obj_alloc/free */
+    st_bench_slab_profiling_processes(prof);
+
+    /** create threads to run profiling of malloc/free */
+    st_bench_slab_profiling_threads(prof);
+}
+
+st_ben(st_slab, single_proc, 60, n)
+{
+    st_slab_prof_t *prof = st_bench_slab_prof_setup(0, 1, 100000, n);
+
+    st_bench_slab_profiling(prof);
+
+    st_bench_slab_prof_cleanup(prof);
+}
+
+st_ben(st_slab, multiple_proc, 60, n)
+{
+    st_slab_prof_t *prof = st_bench_slab_prof_setup(0, 8, 100000, n);
+
+    st_bench_slab_profiling(prof);
+
+    st_bench_slab_prof_cleanup(prof);
+}
+
+st_ben(st_slab, single_thread, 60, n)
+{
+    st_slab_prof_t *prof = st_bench_slab_prof_setup(1, 0, 100000, n);
+
+    st_bench_slab_profiling(prof);
+
+    st_bench_slab_prof_cleanup(prof);
+}
+
+st_ben(st_slab, multiple_thread, 60, n)
+{
+    st_slab_prof_t *prof = st_bench_slab_prof_setup(8, 0, 100000, n);
+
+    st_bench_slab_profiling(prof);
+
+    st_bench_slab_prof_cleanup(prof);
 }
 
 st_ut_main;
