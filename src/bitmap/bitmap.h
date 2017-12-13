@@ -9,9 +9,9 @@
 
 int st_bitmap_get(uint64_t *bitmap, uint32_t idx);
 
-void st_bitmap_set(uint64_t *bitmap, uint32_t idx);
+int st_bitmap_set(uint64_t *bitmap, uint32_t idx);
 
-void st_bitmap_clear(uint64_t *bitmap, uint32_t idx);
+int st_bitmap_clear(uint64_t *bitmap, uint32_t idx);
 
 int st_bitmap_are_all_cleared(uint64_t *bitmap, uint32_t nbits);
 

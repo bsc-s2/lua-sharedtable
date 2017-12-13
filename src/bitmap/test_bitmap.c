@@ -38,7 +38,12 @@ st_test(bitmap, set_bit) {
 
     for (int i = 0; i < st_nelts(set_indexes); i++) {
         set_i = set_indexes[i];
-        st_bitmap_set(bitmap, set_i);
+
+        int ret = st_bitmap_set(bitmap, set_i);
+        st_ut_eq(0, ret, "failed to get original bit 0");
+
+        ret = st_bitmap_set(bitmap, set_i);
+        st_ut_eq(1, ret, "failed to get original bit 1");
 
         // check all set bit from begin
         for (int j = 0; j < 2 * sizeof(uint64_t) * 8; j ++) {
@@ -70,7 +75,12 @@ st_test(bitmap, clear_bit) {
 
     for (int i = 0; i < st_nelts(clear_indexes); i++) {
         clear_i = clear_indexes[i];
-        st_bitmap_clear(bitmap, clear_i);
+
+        int ret = st_bitmap_clear(bitmap, clear_i);
+        st_ut_eq(1, ret, "failed to get original bit 1");
+
+        ret = st_bitmap_clear(bitmap, clear_i);
+        st_ut_eq(0, ret, "failed to get original bit 0");
 
         // check all clear bit from begin
         for (int j = 0; j < 2 * sizeof(uint64_t) * 8; j ++) {

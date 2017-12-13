@@ -46,20 +46,30 @@ int st_bitmap_get(uint64_t *bitmap, uint32_t idx) {
     return word_bits_(bitmap, idx, idx + 1) ? 1 : 0;
 }
 
-void st_bitmap_set(uint64_t *bitmap, uint32_t idx) {
+int st_bitmap_set(uint64_t *bitmap, uint32_t idx) {
     uint32_t w_idx = idx / ST_BITMAP_BITS_PER_WORD;
 
     idx = idx % ST_BITMAP_BITS_PER_WORD;
 
-    bitmap[w_idx] |=  mask_(idx, idx + 1);
+    uint64_t mask = mask_(idx, idx + 1);
+    uint64_t original = bitmap[w_idx] & mask;
+
+    bitmap[w_idx] |=  mask;
+
+    return original ? 1 : 0;
 }
 
-void st_bitmap_clear(uint64_t *bitmap, uint32_t idx) {
+int st_bitmap_clear(uint64_t *bitmap, uint32_t idx) {
     uint32_t w_idx = idx / ST_BITMAP_BITS_PER_WORD;
 
     idx = idx % ST_BITMAP_BITS_PER_WORD;
 
-    bitmap[w_idx] &= ~mask_(idx, idx + 1);
+    uint64_t mask = mask_(idx, idx + 1);
+    uint64_t original = bitmap[w_idx] & mask;
+
+    bitmap[w_idx] &= ~mask;
+
+    return original ? 1 : 0;
 }
 
 int st_bitmap_are_all_cleared(uint64_t *bitmap, uint32_t nbits) {
