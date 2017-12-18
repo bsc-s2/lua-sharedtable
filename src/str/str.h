@@ -40,9 +40,13 @@ static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
 #define st_str_equal(a, b)                                                    \
         st_str_equal_((st_str_t*)(a), (st_str_t*)(b))
 
+/*
+ * use (uintptr_t)a == 0 instead of a == NULL
+ * `a != NULL` raises warning about a is never NULL for const args
+ */
 #define st_str_equal_(a, b)                                                   \
-  ((a) != NULL                                                                \
-   && (b) != NULL                                                             \
+  ((uintptr_t)(a) != 0                                                        \
+   && (uintptr_t)(b) != 0                                                     \
    && (a)->bytes != NULL                                                      \
    && (b)->bytes != NULL                                                      \
    && (a)->len == (b)->len                                                    \
