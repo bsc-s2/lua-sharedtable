@@ -156,7 +156,8 @@ st_str_copy_cstr(st_str_t *str, const char *s) {
         return ret;
     }
 
-    st_memcpy(str->bytes, s, slen);
+    st_memcpy(str->bytes, s, slen + 1);
+
     return ST_OK;
 }
 

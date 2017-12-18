@@ -506,8 +506,9 @@ st_test(str, copy_cstr) {
     st_ut_eq(1,             s.bytes_owned, "bytes_owned is 1, memory allocated");
     st_ut_ne(NULL,          s.bytes,       "bytes is not NULL");
 
-    ret = st_memcmp(FOO, s.bytes, s.capacity);
+    ret = st_memcmp(FOO, s.bytes, s.len);
     st_ut_eq(0, ret, "s.bytes is same as FOO");
+    st_ut_eq('\0', s.bytes[s.len], "s has trailing 0");
 
     ret = st_str_destroy(&s);
     st_ut_eq(ST_OK, ret, "destroy s");
