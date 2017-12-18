@@ -1013,7 +1013,7 @@ st_test(btree, pop) {
 #   undef add_all
 }
 
-st_ben(btree, binsearch, 2) {
+st_ben(btree, binsearch, 2, n) {
 
     int              i;
     st_btu64_key_t   k;
@@ -1043,7 +1043,7 @@ st_ben(btree, binsearch, 2) {
 
 }
 
-st_ben(btree, add, 2) {
+st_ben(btree, add, 2, n) {
     int           i;
 
     bt_declare(bt);
@@ -1089,7 +1089,7 @@ _free_bt(void *data) {
 }
 
 
-st_bench(btree, search, _make_bt_1m, _free_bt, 2) {
+st_bench(btree, search, _make_bt_1m, _free_bt, 2, data, n) {
     int              i;
     st_btu64_key_t  k;
     st_btu64_t     *bt;

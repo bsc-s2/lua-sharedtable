@@ -74,17 +74,17 @@ char *st_ut_get_tostring_buf();
     static void st_ut_case_##case_##_##func_()
 
 /* define benchmark */
-#define st_ben(name_, func_, n_sec) \
-        st_bench(name_, func_, NULL, NULL, n_sec)
+#define st_ben(name_, func_, n_sec, times) \
+        st_bench(name_, func_, NULL, NULL, n_sec, data, times)
 
-#define st_bench(name_, func_, init_func, clean_func, n_sec)                  \
-    static void st_ut_bench_##name_##_##func_(void*data, int64_t n);          \
+#define st_bench(name_, func_, init_func, clean_func, n_sec, data, times)     \
+    static void st_ut_bench_##name_##_##func_(void*data, int64_t times);      \
     __attribute__((constructor))                                              \
     void st_ut_bench_##name_##_##func_##_constructor_() {                     \
         st_ut_add_bench(#name_ "::" #func_, st_ut_bench_##name_##_##func_,    \
                          init_func, clean_func, n_sec);                       \
     }                                                                         \
-    static void st_ut_bench_##name_##_##func_(void*data, int64_t n)
+    static void st_ut_bench_##name_##_##func_(void*data, int64_t times)
 
 #define st_ut_return_fail()                                                   \
         do {                                                                  \

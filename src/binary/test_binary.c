@@ -63,13 +63,13 @@ st_test(binary, varint_edge) {
     }
 }
 
-st_bench(binary, vu64_size, NULL, NULL, 2) {
+st_bench(binary, vu64_size, NULL, NULL, 2, data, n) {
     for (int64_t i = 0; i < n; i++) {
         bin_vu64_size(103294);
     }
 }
 
-st_bench(binary, vu64_put, NULL, NULL, 2) {
+st_bench(binary, vu64_put, NULL, NULL, 2, data, n) {
     uint8_t buf[10];
     for (int64_t i = 0; i < n; i++) {
         bin_vu64_put(buf, 10, (1ULL << 60) + i);
