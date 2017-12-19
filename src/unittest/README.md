@@ -109,7 +109,7 @@ Similar to `st_test`, it defines a benchmark function with `module_name` and
 -   `times`:
     specifies the variable name to receive number of times to run.
 
-    Inside the body(in braces), `times` is a `uint64_t` integer.
+    Inside the body(in braces), `times` is a `int64_t` integer.
 
 
 ##  st_ben
