@@ -80,8 +80,22 @@ test_src = $(srcs) $(test_exec).c
 test_objs = $(test_src:.c=.o)
 test_debug_objs = $(test_src:.c=.gcda) $(test_src:.c=.gcno)
 
+# $(1): a list of absolute path names of dependent static lib files, like xxx.a
+# $(2): execute command when file exists or not, 1: true, 0: false
+# $(3): make action like `clean`, ``, `test`. `` is for basic make
+define make_each_dep
+	@for dep in $(1); do              \
+		[ -f $${dep} ];               \
+		if [ $${?} -ne $(2) ]; then   \
+			cd $$(dirname $${dep}) && \
+				$(MAKE) $(3) &&       \
+				cd -;                 \
+		fi;                           \
+	done;
+endef
+
 # t: clean test valgrind
-t: clean test
+t: test
 
 b: clean bench
 
@@ -90,14 +104,15 @@ valgrind: $(target) $(test_exec)
 	valgrind --leak-check=full --dsymutil=yes $(test_exec) 2>&1
 
 all: $(target)
-	@for dep in $(deps); do ( cd $(BASE_DIR)/$$dep && $(MAKE); ) done
+	# 3rd arg is empty to trigger simple `make` command
+	$(call make_each_dep, $(deps_a), 0)
 
 clean:
-	@for dep in $(deps); do ( cd $(BASE_DIR)/$$dep && $(MAKE) clean; ) done
 	-@rm $(objs) $(debug_objs) 2>/dev/null
 	-@rm $(target) 2>/dev/null
 	-@rm $(test_objs) $(test_debug_objs) 2>/dev/null
 	-@rm $(test_exec) 2>/dev/null
+	$(call make_each_dep, $(deps_a), 1, clean)
 	-@echo "clean done ----------------"
 
 # bench: $(target) $(test_exec)
@@ -105,11 +120,11 @@ bench: $(test_exec)
 	./$(test_exec) bench
 
 # test: $(target) $(test_exec)
-test: $(test_exec) $(target)
+test: $(target) $(test_exec)
 	./$(test_exec) test
 
 $(test_exec): $(test_objs)
-	@for dep in $(deps); do ( cd $(BASE_DIR)/$$dep && echo make $$dep && $(MAKE) test; ) done
+	$(call make_each_dep, $(deps_a), 0, test)
 	$(CC) $(CFLAGS) $(cflags) $(libs:%=-l% ) -o $@ $^ $(deps_a)
 
 $(objs): $(BASE_DIR)/inc/*.h

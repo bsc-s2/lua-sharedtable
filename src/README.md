@@ -60,6 +60,12 @@ For all the commands above, you can add the following compile options:
     - `small`: use small memory size.
     - `normal`: use normal memory size which is default.
 
+`make` and `make test` commands will be executed on submodules only once.
+After the first time, `make` and `make test` only executed on the current
+ module itself to reduce the time used by compiling and testing.
+ So if you want `make` or `make test` commands executed on
+ all the dependent modules, you need to `make clean` first.
+
 # Description
 Makefile for GNU make tool.
 
