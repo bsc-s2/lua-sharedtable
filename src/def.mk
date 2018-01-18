@@ -63,7 +63,7 @@ BUILD_EXTRA_CFLAGS += $(MEM_FLAGS_$(mem))
 
 CC        = gcc
 BASE_DIR ?= ..
-CFLAGS   ?= -g -O2 -Wall -Werror -std=c11 -D _GNU_SOURCE $(BUILD_EXTRA_CFLAGS)
+CFLAGS   ?= -g -O2 -fPIC -Wall -Werror -std=c11 -D _GNU_SOURCE $(BUILD_EXTRA_CFLAGS)
 
 C_INCLUDE_PATH = $(BASE_DIR):$(BASE_DIR)/inc
 export C_INCLUDE_PATH
@@ -99,19 +99,27 @@ t: test
 
 b: clean bench
 
+dylib: all
+ifeq ($(target_dylib),)
+	$(error no dynamic library name specific)
+endif
+	$(CC) -fPIC -shared -o $(target_dylib) \
+		-Wl,--whole-archive $(target) $(deps_a) -Wl,--no-whole-archive
+
 valgrind: $(target) $(test_exec)
 	# valgrind --leak-check=full --dsymutil=yes $(test_exec) 2>&1 | grep -C10 --color xpj
 	valgrind --leak-check=full --dsymutil=yes $(test_exec) 2>&1
 
 all: $(target)
 	# 3rd arg is empty to trigger simple `make` command
-	$(call make_each_dep, $(deps_a), 0)
+	$(call make_each_dep, $(deps_a), 0, all)
 
 clean:
 	-@rm $(objs) $(debug_objs) 2>/dev/null
 	-@rm $(target) 2>/dev/null
 	-@rm $(test_objs) $(test_debug_objs) 2>/dev/null
 	-@rm $(test_exec) 2>/dev/null
+	-@rm $(target_dylib) 2>/dev/null
 	$(call make_each_dep, $(deps_a), 1, clean)
 	-@echo "clean done ----------------"
 
