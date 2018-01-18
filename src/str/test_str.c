@@ -368,19 +368,6 @@ st_test(str, cmp) {
         ddx(rst);
 
         st_ut_eq(c.expected, rst, "");
-
-        char ca[100];
-        char cb[100];
-        memcpy(ca, c.a, strlen(c.a));
-        memcpy(cb, c.b, strlen(c.b));
-
-        a = (st_str_t)st_str_wrap_common(ca, ST_TYPES_CHAR_ARRAY, (strlen(c.a)));
-        b = (st_str_t)st_str_wrap_common(cb, ST_TYPES_CHAR_ARRAY, (strlen(c.b)));
-        rst = st_str_cmp(&a, &b);
-
-        ddx(rst);
-
-        st_ut_eq(c.expected, rst, "");
     }
 
     {

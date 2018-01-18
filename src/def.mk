@@ -106,12 +106,13 @@ t: test
 b: clean bench
 
 dylib: all
-ifeq ($(target_dylib),)
-	$(error no dynamic library name specific)
-endif
+ifneq ($(target_dylib),)
 	$(CC) -fPIC -shared -o $(target_dylib).$(st_version_full)          \
 		-Wl,-soname,$(target_dylib).$(st_version_soname)               \
-		-Wl,--whole-archive $(target) $(deps_a) -Wl,--no-whole-archive
+		-Wl,--whole-archive $(target) $(deps_a) -Wl,--no-whole-archive $(libs:%=-l% )
+else
+	@echo "no dylib target specified"
+endif
 
 valgrind: $(target) $(test_exec)
 	# valgrind --leak-check=full --dsymutil=yes $(test_exec) 2>&1 | grep -C10 --color xpj
@@ -135,7 +136,7 @@ bench: $(test_exec)
 	./$(test_exec) bench
 
 # test: $(target) $(test_exec)
-test: $(target) $(test_exec)
+test: $(target) $(test_exec) dylib
 	./$(test_exec) test
 
 $(test_exec): $(test_objs)

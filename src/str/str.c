@@ -241,7 +241,6 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
 
             break;
         case ST_TYPES_STRING:
-        case ST_TYPES_CHAR_ARRAY:
         case ST_TYPES_UNKNOWN:
         default:
             len = st_min(a->len, b->len);
