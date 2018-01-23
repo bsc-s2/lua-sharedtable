@@ -110,7 +110,8 @@ static void st_rbtree_right_rotate(st_rbtree_node_t **root, st_rbtree_node_t *se
     node->parent = child;
 }
 
-static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node) {
+static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exist,
+                       int *need_rebalance) {
     st_rbtree_node_t *curr = tree->root;
     st_rbtree_node_t  **p = NULL;
     st_rbtree_node_t *sentinel = &tree->sentinel;
@@ -122,16 +123,22 @@ static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node) {
         st_rbtree_black(node);
         tree->root = node;
 
-        // no need rebalance
-        return 0;
+        *need_rebalance = 0;
+        return ST_OK;
     }
 
     while (1) {
 
         if (tree->cmp(node, curr) < 0) {
             p = &curr->left;
-        } else {
+        } else if (tree->cmp(node, curr) > 0) {
             p = &curr->right;
+        } else {
+            if (allow_exist) {
+                p = &curr->right;
+            } else {
+                return ST_EXISTED;
+            }
         }
 
         if (*p == sentinel) {
@@ -147,23 +154,24 @@ static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node) {
     node->right = sentinel;
     st_rbtree_red(node);
 
-    // need rebalance
-    return 1;
+    *need_rebalance = 1;
+    return ST_OK;
 }
 
-int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node) {
+int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exist) {
     st_rbtree_node_t  **root, *uncle, *sentinel;
-    int need_rebalance;
+    int ret, need_rebalance;
 
     st_must(tree != NULL, ST_ARG_INVALID);
     st_must(node != NULL, ST_ARG_INVALID);
+    st_must(allow_exist == 0 || allow_exist == 1, ST_ARG_INVALID);
 
     root = (st_rbtree_node_t **) &tree->root;
     sentinel = &tree->sentinel;
 
-    need_rebalance = insert_node(tree, node);
-    if (need_rebalance == 0) {
-        return ST_OK;
+    ret = insert_node(tree, node, allow_exist, &need_rebalance);
+    if (ret != ST_OK || need_rebalance == 0) {
+        return ret;
     }
 
     /* insert fixup, re-balance tree */
@@ -506,6 +514,74 @@ st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node)
     }
 
     return curr != sentinel ? curr : bigger;
+}
+
+// node maybe not in tree, so need search node.
+st_rbtree_node_t *st_rbtree_search_next(st_rbtree_t *tree, st_rbtree_node_t *node) {
+
+    st_must(tree != NULL, NULL);
+    st_must(node != NULL, NULL);
+
+    st_rbtree_node_t *curr = tree->root;
+    st_rbtree_node_t *sentinel = &tree->sentinel;
+
+    st_rbtree_node_t *next = NULL;
+
+    int ret;
+
+    while (curr != sentinel) {
+
+        ret = tree->cmp(node, curr);
+        if (ret < 0) {
+            next = curr;
+            curr = curr->left;
+        } else if (ret > 0) {
+            curr = curr->right;
+        } else {
+            break;
+        }
+    }
+
+    if (curr == sentinel || curr->right == sentinel) {
+        return next;
+    } else {
+        return get_left_most(curr->right, sentinel);
+    }
+}
+
+// node must be in tree, so need search node, just get node next.
+st_rbtree_node_t *st_rbtree_get_next(st_rbtree_t *tree, st_rbtree_node_t *node) {
+
+    st_must(tree != NULL, NULL);
+    st_must(node != NULL, NULL);
+
+    if (!st_rbtree_node_is_inited(node)) {
+        return NULL;
+    }
+
+    st_rbtree_node_t *sentinel = &tree->sentinel;
+
+    if (node == sentinel) {
+        return NULL;
+    }
+
+    if (node->right != sentinel) {
+        return get_left_most(node->right, sentinel);
+    }
+
+    st_rbtree_node_t *parent, *curr = node;
+
+    while (curr != tree->root) {
+        parent = curr->parent;
+
+        if (st_rbtree_is_left_child(curr)) {
+            return parent;
+        } else {
+            curr = parent;
+        }
+    }
+
+    return NULL;
 }
 
 int
