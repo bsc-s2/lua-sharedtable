@@ -110,7 +110,7 @@ static void st_rbtree_right_rotate(st_rbtree_node_t **root, st_rbtree_node_t *se
     node->parent = child;
 }
 
-static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exist,
+static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_equal,
                        int *need_rebalance) {
     st_rbtree_node_t *curr = tree->root;
     st_rbtree_node_t  **p = NULL;
@@ -134,7 +134,7 @@ static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exis
         } else if (tree->cmp(node, curr) > 0) {
             p = &curr->right;
         } else {
-            if (allow_exist) {
+            if (allow_equal) {
                 p = &curr->right;
             } else {
                 return ST_EXISTED;
@@ -158,18 +158,18 @@ static int insert_node(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exis
     return ST_OK;
 }
 
-int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_exist) {
+int st_rbtree_insert(st_rbtree_t *tree, st_rbtree_node_t *node, int allow_equal) {
     st_rbtree_node_t  **root, *uncle, *sentinel;
     int ret, need_rebalance;
 
     st_must(tree != NULL, ST_ARG_INVALID);
     st_must(node != NULL, ST_ARG_INVALID);
-    st_must(allow_exist == 0 || allow_exist == 1, ST_ARG_INVALID);
+    st_must(allow_equal == 0 || allow_equal == 1, ST_ARG_INVALID);
 
     root = (st_rbtree_node_t **) &tree->root;
     sentinel = &tree->sentinel;
 
-    ret = insert_node(tree, node, allow_exist, &need_rebalance);
+    ret = insert_node(tree, node, allow_equal, &need_rebalance);
     if (ret != ST_OK || need_rebalance == 0) {
         return ret;
     }

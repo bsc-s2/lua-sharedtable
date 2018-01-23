@@ -266,4 +266,46 @@ st_test(list, for_each_entry_safe) {
     st_ut_eq(st_list_empty(&head), 1, "list empty");
 }
 
+st_test(list, join) {
+    st_list_t *prt = NULL;
+    st_list_t nodes[20];
+
+    st_list_t head1 = ST_LIST_INIT(head1);
+    st_list_t head2 = ST_LIST_INIT(head2);
+
+    init_list_with_nodes(&head1, nodes, 10, 1);
+    init_list_with_nodes(&head2, nodes + 10, 10, 1);
+
+    st_list_join(&head1, &head2);
+
+    st_ut_eq(1, st_list_empty(&head2), "list2 empty");
+
+    prt = &head1;
+    for (int i = 0; i < 20; i++, prt = prt->next) {
+        st_ut_eq(prt->next, nodes + i, "list next equal insert node");
+        st_ut_eq((nodes + i)->prev, prt, "insert node prev equal last node");
+    }
+
+    st_ut_eq(prt->next, &head1, "last node next equal head");
+    st_ut_eq(head1.prev, prt, "head prev equal last node");
+}
+
+st_test(list, pop_first) {
+
+    st_list_t nodes[10];
+    st_list_t head = ST_LIST_INIT(head);
+    st_list_t *removed;
+
+    init_list_with_nodes(&head, nodes, 10, 1);
+
+    for (int i = 0; i < 10; i++) {
+        removed = st_list_pop_first(&head);
+        st_ut_eq(nodes + i, removed, "");
+    }
+
+    st_ut_eq(1, st_list_pop_first(&head) == NULL, "");
+
+    st_ut_eq(1, st_list_empty(&head), "list empty");
+}
+
 st_ut_main;

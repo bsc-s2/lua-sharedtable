@@ -68,6 +68,39 @@ static inline void st_list_move_tail(st_list_t *node, st_list_t *head) {
     st_list_insert_last(head, node);
 }
 
+static inline int st_list_is_inited(st_list_t *node) {
+    if (node == NULL || node->next == NULL || node->prev == NULL) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static inline void st_list_join(st_list_t *dest, st_list_t *src) {
+    if (st_list_empty(src)) {
+        return;
+    }
+
+    dest->prev->next = src->next;
+    src->next->prev = dest->prev;
+    dest->prev = src->prev;
+    dest->prev->next = dest;
+
+    st_list_init(src);
+}
+
+static inline st_list_t *st_list_pop_first(st_list_t *head) {
+    if (st_list_empty(head)) {
+        return NULL;
+    }
+
+    st_list_t *node = head->next;
+
+    st_list_remove(node);
+
+    return node;
+}
+
 #define st_list_for_each(node, head)                                                  \
     for (node = (head)->next; node != (head); node = node->next)
 
