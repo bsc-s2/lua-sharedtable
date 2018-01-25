@@ -67,16 +67,17 @@ A stepped GC runs from step 3.
     -   Pop one item from `sweep_queue`.
     -   If it is `reachable`, put it into `prev_sweep_queue`.
     -   If it is `unknown`:
+        -   Mark it as `garbage`.
         -   Put it into `garbage_queue`.
+        -   Put all its `unknown` child items to `sweep_queue`.
 
 5.  Free items in `garbage_queue` one by one:
 
     Scan queue:
 
     -   Pop one item from `garbage_queue`.
-    -   Mark it as `garbage`.
-    -   Put all its `unknown` child items to `garbage_queue`.
     -   Release references to its children.
+    -   Release item.
 
 6.  Replace `prev_sweep_queue` with `sweep_queue`.
     Empty `sweep_queue`.
