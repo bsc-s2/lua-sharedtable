@@ -8,7 +8,7 @@ st_test(str, const) {
     {
         st_str_t s = st_str_const(FOO);
 
-        st_ut_eq(NULL,          s.left,        "left is NULL");
+        st_ut_eq(0,             s.type,        "type is 0");
         st_ut_eq(sizeof(FOO)-1, s.len,         "len");
         st_ut_eq(sizeof(FOO),   s.capacity,    "capacity");
         st_ut_eq(0,             s.bytes_owned, "bytes_owned is 0");
@@ -18,7 +18,7 @@ st_test(str, const) {
     {
         st_str_t s = st_str_var(10);
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(10,   s.len,         "len");
         st_ut_eq(10,   s.capacity,    "capacity");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -30,7 +30,7 @@ st_test(str, const) {
         int64_t   l = 2;
         st_str_t  s = st_str_wrap(b, l);
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(l,    s.len,         "len");
         st_ut_eq(l,    s.capacity,    "capacity");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -42,7 +42,7 @@ st_test(str, const) {
         int64_t   l = sizeof(FOO) - 1;
         st_str_t  s = st_str_wrap_0(b, l);
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(l,    s.len,         "len");
         st_ut_eq(l+1,  s.capacity,    "capacity");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -55,7 +55,7 @@ st_test(str, const) {
         char b[10];
         st_str_t s = st_str_wrap_chars(b);
 
-        st_ut_eq(NULL,        s.left,        "left is NULL");
+        st_ut_eq(0,           s.type,        "type is 0");
         st_ut_eq(10,          s.len,         "len");
         st_ut_eq(10,          s.capacity,    "capacity");
         st_ut_eq(0,           s.bytes_owned, "bytes_owned is 0");
@@ -65,7 +65,7 @@ st_test(str, const) {
     {
         st_str_t s = st_str_null;
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(0,    s.len,         "len");
         st_ut_eq(0,    s.capacity,    "capacity");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -75,7 +75,7 @@ st_test(str, const) {
     {
         st_str_t s = st_str_empty;
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(0,    s.len,         "len");
         st_ut_eq(1,    s.capacity,    "capacity");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -104,14 +104,14 @@ st_test(str, init_invalid) {
         st_typeof(cases[0])   c = cases[i];
         st_typeof(c.expected) rst;
 
-        st_str_t s = {0};
+        st_str_t s = {{0}};
 
         rst = st_str_init(&s, c.inp);
         ddx(rst);
 
         st_ut_eq(c.expected, rst, "");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(NULL, s.right,       "right is NULL");
         st_ut_eq(0,    s.len,         "len is 0");
         st_ut_eq(0,    s.capacity,    "capacity is 0");
@@ -129,7 +129,7 @@ st_test(str, init) {
         ret = st_str_init(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(0,    s.len,         "len is 0");
         st_ut_eq(1,    s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
@@ -138,7 +138,7 @@ st_test(str, init) {
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(-1,   s.type,        "type is -1");
         st_ut_eq(0,    s.len,         "len is 0");
         st_ut_eq(0,    s.capacity,    "capacity is 0");
         st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -150,7 +150,7 @@ st_test(str, init) {
         ret = st_str_init(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(1,    s.len,         "len is 0");
         st_ut_eq(1,    s.capacity,    "capacity is 1");
         st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
@@ -165,7 +165,7 @@ st_test(str, init) {
         ret = st_str_init(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL,   s.left,        "left is NULL");
+        st_ut_eq(0,      s.type,        "type is 0");
         st_ut_eq(102400, s.len,         "len is 0");
         st_ut_eq(102400, s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
         st_ut_eq(1,      s.bytes_owned, "bytes_owned is 1");
@@ -185,7 +185,7 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(0,    s.len,         "len is 0");
         st_ut_eq(1,    s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
         st_ut_eq(1,    s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
@@ -200,7 +200,7 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(1,    s.len,         "len");
         st_ut_eq(2,    s.capacity,    "capacity is 2");
         st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
@@ -215,7 +215,7 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(NULL,   s.left,        "left is NULL");
+        st_ut_eq(0,      s.type,        "type is 0");
         st_ut_eq(102400, s.len,         "len");
         st_ut_eq(102401, s.capacity,    "capacity");
         st_ut_eq(1,      s.bytes_owned, "bytes_owned is 1");
@@ -247,13 +247,13 @@ st_test(str, init_0_invalid) {
         st_typeof(cases[0])   c = cases[i];
         st_typeof(c.expected) rst;
 
-        st_str_t s = {0};
+        st_str_t s = {{0}};
 
         rst = st_str_init_0(&s, c.inp);
 
         st_ut_eq(c.expected, rst, "");
 
-        st_ut_eq(NULL, s.left,        "left is NULL");
+        st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(NULL, s.right,       "right is NULL");
         st_ut_eq(0,    s.len,         "len is 0");
         st_ut_eq(0,    s.capacity,    "capacity is 0");
@@ -379,7 +379,7 @@ st_test(str, destroy) {
     ret = st_str_init(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
-    st_ut_eq(NULL, s.left,        "left is NULL");
+    st_ut_eq(0,    s.type,        "type is 0");
     st_ut_eq(10,   s.len,         "len is 10");
     st_ut_eq(10,   s.capacity,    "capacity is 10");
     st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
@@ -388,7 +388,7 @@ st_test(str, destroy) {
     ret = st_str_destroy(&s);
     st_ut_eq(ST_OK, ret, "destroy");
 
-    st_ut_eq(NULL, s.left,        "left is NULL");
+    st_ut_eq(-1,   s.type,        "type is -1");
     st_ut_eq(0,    s.len,         "len is 0");
     st_ut_eq(0,    s.capacity,    "capacity is 0");
     st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
@@ -423,7 +423,7 @@ st_test(str, ref) {
 
     st_ut_eq(1, s.bytes_owned, "target bytes_owned does not change");
 
-    st_ut_eq(NULL,    ref.left,        "left is NULL");
+    st_ut_eq(0,       ref.type,        "type is 0");
     st_ut_eq(10,      ref.len,         "len is 0");
     st_ut_eq(10,      ref.capacity,    "capacity is 0");
     st_ut_eq(0,       ref.bytes_owned, "bytes_owned is 0, ref does not need to free memory");
@@ -464,7 +464,7 @@ st_test(str, copy) {
 
     st_ut_eq(1, s.bytes_owned, "target bytes_owned does not change");
 
-    st_ut_eq(NULL,       cpy.left,        "left is NULL");
+    st_ut_eq(0,          cpy.type,        "type is 0");
     st_ut_eq(s.len,      cpy.len,         "len is same as s");
     st_ut_eq(s.capacity, cpy.capacity,    "capacity is same as s");
     st_ut_eq(1,          cpy.bytes_owned, "bytes_owned is 1, memory reallocated");
@@ -500,7 +500,7 @@ st_test(str, copy_cstr) {
     ret = st_str_copy_cstr(&s, FOO);
     st_ut_eq(ST_OK, ret, "");
 
-    st_ut_eq(NULL,          s.left,        "left is NULL");
+    st_ut_eq(0,             s.type,        "type is 0");
     st_ut_eq(sizeof(FOO)-1, s.len,         "len is strlen(FOO)");
     st_ut_eq(sizeof(FOO),   s.capacity,    "capacity is sizeof(FOO)");
     st_ut_eq(1,             s.bytes_owned, "bytes_owned is 1, memory allocated");
@@ -542,7 +542,7 @@ st_test(str, seize) {
 
     st_ut_eq(0, s.bytes_owned, "target bytes_owned does not change");
 
-    st_ut_eq(s.left,     seize.left,        "left is NULL");
+    st_ut_eq(s.type,     seize.type,        "type is same as s");
     st_ut_eq(s.len,      seize.len,         "len is same as s");
     st_ut_eq(s.capacity, seize.capacity,    "capacity is same as s");
     st_ut_eq(1,          seize.bytes_owned, "bytes_owned is 1");

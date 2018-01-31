@@ -61,6 +61,7 @@ st_str_destroy(st_str_t *s) {
         st_free(s->bytes);
     }
 
+    s->type = -1;
     s->bytes = NULL;
     s->bytes_owned = 0;
     s->len = 0;
@@ -131,6 +132,7 @@ st_str_copy(st_str_t *str, const st_str_t *from) {
 
     st_memcpy(str->bytes, from->bytes, from->capacity);
     str->len = from->len;
+    str->type = from->type;
 
     return ST_OK;
 }
@@ -157,6 +159,7 @@ st_str_copy_cstr(st_str_t *str, const char *s) {
     }
 
     st_memcpy(str->bytes, s, slen + 1);
+    str->type = 0;
 
     return ST_OK;
 }
