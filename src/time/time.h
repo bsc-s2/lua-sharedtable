@@ -5,7 +5,7 @@
 #include <errno.h>
 #include "inc/inc.h"
 
-static inline int64_t st_time_in_usec(int64_t *usec) {
+static inline int st_time_in_usec(int64_t *usec) {
 
     struct timeval tm;
 
