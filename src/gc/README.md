@@ -22,7 +22,7 @@
     -   `garbage`:   defined to be: `gc_round+2`. Confirmed to be unreachable from any `roots`.
 
 -   `roots`:
-    is a collection of items those are **root**s and should never be freed.
+    is a collection of items those are root items and should never be freed.
     A root item is where the mark-process starts.
 
 -   `mark_queue`:
