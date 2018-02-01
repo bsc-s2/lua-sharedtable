@@ -1,6 +1,15 @@
 
 ## GC algorithm
 
+### Terminology
+
+-   Reference: A reference B means: B is a child item of A and B is reachable
+    from A.
+
+-   ADD: add a reference(from A to B).
+
+-   DEL: delete a reference(from A to B).
+
 ### Data structure
 
 -   `gc_round`:
@@ -20,20 +29,52 @@
     is queue of items to mark as `reachable`.
 
 -   `sweep_queue`:
-    is queue of items whose references are deleted one or more times.
+    is queue of items being DEL-ed one or more times in this
+    gc-round.
+
+    Items in this queue might be in one of three status:
+
+    -   Not marked(`unknown`) and being DEL-ed once or more.
+    -   Is a garbage and marked(`reachable`) and being DEL-ed once or more.
+    -   Is not a garbage and marked(`reachable`) and being DEL-ed once or more.
+
+    The first status of items are freed in this gc-round.
+    The other two status are left to next gc-round to determine.
 
 -   `prev_sweep_queue`:
     is queue of items those can not be decided whether it is a garbage in
     previous round of gc.
+
+    Since DEL puts an item into `sweep_queue`,
+    after a full gc-round, all items in `prev_sweep_queue` are in one of the two
+    status:
+
+    -   `unknown`: it must be a garbage.
+    -   `reachable`: it must NOT be a garbage.
 
 -   `garbage_queue`:
     is queue of `garbage` item.
 
 ### GC workflow
 
-A complete GC round runs all following steps.
+#### Item reference operation
 
-A stepped GC runs from step 3.
+ADD/DEL reference of items and stepped-gc happens alternately.
+A full gc-round might be split into several steps.
+**A gc-step is protected by a gc lock**.
+But between two gc-step, item referencing might be changed:
+
+-   When ADD reference, the item should be put into
+    `mark_queue`.
+
+-   When DEL reference, the item should be removed from
+    `sweep_queue` or `prev_sweep_queue`, and be put into `sweep_queue`.
+
+#### GC
+
+-   A complete GC round runs all following steps.
+-   A stepped GC runs from step 3.
+
 
 0.  Mark all items as `unknown`.
     This is done by incrementing `gc_round` by `4`.
@@ -49,6 +90,16 @@ A stepped GC runs from step 3.
     -   Mark it as `reachable`.
     -   Put all its `unknown` child items to `mark_queue`.
 
+    > After this mark-step, all items those are reachable from any `root`s, are
+    > marked as `reachable`.
+    > But not all `reachable` are actually reachable.
+    > There might be item being DEL-ed after being marked as
+    > `reachable`.
+
+    > And all items being DEL-ed in this gc-round are in `sweep_queue`.
+    > `prev_sweep_queue` does not contain any item being DEL-ed in this
+    > gc-round.
+
 3.  Sweep-prev:
 
     Repeat until queue is empty:
@@ -60,9 +111,17 @@ A stepped GC runs from step 3.
         -   Put it into `garbage_queue`.
         -   Put all its `unknown` child items to `prev_sweep_queue`.
 
+    > Because a DEL operation removes an item from `prev_sweep_queue`(and puts
+    > it into `sweep_queue`),
+    > all items in `prev_sweep_queue` are NOT DEL-ed in this gc-round.
+    >
+    > Thus these item status are determined:
+    > - `reachable` item is actually reachable,
+    > - and `unknown` item is actually garbage.
+
 4.  Sweep:
 
-    Scan queue:
+    Repeat until queue is empty:
 
     -   Pop one item from `sweep_queue`.
     -   If it is `reachable`, put it into `prev_sweep_queue`.
@@ -70,6 +129,13 @@ A stepped GC runs from step 3.
         -   Mark it as `garbage`.
         -   Put it into `garbage_queue`.
         -   Put all its `unknown` child items to `sweep_queue`.
+
+    > `reachable` item in `sweep_queue` means it has been ADD-ed and DEL-ed in
+    > this gc-round and we could not determine its actual status.
+    > Leave such item to next gc-round by putting it into `prev_sweep_queue`.
+
+    > After this step, `sweep_queue` is empty and `prev_sweep_queue` contains
+    > undetermined items.
 
 5.  Free items in `garbage_queue` one by one:
 
@@ -79,31 +145,10 @@ A stepped GC runs from step 3.
     -   Release references to its children.
     -   Release item.
 
-6.  Replace `prev_sweep_queue` with `sweep_queue`.
-    Empty `sweep_queue`.
+6.  GC completed.
 
-    > A `reachable` item in this gc round can not be confirmed to be a garbage.
-    > Those items must be kept. Otherwise, if it is actually a garbage, its
-    > memory will never be freed.
-    > Thus we move these items to `prev_sweep_queue`.
-    > Then in next round of GC, these `reachable` items will be reset to
-    > `unknown`.
-    > If these items are not reachable in next GC round, we confirms that
-    > these items are garbage.
 
-7.  GC completed.
-
-### Item reference operation
-
-Adding/deleting reference of items happens alternately.
-
--   When adding reference, the item being referenced should be added to
-    `mark_queue`.
-
--   When deleting reference, the item being de-referenced should be removed from
-    `sweep_queue` or `prev_sweep_queue`, and should be added to `sweep_queue`.
-
-## Example of the three class of items in sweep_queue: (absolute garbage, reachable garbage, reachable non-garbage)
+## Example of the three item status in sweep_queue: (absolute garbage, reachable garbage, reachable non-garbage)
 
 ```
 ### Initial:
@@ -116,7 +161,7 @@ C     D    E
 mark_queue:  [R]
 sweep_queue: []
 
-### User delete ref (R->C).
+### User DEL ref (R->C).
 
 R
  `----.----.
@@ -136,7 +181,7 @@ R
 mark_queue:  [E]
 sweep_queue: [C]
 
-### User add ref (D->E), then delete ref (D->E).
+### User ADD ref (D->E), then DEL ref (D->E).
 
 R
  `----.----.
@@ -156,7 +201,7 @@ R
 mark_queue:  []
 sweep_queue: [C, E(r)]
 
-### User delete ref (R->D)
+### User DEL ref (R->D)
 
 R
  `---------.
@@ -168,9 +213,9 @@ sweep_queue: [C, E(r), D(r)]
 
 ### After GC
 
--   C is unknown and is in sweep_queue, it is a confirmed garbage in this round.
+-   C is unknown and is in sweep_queue, it is a determined garbage in this round.
 
--   D is reachable and is in sweep_queue, it can not be confirmed to be garbage.
+-   D is reachable and is in sweep_queue, it can not be determined to be garbage.
     But it actually is. It will be freed(by moving it to prev_sweep_queue and it
     will not be reachable) in next round of GC.
 
@@ -199,5 +244,5 @@ mark_queue:       []
 prev_sweep_queue: [D]
 sweep_queue:      []
 
-### D is confirmed to be garbage and is freed.
+### D is determined to be garbage and is freed.
 ```
