@@ -4,12 +4,15 @@
 #   copy to ~/.astylerc
 # Then
 #   astyle src/str/str.c
+#
+# add command in .vimrc, for example:
+#   noremap <leader>as :%!astyle 2>/dev/null<CR>
 
 #Bracket style
-style=google
+style=kr
 
 #Tab
-#使用2个空格作为一个缩进单位
+#使用4个空格作为一个缩进单位
 indent=spaces=4
 
 #Indentation
@@ -37,6 +40,10 @@ align-pointer=name
 #Formatting
 #单行的分支循环块补充花括号
 add-brackets
+#else和else if换行
+break-closing-braces
+#while和花括号一行
+attach-closing-while
 #凡是tab都替换成两个空格
 convert-tabs
 #单行最长100个字节
