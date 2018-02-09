@@ -14,7 +14,8 @@ enum fib_size_e {
 };
 
 
-int get_fib_variance(enum fib_size_e fib_size) {
+int get_fib_variance(enum fib_size_e fib_size)
+{
 
     int n = 1024 * 1024 * 10;
     int n_bucket = 256;
@@ -28,10 +29,18 @@ int get_fib_variance(enum fib_size_e fib_size) {
 
     for (i = 0; i < n; i++) {
         switch (fib_size) {
-            case fib8:  hash = fib_hash8(i) % n_bucket; break;
-            case fib16: hash = fib_hash16(i) % n_bucket; break;
-            case fib32: hash = fib_hash32(i) % n_bucket; break;
-            case fib64: hash = fib_hash64(i) % n_bucket; break;
+            case fib8:
+                hash = fib_hash8(i) % n_bucket;
+                break;
+            case fib16:
+                hash = fib_hash16(i) % n_bucket;
+                break;
+            case fib32:
+                hash = fib_hash32(i) % n_bucket;
+                break;
+            case fib64:
+                hash = fib_hash64(i) % n_bucket;
+                break;
         }
         buckets[(int)hash] += 1;
     }
@@ -51,7 +60,8 @@ int get_fib_variance(enum fib_size_e fib_size) {
     return (max - min) * 1000 / (n / n_bucket);
 }
 
-st_test(hash, fib_64) {
+st_test(hash, fib_64)
+{
 
     int variance;
 
@@ -69,7 +79,8 @@ st_test(hash, fib_64) {
 }
 
 
-st_test(hash, crc32) {
+st_test(hash, crc32)
+{
 
     struct case_s {
         char    *inp;
@@ -80,13 +91,15 @@ st_test(hash, crc32) {
         { "a",   1, 3904355907 },
         { "1",   1, 2212294583 },
         { "123", 3, 2286445522 },
-        { "\0\1\2\3fjkldsfjdkaslfdjsaklfdjsaklfd;sfjklsajfdkls"
-            ";afjdklsafjdslka;fdjsalkf;dsjaklfd;sadfkl", 88, 1243232475 },
+        {
+            "\0\1\2\3fjkldsfjdkaslfdjsaklfdjsaklfd;sfjklsajfdkls"
+            ";afjdklsafjdslka;fdjsalkf;dsjaklfd;sadfkl", 88, 1243232475
+        },
     };
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0])   c = cases[i];
-        st_typeof(c.expected) rst = crc32((uint8_t*)c.inp, c.len);
+        st_typeof(c.expected) rst = crc32((uint8_t *)c.inp, c.len);
 
         ddx(rst);
 
