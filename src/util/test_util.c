@@ -175,6 +175,68 @@ st_test(util, bit_most_significant_bit) {
     st_ut_eq(0, st_bit_msb(++i), "");
 }
 
+st_test(util, bit_cnt1) {
+
+    st_ut_eq(0, st_bit_cnt1((uint32_t)0), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)1), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)2), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)4), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)8), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL<<30)), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL<<31)), "");
+
+    st_ut_eq(30, st_bit_cnt1((uint32_t)((1ULL<<30)-1)), "");
+    st_ut_eq(31, st_bit_cnt1((uint32_t)((1ULL<<31)-1)), "");
+    st_ut_eq(32, st_bit_cnt1((uint32_t)(0ULL-1)), "");
+
+
+    st_ut_eq(0, st_bit_cnt1((uint64_t)0), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)1), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)2), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)4), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)8), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL<<30)), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL<<31)), "");
+
+    st_ut_eq(30, st_bit_cnt1((uint64_t)((1ULL<<30)-1)), "");
+    st_ut_eq(31, st_bit_cnt1((uint64_t)((1ULL<<31)-1)), "");
+
+    st_ut_eq(63, st_bit_cnt1((uint64_t)((1ULL<<63)-1)), "");
+    st_ut_eq(64, st_bit_cnt1((uint64_t)(0ULL-1)), "");
+}
+
+st_test(util, bit_cnt1_before) {
+
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)0ULL, -1), "");
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)1ULL, -1), "");
+    st_ut_eq(0, st_bit_cnt1_before((uint64_t)0ULL, -1), "");
+    st_ut_eq(0, st_bit_cnt1_before((uint64_t)1ULL, -1), "");
+
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)0ULL, 0), "");
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)1ULL, 0), "");
+    st_ut_eq(1, st_bit_cnt1_before((uint32_t)1ULL, 1), "");
+    st_ut_eq(1, st_bit_cnt1_before((uint32_t)3ULL, 1), "");
+    st_ut_eq(2, st_bit_cnt1_before((uint32_t)3ULL, 2), "");
+
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)(0ULL-1), 0), "");
+    st_ut_eq(1, st_bit_cnt1_before((uint32_t)(0ULL-1), 1), "");
+    st_ut_eq(2, st_bit_cnt1_before((uint32_t)(0ULL-1), 2), "");
+    st_ut_eq(31, st_bit_cnt1_before((uint32_t)(0ULL-1), 31), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL-1), 32), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL-1), 33), "");
+
+
+    st_ut_eq(0,  st_bit_cnt1_before((uint64_t)(0ULL-1), 0), "");
+    st_ut_eq(1,  st_bit_cnt1_before((uint64_t)(0ULL-1), 1), "");
+    st_ut_eq(2,  st_bit_cnt1_before((uint64_t)(0ULL-1), 2), "");
+    st_ut_eq(31, st_bit_cnt1_before((uint64_t)(0ULL-1), 31), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint64_t)(0ULL-1), 32), "");
+    st_ut_eq(33, st_bit_cnt1_before((uint64_t)(0ULL-1), 33), "");
+    st_ut_eq(63, st_bit_cnt1_before((uint64_t)(0ULL-1), 63), "");
+    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL-1), 64), "");
+    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL-1), 65), "");
+}
+
 /*
  * TODO
  *     offset
