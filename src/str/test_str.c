@@ -1,5 +1,7 @@
 #include "str.h"
 #include "unittest/unittest.h"
+#include <limits.h>
+#include <float.h>
 
 #define FOO "abc"
 
@@ -8,21 +10,21 @@ st_test(str, const) {
     {
         st_str_t s = st_str_const(FOO);
 
-        st_ut_eq(0,             s.type,        "type is 0");
-        st_ut_eq(sizeof(FOO)-1, s.len,         "len");
-        st_ut_eq(sizeof(FOO),   s.capacity,    "capacity");
-        st_ut_eq(0,             s.bytes_owned, "bytes_owned is 0");
-        st_ut_ne(NULL,          s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(sizeof(FOO)-1,   s.len,         "len");
+        st_ut_eq(sizeof(FOO),     s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
     }
 
     {
         st_str_t s = st_str_var(10);
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(10,   s.len,         "len");
-        st_ut_eq(10,   s.capacity,    "capacity");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(10,              s.len,         "len");
+        st_ut_eq(10,              s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
     }
 
     {
@@ -30,11 +32,11 @@ st_test(str, const) {
         int64_t   l = 2;
         st_str_t  s = st_str_wrap(b, l);
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(l,    s.len,         "len");
-        st_ut_eq(l,    s.capacity,    "capacity");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
-        st_ut_eq(b,    s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(l,               s.len,         "len");
+        st_ut_eq(l,               s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_eq(b,               s.bytes,       "bytes is not NULL");
     }
 
     {
@@ -42,11 +44,11 @@ st_test(str, const) {
         int64_t   l = sizeof(FOO) - 1;
         st_str_t  s = st_str_wrap_0(b, l);
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(l,    s.len,         "len");
-        st_ut_eq(l+1,  s.capacity,    "capacity");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
-        st_ut_eq(b,    s.bytes,       "bytes is b");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(l,               s.len,         "len");
+        st_ut_eq(l+1,             s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_eq(b,               s.bytes,       "bytes is b");
 
         st_ut_eq(1, st_str_trailing_0(&s), "it has trailing 0");
     }
@@ -55,31 +57,31 @@ st_test(str, const) {
         char b[10];
         st_str_t s = st_str_wrap_chars(b);
 
-        st_ut_eq(0,           s.type,        "type is 0");
-        st_ut_eq(10,          s.len,         "len");
-        st_ut_eq(10,          s.capacity,    "capacity");
-        st_ut_eq(0,           s.bytes_owned, "bytes_owned is 0");
-        st_ut_eq((uint8_t*)b, s.bytes,       "bytes is b");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(10,              s.len,         "len");
+        st_ut_eq(10,              s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_eq((uint8_t*)b,     s.bytes,       "bytes is b");
     }
 
     {
         st_str_t s = st_str_null;
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(0,    s.len,         "len");
-        st_ut_eq(0,    s.capacity,    "capacity");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
-        st_ut_eq(NULL, s.bytes,       "bytes is NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(0,               s.len,         "len");
+        st_ut_eq(0,               s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_eq(NULL,            s.bytes,       "bytes is NULL");
     }
 
     {
         st_str_t s = st_str_empty;
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(0,    s.len,         "len");
-        st_ut_eq(1,    s.capacity,    "capacity");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(0,               s.len,         "len");
+        st_ut_eq(1,               s.capacity,    "capacity");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
     }
 
 }
@@ -129,11 +131,11 @@ st_test(str, init) {
         ret = st_str_init(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(0,    s.len,         "len is 0");
-        st_ut_eq(1,    s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
-        st_ut_eq(0,    s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(0,               s.len,         "len is 0");
+        st_ut_eq(1,               s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
+        st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -150,11 +152,11 @@ st_test(str, init) {
         ret = st_str_init(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(1,    s.len,         "len is 0");
-        st_ut_eq(1,    s.capacity,    "capacity is 1");
-        st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(1,               s.len,         "len is 0");
+        st_ut_eq(1,               s.capacity,    "capacity is 1");
+        st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -165,11 +167,11 @@ st_test(str, init) {
         ret = st_str_init(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,      s.type,        "type is 0");
-        st_ut_eq(102400, s.len,         "len is 0");
-        st_ut_eq(102400, s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
-        st_ut_eq(1,      s.bytes_owned, "bytes_owned is 1");
-        st_ut_ne(NULL,   s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(102400,          s.len,         "len is 0");
+        st_ut_eq(102400,          s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
+        st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -185,11 +187,11 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(0,    s.len,         "len is 0");
-        st_ut_eq(1,    s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
-        st_ut_eq(1,    s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(0,               s.len,         "len is 0");
+        st_ut_eq(1,               s.capacity,    "capacity is 1, because it use a pre-allocated empty c-string");
+        st_ut_eq(1,               s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -200,11 +202,11 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,    s.type,        "type is 0");
-        st_ut_eq(1,    s.len,         "len");
-        st_ut_eq(2,    s.capacity,    "capacity is 2");
-        st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
-        st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(1,               s.len,         "len");
+        st_ut_eq(2,               s.capacity,    "capacity is 2");
+        st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -215,11 +217,11 @@ st_test(str, init_0) {
         ret = st_str_init_0(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
-        st_ut_eq(0,      s.type,        "type is 0");
-        st_ut_eq(102400, s.len,         "len");
-        st_ut_eq(102401, s.capacity,    "capacity");
-        st_ut_eq(1,      s.bytes_owned, "bytes_owned is 1");
-        st_ut_ne(NULL,   s.bytes,       "bytes is not NULL");
+        st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+        st_ut_eq(102400,          s.len,         "len");
+        st_ut_eq(102401,          s.capacity,    "capacity");
+        st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
+        st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
         ret = st_str_destroy(&s);
         st_ut_eq(ST_OK, ret, "destroy");
@@ -366,6 +368,133 @@ st_test(str, cmp) {
         ddx(rst);
 
         st_ut_eq(c.expected, rst, "");
+
+        char ca[100];
+        char cb[100];
+        memcpy(ca, c.a, strlen(c.a));
+        memcpy(cb, c.b, strlen(c.b));
+
+        a = (st_str_t)st_str_wrap_common(ca, ST_TYPES_CHAR_ARRAY, (strlen(c.a)));
+        b = (st_str_t)st_str_wrap_common(cb, ST_TYPES_CHAR_ARRAY, (strlen(c.b)));
+        rst = st_str_cmp(&a, &b);
+
+        ddx(rst);
+
+        st_ut_eq(c.expected, rst, "");
+    }
+
+    {
+        /** invalid ST_TYPES_TABLE */
+        st_str_t a = st_str_wrap_common(NULL, ST_TYPES_TABLE, 0);
+        st_str_t b = st_str_wrap_common(NULL, ST_TYPES_INTEGER, 0);
+
+        int rst = st_str_cmp(&a, &b);
+        st_ut_eq(ST_ARG_INVALID, rst, "table type should be invalid");
+
+        rst = st_str_cmp(&b, &a);
+        st_ut_eq(ST_ARG_INVALID, rst, "table type should be invalid");
+
+    }
+
+    {
+        /** cmp by different types */
+        for (int t = ST_TYPES_INTEGER; t < ST_TYPES_NIL; t++) {
+            st_str_t a = st_str_wrap_common(NULL, t, 0);
+            st_str_t b = st_str_wrap_common(NULL, t + 1, 0);
+
+            int rst = st_str_cmp(&a, &b);
+            st_ut_eq(-1, rst, "failed to compare types");
+        }
+    }
+
+    {
+        /** int */
+        int values[] = { INT_MIN, -256, -255, -254, -1, 0, 255, INT_MAX-1 };
+        for (int idx = 0; idx < st_nelts(values); idx++) {
+            int ia = values[idx];
+            int ib = ia + 1;
+            st_str_t a = st_str_wrap_common(&ia, ST_TYPES_INTEGER, sizeof(ia));
+            st_str_t b = st_str_wrap_common(&ib, ST_TYPES_INTEGER, sizeof(ib));
+
+            int rst = st_str_cmp(&a, &b);
+            st_ut_eq(-1, rst, "failed to compare int type lt case");
+
+            rst = st_str_cmp(&a, &a);
+            st_ut_eq(0, rst, "failed to compare int type eq case");
+
+            rst = st_str_cmp(&b, &a);
+            st_ut_eq(1, rst, "failed to compare int type gt case");
+        }
+    }
+
+    {
+        /** uint64_t */
+        uint64_t values[] = { 0, 255, ULONG_MAX-1 };
+        for (int idx = 0; idx < st_nelts(values); idx++) {
+            uint64_t u64_a = values[idx];
+            uint64_t u64_b = u64_a + 1;
+
+            st_str_t a = st_str_wrap_common(&u64_a, ST_TYPES_U64, sizeof(u64_a));
+            st_str_t b = st_str_wrap_common(&u64_b, ST_TYPES_U64, sizeof(u64_b));
+
+            int rst = st_str_cmp(&a, &b);
+            st_ut_eq(-1, rst, "failed to compare uint64_t type lt case");
+
+            rst = st_str_cmp(&a, &a);
+            st_ut_eq(0, rst, "failed to compare uint64_t type eq case");
+
+            rst = st_str_cmp(&b, &a);
+            st_ut_eq(1, rst, "failed to compare uint64_t type gt case");
+        }
+    }
+
+    {
+        /** double */
+        double values[] = { -256.0, -255.0, 0.0, 255.0 };
+        for (int idx = 0; idx < st_nelts(values); idx++) {
+            double da = values[idx];
+            double db = da + 1;
+
+            st_str_t a = st_str_wrap_common(&da, ST_TYPES_NUMBER, sizeof(da));
+            st_str_t b = st_str_wrap_common(&db, ST_TYPES_NUMBER, sizeof(db));
+
+            int rst = st_str_cmp(&a, &b);
+            st_ut_eq(-1, rst, "failed to compare double type lt case");
+
+            rst = st_str_cmp(&a, &a);
+            st_ut_eq(0, rst, "failed to compare double type eq case");
+
+            rst = st_str_cmp(&b, &a);
+            st_ut_eq(1, rst, "failed to compare double type gt case");
+        }
+    }
+
+    {
+        /** st_bool */
+        st_bool ba = 0;
+        st_bool bb = 1;
+
+        st_str_t a = st_str_wrap_common(&ba, ST_TYPES_BOOLEAN, sizeof(ba));
+        st_str_t b = st_str_wrap_common(&bb, ST_TYPES_BOOLEAN, sizeof(bb));
+
+        int rst = st_str_cmp(&a, &b);
+        st_ut_eq(-1, rst, "failed to compare st_bool type lt case");
+
+        rst = st_str_cmp(&a, &a);
+        st_ut_eq(0, rst, "failed to compare st_bool type eq case");
+
+        rst = st_str_cmp(&b, &a);
+        st_ut_eq(1, rst, "failed to compare st_bool type gt case");
+
+    }
+
+    {
+        /** null */
+        st_str_t a = st_str_wrap_common(NULL, ST_TYPES_NIL, 0);
+        st_str_t b = st_str_wrap_common(NULL, ST_TYPES_NIL, 0);
+
+        int rst = st_str_cmp(&a, &b);
+        st_ut_eq(0, rst, "failed to comapre nil type case");
     }
 }
 
@@ -394,11 +523,11 @@ st_test(str, destroy) {
     ret = st_str_init(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
-    st_ut_eq(0,    s.type,        "type is 0");
-    st_ut_eq(10,   s.len,         "len is 10");
-    st_ut_eq(10,   s.capacity,    "capacity is 10");
-    st_ut_eq(1,    s.bytes_owned, "bytes_owned is 1");
-    st_ut_ne(NULL, s.bytes,       "bytes is not NULL");
+    st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
+    st_ut_eq(10,              s.len,         "len is 10");
+    st_ut_eq(10,              s.capacity,    "capacity is 10");
+    st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
+    st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
     ret = st_str_destroy(&s);
     st_ut_eq(ST_OK, ret, "destroy");
@@ -438,11 +567,11 @@ st_test(str, ref) {
 
     st_ut_eq(1, s.bytes_owned, "target bytes_owned does not change");
 
-    st_ut_eq(0,       ref.type,        "type is 0");
-    st_ut_eq(10,      ref.len,         "len is 0");
-    st_ut_eq(10,      ref.capacity,    "capacity is 0");
-    st_ut_eq(0,       ref.bytes_owned, "bytes_owned is 0, ref does not need to free memory");
-    st_ut_eq(s.bytes, ref.bytes,       "bytes is shared");
+    st_ut_eq(ST_TYPES_STRING, ref.type,        "type is not string");
+    st_ut_eq(10,              ref.len,         "len is 0");
+    st_ut_eq(10,              ref.capacity,    "capacity is 0");
+    st_ut_eq(0,               ref.bytes_owned, "bytes_owned is 0, ref does not need to free memory");
+    st_ut_eq(s.bytes,         ref.bytes,       "bytes is shared");
 
     ret = st_str_destroy(&s);
     st_ut_eq(ST_OK, ret, "destroy s");
@@ -479,11 +608,11 @@ st_test(str, copy) {
 
     st_ut_eq(1, s.bytes_owned, "target bytes_owned does not change");
 
-    st_ut_eq(0,          cpy.type,        "type is 0");
-    st_ut_eq(s.len,      cpy.len,         "len is same as s");
-    st_ut_eq(s.capacity, cpy.capacity,    "capacity is same as s");
-    st_ut_eq(1,          cpy.bytes_owned, "bytes_owned is 1, memory reallocated");
-    st_ut_ne(s.bytes,    cpy.bytes,       "bytes is not shared");
+    st_ut_eq(ST_TYPES_STRING, cpy.type,        "type is not string");
+    st_ut_eq(s.len,           cpy.len,         "len is same as s");
+    st_ut_eq(s.capacity,      cpy.capacity,    "capacity is same as s");
+    st_ut_eq(1,               cpy.bytes_owned, "bytes_owned is 1, memory reallocated");
+    st_ut_ne(s.bytes,         cpy.bytes,       "bytes is not shared");
 
     ret = st_memcmp(s.bytes, cpy.bytes, s.capacity);
     st_ut_eq(0, ret, "cpy.bytes is same as s.bytes");

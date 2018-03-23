@@ -1,6 +1,7 @@
 #include "str/str.h"
 
 #include <time.h>
+#include "inc/types.h"
 
 int
 st_str_init(st_str_t *s, int64_t len) {
@@ -194,6 +195,8 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
 
     st_must(a != NULL, ST_ARG_INVALID);
     st_must(b != NULL, ST_ARG_INVALID);
+    st_must(a->type != ST_TYPES_TABLE, ST_ARG_INVALID);
+    st_must(b->type != ST_TYPES_TABLE, ST_ARG_INVALID);
 
     if (a->type - b->type != 0) {
         return a->type - b->type > 0 ? 1 : -1;
@@ -213,9 +216,40 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
         return 1;
     }
 
-    int64_t l = st_min(a->len, b->len);
+    int ret;
+    int64_t len;
+    /** the same valid type */
+    switch (a->type) {
+        case ST_TYPES_INTEGER:
+            ret = st_cmp(*(int *)a->bytes, *(int *)b->bytes);
 
-    int ret = st_memcmp(a->bytes, b->bytes, l);
+            break;
+        case ST_TYPES_U64:
+            ret = st_cmp(*(uint64_t *)a->bytes, *(uint64_t *)b->bytes);
+
+            break;
+        case ST_TYPES_NUMBER:
+            ret = st_cmp(*(double *)a->bytes, *(double *)b->bytes);
+
+            break;
+        case ST_TYPES_BOOLEAN:
+            ret = st_cmp(*(st_bool *)a->bytes, *(st_bool *)b->bytes);
+
+            break;
+        case ST_TYPES_NIL:
+            ret = 0;
+
+            break;
+        case ST_TYPES_STRING:
+        case ST_TYPES_CHAR_ARRAY:
+        case ST_TYPES_UNKNOWN:
+        default:
+            len = st_min(a->len, b->len);
+            ret = st_memcmp(a->bytes, b->bytes, len);
+
+            break;
+    }
+
     if (ret != 0) {
         return ret > 0 ? 1 : -1;
     }

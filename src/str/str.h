@@ -39,14 +39,14 @@ struct st_MemPool;
 static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
 
 #define st_str_wrap_common(_charptr, t, _len) {.type=t, .len=(_len), .capacity=(_len), .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
-#define st_str_wrap(_charptr, _len)           st_str_wrap_common(_charptr, 0, _len)
+#define st_str_wrap(_charptr, _len)           st_str_wrap_common(_charptr, ST_TYPES_STRING, _len)
 
-#define st_str_const(s)               {.type=0, .len=sizeof(s)-1,    .capacity=sizeof(s),      .bytes_owned=0, .bytes=(uint8_t*)(s)}
-#define st_str_var(_len)              {.type=0, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
-#define st_str_wrap_0(_charptr, _len) {.type=0, .len=(_len),         .capacity=(_len) + 1,     .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
-#define st_str_wrap_chars(_chars)     {.type=0, .len=sizeof(_chars), .capacity=sizeof(_chars), .bytes_owned=0, .bytes=(uint8_t*)(_chars)}
-#define st_str_null                   {.type=0, .len=0,              .capacity=0,              .bytes_owned=0, .bytes=NULL}
-#define st_str_empty                  {.type=0, .len=0,              .capacity=1,              .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
+#define st_str_const(s)               {.type=ST_TYPES_STRING, .len=sizeof(s)-1,    .capacity=sizeof(s),      .bytes_owned=0, .bytes=(uint8_t*)(s)}
+#define st_str_var(_len)              {.type=ST_TYPES_STRING, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
+#define st_str_wrap_0(_charptr, _len) {.type=ST_TYPES_STRING, .len=(_len),         .capacity=(_len) + 1,     .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
+#define st_str_wrap_chars(_chars)     {.type=ST_TYPES_STRING, .len=sizeof(_chars), .capacity=sizeof(_chars), .bytes_owned=0, .bytes=(uint8_t*)(_chars)}
+#define st_str_null                   {.type=ST_TYPES_STRING, .len=0,              .capacity=0,              .bytes_owned=0, .bytes=NULL}
+#define st_str_empty                  {.type=ST_TYPES_STRING, .len=0,              .capacity=1,              .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
 
 #define st_str_equal(a, b)                                                    \
         st_str_equal_((st_str_t*)(a), (st_str_t*)(b))
