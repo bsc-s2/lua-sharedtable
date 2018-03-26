@@ -54,18 +54,21 @@ static ssize_t remain_element_cnt(st_table_pool_t *pool, uint64_t element_size) 
     return get_alloc_cnt_in_slab(pool, element_size);
 }
 
-static st_table_pool_t *alloc_table_pool() {
-    st_table_pool_t *pool = mmap(NULL, TEST_POOL_SIZE, PROT_READ | PROT_WRITE,
-                                 MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    st_assert(pool != MAP_FAILED);
+static st_table_pool_t *alloc_table_pool(int* shm_fd) {
+    st_table_pool_t *pool;
+
+    int ret = st_region_shm_create(TEST_POOL_SIZE,
+                                   (void **)&pool,
+                                   shm_fd);
+    st_assert(ret == ST_OK);
 
     memset(pool, 0, sizeof(st_table_pool_t));
 
     void *data = (void *)(st_align((uintptr_t)pool + sizeof(st_table_pool_t), 4096));
 
     int region_size = 1024 * 4096;
-    int ret = st_region_init(&pool->slab_pool.page_pool.region_cb, data,
-                             region_size / 4096, TEST_POOL_SIZE / region_size, 0);
+    ret = st_region_init(&pool->slab_pool.page_pool.region_cb, data,
+                         region_size / 4096, TEST_POOL_SIZE / region_size, 0);
     st_assert(ret == ST_OK);
 
     ret = st_pagepool_init(&pool->slab_pool.page_pool, 4096);
@@ -80,7 +83,7 @@ static st_table_pool_t *alloc_table_pool() {
     return pool;
 }
 
-static void free_table_pool(st_table_pool_t *pool) {
+static void free_table_pool(st_table_pool_t *pool, int shm_fd) {
 
     int ret = st_table_pool_destroy(pool);
     st_assert(ret == ST_OK);
@@ -94,7 +97,10 @@ static void free_table_pool(st_table_pool_t *pool) {
     ret = st_region_destroy(&pool->slab_pool.page_pool.region_cb);
     st_assert(ret == ST_OK);
 
-    munmap(pool, TEST_POOL_SIZE);
+    ret = st_region_shm_destroy(shm_fd,
+                                (void *)pool,
+                                TEST_POOL_SIZE);
+    st_assert(ret == ST_OK);
 }
 
 static void run_gc_one_round(st_gc_t *gc) {
@@ -117,6 +123,17 @@ void set_process_to_cpu(int cpu_id) {
     sched_setaffinity(0, sizeof(set), &set);
 }
 
+void set_thread_to_cpu(int cpu_id) {
+    int cpu_cnt = sysconf(_SC_NPROCESSORS_CONF);
+
+    cpu_set_t set;
+
+    CPU_ZERO(&set);
+    CPU_SET(cpu_id % cpu_cnt, &set);
+
+    pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+}
+
 int wait_children(int *pids, int pid_cnt) {
     int ret, err = ST_OK;
 
@@ -133,7 +150,8 @@ int wait_children(int *pids, int pid_cnt) {
 st_test(table, new_free) {
 
     st_table_t *t;
-    st_table_pool_t *pool = alloc_table_pool();
+    int shm_fd;
+    st_table_pool_t *pool = alloc_table_pool(&shm_fd);
 
     // use big value buffer, because want element size different from slab chunk size
     // from table chunk size.
@@ -172,7 +190,7 @@ st_test(table, new_free) {
 
     st_ut_eq(ST_ARG_INVALID, st_table_free(NULL), "");
 
-    free_table_pool(pool);
+    free_table_pool(pool, shm_fd);
 }
 
 st_test(table, add_key_value) {
@@ -180,8 +198,9 @@ st_test(table, add_key_value) {
     st_table_t *t;
     st_str_t found;
     int value_buf[40] = {0};
+    int shm_fd;
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     int element_size = sizeof(st_table_element_t) + sizeof(int) + sizeof(value_buf);
 
     st_table_new(table_pool, &t);
@@ -221,7 +240,7 @@ st_test(table, add_key_value) {
 
     st_table_remove_all(t);
     st_table_free(t);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 st_test(table, set_key_value) {
@@ -229,8 +248,9 @@ st_test(table, set_key_value) {
     st_table_t *t;
     st_str_t found;
     int value_buf[40] = {0};
+    int shm_fd;
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     int element_size = sizeof(st_table_element_t) + sizeof(int) + sizeof(value_buf);
 
     st_table_new(table_pool, &t);
@@ -275,15 +295,16 @@ st_test(table, set_key_value) {
 
     st_table_remove_all(t);
     st_table_free(t);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 st_test(table, remove_all) {
 
     st_table_t *t;
     int value_buf[40] = {0};
+    int shm_fd;
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     int element_size = sizeof(st_table_element_t) + sizeof(int) + sizeof(value_buf);
 
     st_table_new(table_pool, &t);
@@ -311,7 +332,7 @@ st_test(table, remove_all) {
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
     st_table_free(t);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 st_test(table, remove_key) {
@@ -319,8 +340,9 @@ st_test(table, remove_key) {
     st_table_t *t;
     st_str_t found;
     int value_buf[40] = {0};
+    int shm_fd;
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
 
     int element_size = sizeof(st_table_element_t) + sizeof(int) + sizeof(value_buf);
 
@@ -358,7 +380,7 @@ st_test(table, remove_key) {
 
     st_table_remove_all(t);
     st_table_free(t);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 st_test(table, iter_next_key_value) {
@@ -366,8 +388,9 @@ st_test(table, iter_next_key_value) {
     int i;
     st_table_t *t;
     int value_buf[40] = {0};
+    int shm_fd;
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     st_list_t all = ST_LIST_INIT(all);
 
     st_table_new(table_pool, &t);
@@ -408,7 +431,7 @@ st_test(table, iter_next_key_value) {
 
     st_table_remove_all(t);
     st_table_free(t);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 void add_sub_table(st_table_t *table, char *name, st_table_t *sub) {
@@ -430,9 +453,10 @@ st_test(table, add_remove_table) {
     st_table_t *root, *table, *t;
     char key_buf[11] = {0};
     int value_buf[40] = {0};
+    int shm_fd;
 
     int element_size = sizeof(st_table_element_t) + sizeof(key_buf) + sizeof(value_buf);
-    st_table_pool_t *table_pool = alloc_table_pool();
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
 
     st_table_new(table_pool, &root);
     st_ut_eq(st_gc_add_root(&table_pool->gc, &root->gc_head), ST_OK, "");
@@ -473,7 +497,7 @@ st_test(table, add_remove_table) {
     st_ut_eq(0, remain_table_cnt(table_pool), "");
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 int block_all_children(int sem_id) {
@@ -632,7 +656,8 @@ static int add_tables(int process_id, st_table_t *root) {
 
 st_test(table, test_table_in_processes) {
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    int shm_fd;
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     int value_buf[40] = {0};
     int element_size = sizeof(st_table_element_t) + sizeof(int) + sizeof(value_buf);
 
@@ -665,7 +690,7 @@ st_test(table, test_table_in_processes) {
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
     semctl(sem_id, 0, IPC_RMID);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 st_test(table, clear_circular_ref_in_same_table) {
@@ -675,7 +700,8 @@ st_test(table, clear_circular_ref_in_same_table) {
     int value_buf[40] = {0};
 
     int element_size = sizeof(st_table_element_t) + sizeof(key_buf) + sizeof(value_buf);
-    st_table_pool_t *table_pool = alloc_table_pool();
+    int shm_fd;
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
 
     st_table_new(table_pool, &root);
     st_ut_eq(st_gc_add_root(&table_pool->gc, &root->gc_head), ST_OK, "");
@@ -710,7 +736,7 @@ st_test(table, clear_circular_ref_in_same_table) {
 
     st_ut_eq(0, remain_table_cnt(table_pool), "");
 
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
 }
 
 static int test_circular_ref(int process_id, st_table_pool_t *table_pool) {
@@ -782,7 +808,8 @@ static int test_circular_ref(int process_id, st_table_pool_t *table_pool) {
 
 st_test(table, test_circular_ref) {
 
-    st_table_pool_t *table_pool = alloc_table_pool();
+    int shm_fd;
+    st_table_pool_t *table_pool = alloc_table_pool(&shm_fd);
     char key_buf[11] = {0};
     int value_buf[40] = {0};
     int element_size = sizeof(st_table_element_t) + sizeof(key_buf) + sizeof(value_buf);
@@ -798,7 +825,312 @@ st_test(table, test_circular_ref) {
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
     semctl(sem_id, 0, IPC_RMID);
-    free_table_pool(table_pool);
+    free_table_pool(table_pool, shm_fd);
+}
+
+typedef struct {
+    st_table_pool_t *table_pool;
+    int             shm_fd;
+    st_table_t      *table;
+    st_table_t      *root;
+    ssize_t         thread_cnt;     /** the number of thread */
+    ssize_t         process_cnt;    /** the number of processes */
+    ssize_t         run_times;
+    ssize_t         test_cnt;
+    ssize_t         buf_size;
+    st_table_t      *sub_tables[1000];
+    uint64_t        id;
+} st_table_prof_t;
+
+static void st_bench_table_do_profiling(st_table_prof_t *prof)
+{
+    ssize_t total_cnt = prof->run_times * prof->test_cnt;
+    int ret           = ST_OK;
+
+    char *value_buf = NULL;
+    if(prof->buf_size > 0){
+        value_buf = (char*)malloc(prof->buf_size);
+    }
+
+    for(int cnt = 0; cnt < total_cnt; cnt++){
+        uint64_t uid   = (prof->id << 56) | cnt;
+        st_str_t key   = st_str_wrap(&uid, sizeof(uid));
+
+        if(value_buf != NULL){
+            st_str_t value = st_str_wrap(value_buf, prof->buf_size);
+            ret = st_table_add_key_value(prof->table, key, value);
+        }
+        else{
+            st_table_t *sub = prof->sub_tables[cnt % 1000];
+            st_str_t value = st_str_wrap_common(&sub, ST_TYPES_TABLE, sizeof(sub));
+            ret = st_table_add_key_value(prof->table, key, value);
+        }
+
+        st_assert(ret == ST_OK);
+
+        ret = st_table_remove_key(prof->table, key);
+        st_assert(ret == ST_OK);
+    }
+
+    if(value_buf != NULL){
+        free(value_buf);
+    }
+}
+
+static void st_bench_table_processes(st_table_prof_t *prof)
+{
+    if (prof->process_cnt == 0) {
+        return;
+    }
+
+    pid_t *children = (pid_t *)malloc(prof->process_cnt * sizeof(*children));
+    st_assert(children != NULL);
+
+    for (int cnt = 0; cnt < prof->process_cnt; cnt++) {
+        children[cnt] = fork();
+
+        if (children[cnt] == -1) {
+            derr("failed to fork process\n");
+        }
+        else if (children[cnt] == 0) {
+            /** child process, do test here */
+            set_process_to_cpu(cnt);
+            st_table_prof_t children_prof = *prof;
+            children_prof.id = cnt;
+            st_bench_table_do_profiling(&children_prof);
+
+            free(children);
+            _exit(0);
+        }
+    }
+
+    for (int cnt = 0; cnt < prof->process_cnt; cnt++) {
+        if (children[cnt] != -1) {
+            waitpid(children[cnt], NULL, 0);
+        }
+    }
+
+    free(children);
+}
+
+static void *st_bench_table_thread_entry(void *arg)
+{
+    st_table_prof_t *prof = (st_table_prof_t *)arg;
+    set_thread_to_cpu(prof->id);
+    st_bench_table_do_profiling(prof);
+
+    return NULL;
+}
+
+static void st_bench_table_threads(st_table_prof_t *prof)
+{
+    if (prof->thread_cnt == 0) {
+        return;
+    }
+
+    pthread_t *ths = (pthread_t *)malloc(prof->thread_cnt * sizeof(*ths));
+    st_assert(ths != NULL);
+    st_table_prof_t thread_prof[prof->thread_cnt];
+
+    for (int cnt = 0; cnt < prof->thread_cnt; cnt++) {
+        thread_prof[cnt] = *prof;
+        thread_prof[cnt].id = cnt;
+
+        int ret = pthread_create(&ths[cnt],
+                                 NULL,
+                                 st_bench_table_thread_entry,
+                                 &thread_prof[cnt]);
+        if (ret != 0) {
+            derrno("failed to create thread\n");
+        }
+    }
+
+    for (int cnt = 0; cnt < prof->thread_cnt; cnt++) {
+        pthread_join(ths[cnt], NULL);
+    }
+
+    free(ths);
+}
+
+static void st_bench_table_init_prof(st_table_prof_t *prof,
+                                     ssize_t thread_cnt,
+                                     ssize_t process_cnt,
+                                     ssize_t run_times,
+                                     ssize_t test_cnt,
+                                     ssize_t buf_size)
+{
+    prof->table_pool = alloc_table_pool(&prof->shm_fd);
+    st_table_new(prof->table_pool, &prof->table);
+
+    st_table_new(prof->table_pool, &prof->root);
+    st_ut_eq(st_gc_add_root(&prof->table_pool->gc, &prof->root->gc_head), ST_OK, "");
+
+    prof->thread_cnt    = thread_cnt;
+    prof->process_cnt   = process_cnt;
+    prof->run_times     = run_times;
+    prof->test_cnt      = test_cnt;
+    prof->buf_size      = buf_size;
+
+    if(buf_size > 0){
+        return;
+    }
+
+    for(int cnt = 0; cnt < 1000; cnt++){
+        st_table_t **sub = &prof->sub_tables[cnt];
+        char key_buf[20] = {0};
+
+        st_table_new(prof->table_pool, sub);
+        sprintf(key_buf, "sub_tbl_%d", cnt);
+        st_str_t key = st_str_wrap(key_buf, strlen(key_buf));
+        st_str_t value = st_str_wrap_common(sub, ST_TYPES_TABLE, sizeof(*sub));
+        st_table_add_key_value(prof->root, key, value);
+    }
+}
+
+static void st_bench_table(st_table_prof_t *prof)
+{
+    /** fork processes to run profiling */
+    st_bench_table_processes(prof);
+
+    /** create threads to run profiling */
+    st_bench_table_threads(prof);
+
+    st_table_remove_all(prof->table);
+    st_table_remove_all(prof->root);
+
+    st_gc_remove_root(&prof->table_pool->gc, &prof->root->gc_head);
+    st_table_free(prof->table);
+    st_table_free(prof->root);
+
+    free_table_pool(prof->table_pool, prof->shm_fd);
+}
+
+st_ben(table, signal_thread_256B, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 1, 0, n, 10000, 256);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_thread_1K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 1, 0, n, 10000, 1024);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_thread_4K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 1, 0, n, 10000, 4096);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_thread_sub_table, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 1, 0, n, 10000, 0);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_thread_256B, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 8, 0, n, 10000, 256);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_thread_1K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 8, 0, n, 10000, 1024);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_thread_4K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 8, 0, n, 10000, 4096);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_thread_sub_table, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 8, 0, n, 10000, 0);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_process_256B, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 1, n, 10000, 256);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_process_1K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 1, n, 10000, 1024);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_process_4K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 1, n, 10000, 4096);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, signal_process_sub_table, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 1, n, 10000, 0);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_process_256B, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 8, n, 10000, 256);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_process_1K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 8, n, 10000, 1024);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_process_4K, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 8, n, 10000, 4096);
+
+    st_bench_table(&prof);
+}
+
+st_ben(table, multiple_process_sub_table, 10, n)
+{
+    st_table_prof_t prof;
+    st_bench_table_init_prof(&prof, 0, 8, n, 10000, 0);
+
+    st_bench_table(&prof);
 }
 
 st_ut_main;
