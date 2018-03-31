@@ -1,7 +1,8 @@
 #include "inc/inc.h"
 #include "unittest/unittest.h"
 
-st_test(util, st_nelts) {
+st_test(util, st_nelts)
+{
 
     int n;
 
@@ -11,13 +12,15 @@ st_test(util, st_nelts) {
     { void *arr[10][10]; n = st_nelts(arr); ddx(n); st_ut_eq(10, n, ""); }
 }
 
-st_test(util, st_unused) {
+st_test(util, st_unused)
+{
     int n;
     /* no warning */
     st_unused(n);
 }
 
-st_test(util, st_align) {
+st_test(util, st_align)
+{
 
     struct case_s {
         uint64_t inp;
@@ -46,7 +49,8 @@ st_test(util, st_align) {
     }
 }
 
-st_test(util, cmp) {
+st_test(util, cmp)
+{
 
     struct case_s {
         int64_t a;
@@ -72,7 +76,8 @@ st_test(util, cmp) {
     }
 }
 
-st_test(util, switcher_get) {
+st_test(util, switcher_get)
+{
 
 #define st_foomode_small 5
 #define st_foomode_normal 2
@@ -104,7 +109,8 @@ st_test(util, switcher_get) {
 
 }
 
-st_test(util, bit_count_leading_zero) {
+st_test(util, bit_count_leading_zero)
+{
 
     st_ut_eq(32 - 0,  st_bit_clz((uint32_t)0), "");
     st_ut_eq(32 - 1,  st_bit_clz((uint32_t)1), "");
@@ -115,8 +121,8 @@ st_test(util, bit_count_leading_zero) {
     st_ut_eq(32 - 3,  st_bit_clz((uint32_t)7), "");
     st_ut_eq(32 - 4,  st_bit_clz((uint32_t)8), "");
     st_ut_eq(32 - 4,  st_bit_clz((uint32_t)9), "");
-    st_ut_eq(32 - 31, st_bit_clz((uint32_t)((1ULL<<31)-1)), "");
-    st_ut_eq(32 - 32, st_bit_clz((uint32_t)((1ULL<<31)-0)), "");
+    st_ut_eq(32 - 31, st_bit_clz((uint32_t)((1ULL << 31) - 1)), "");
+    st_ut_eq(32 - 32, st_bit_clz((uint32_t)((1ULL << 31) - 0)), "");
 
     st_ut_eq(64 - 0,  st_bit_clz((uint64_t)0), "");
     st_ut_eq(64 - 1,  st_bit_clz((uint64_t)1), "");
@@ -127,12 +133,12 @@ st_test(util, bit_count_leading_zero) {
     st_ut_eq(64 - 3,  st_bit_clz((uint64_t)7), "");
     st_ut_eq(64 - 4,  st_bit_clz((uint64_t)8), "");
     st_ut_eq(64 - 4,  st_bit_clz((uint64_t)9), "");
-    st_ut_eq(64 - 31, st_bit_clz((uint64_t)((1ULL<<31)-1)), "");
-    st_ut_eq(64 - 32, st_bit_clz((uint64_t)((1ULL<<31)+0)), "");
-    st_ut_eq(64 - 32, st_bit_clz((uint64_t)((1ULL<<31)+1)), "");
-    st_ut_eq(64 - 33, st_bit_clz((uint64_t)((1ULL<<32)+0)), "");
-    st_ut_eq(64 - 63, st_bit_clz((uint64_t)((1ULL<<63)-1)), "");
-    st_ut_eq(64 - 64, st_bit_clz((uint64_t)((1ULL<<63)+0)), "");
+    st_ut_eq(64 - 31, st_bit_clz((uint64_t)((1ULL << 31) - 1)), "");
+    st_ut_eq(64 - 32, st_bit_clz((uint64_t)((1ULL << 31) + 0)), "");
+    st_ut_eq(64 - 32, st_bit_clz((uint64_t)((1ULL << 31) + 1)), "");
+    st_ut_eq(64 - 33, st_bit_clz((uint64_t)((1ULL << 32) + 0)), "");
+    st_ut_eq(64 - 63, st_bit_clz((uint64_t)((1ULL << 63) - 1)), "");
+    st_ut_eq(64 - 64, st_bit_clz((uint64_t)((1ULL << 63) + 0)), "");
 
     /* test one time evaluation */
     uint64_t i = 0;
@@ -140,7 +146,8 @@ st_test(util, bit_count_leading_zero) {
 
 }
 
-st_test(util, bit_most_significant_bit) {
+st_test(util, bit_most_significant_bit)
+{
 
     st_ut_eq(-1, st_bit_msb((uint32_t)0), "");
     st_ut_eq(0,  st_bit_msb((uint32_t)1), "");
@@ -151,8 +158,8 @@ st_test(util, bit_most_significant_bit) {
     st_ut_eq(2,  st_bit_msb((uint32_t)7), "");
     st_ut_eq(3,  st_bit_msb((uint32_t)8), "");
     st_ut_eq(3,  st_bit_msb((uint32_t)9), "");
-    st_ut_eq(30, st_bit_msb((uint32_t)((1ULL<<31)-1)), "");
-    st_ut_eq(31, st_bit_msb((uint32_t)((1ULL<<31))), "");
+    st_ut_eq(30, st_bit_msb((uint32_t)((1ULL << 31) - 1)), "");
+    st_ut_eq(31, st_bit_msb((uint32_t)((1ULL << 31))), "");
 
     st_ut_eq(-1, st_bit_msb((uint64_t)0), "");
     st_ut_eq(0,  st_bit_msb((uint64_t)1), "");
@@ -163,31 +170,32 @@ st_test(util, bit_most_significant_bit) {
     st_ut_eq(2,  st_bit_msb((uint64_t)7), "");
     st_ut_eq(3,  st_bit_msb((uint64_t)8), "");
     st_ut_eq(3,  st_bit_msb((uint64_t)9), "");
-    st_ut_eq(30, st_bit_msb((uint64_t)((1ULL<<31)-1)), "");
-    st_ut_eq(31, st_bit_msb((uint64_t)((1ULL<<31))), "");
-    st_ut_eq(31, st_bit_msb((uint64_t)((1ULL<<31)+1)), "");
-    st_ut_eq(32, st_bit_msb((uint64_t)((1ULL<<32))), "");
-    st_ut_eq(62, st_bit_msb((uint64_t)((1ULL<<63)-1)), "");
-    st_ut_eq(63, st_bit_msb((uint64_t)((1ULL<<63)+0)), "");
+    st_ut_eq(30, st_bit_msb((uint64_t)((1ULL << 31) - 1)), "");
+    st_ut_eq(31, st_bit_msb((uint64_t)((1ULL << 31))), "");
+    st_ut_eq(31, st_bit_msb((uint64_t)((1ULL << 31) + 1)), "");
+    st_ut_eq(32, st_bit_msb((uint64_t)((1ULL << 32))), "");
+    st_ut_eq(62, st_bit_msb((uint64_t)((1ULL << 63) - 1)), "");
+    st_ut_eq(63, st_bit_msb((uint64_t)((1ULL << 63) + 0)), "");
 
     /* test one time evaluation */
     uint64_t i = 0;
     st_ut_eq(0, st_bit_msb(++i), "");
 }
 
-st_test(util, bit_cnt1) {
+st_test(util, bit_cnt1)
+{
 
     st_ut_eq(0, st_bit_cnt1((uint32_t)0), "");
     st_ut_eq(1, st_bit_cnt1((uint32_t)1), "");
     st_ut_eq(1, st_bit_cnt1((uint32_t)2), "");
     st_ut_eq(1, st_bit_cnt1((uint32_t)4), "");
     st_ut_eq(1, st_bit_cnt1((uint32_t)8), "");
-    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL<<30)), "");
-    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL<<31)), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL << 30)), "");
+    st_ut_eq(1, st_bit_cnt1((uint32_t)(1ULL << 31)), "");
 
-    st_ut_eq(30, st_bit_cnt1((uint32_t)((1ULL<<30)-1)), "");
-    st_ut_eq(31, st_bit_cnt1((uint32_t)((1ULL<<31)-1)), "");
-    st_ut_eq(32, st_bit_cnt1((uint32_t)(0ULL-1)), "");
+    st_ut_eq(30, st_bit_cnt1((uint32_t)((1ULL << 30) - 1)), "");
+    st_ut_eq(31, st_bit_cnt1((uint32_t)((1ULL << 31) - 1)), "");
+    st_ut_eq(32, st_bit_cnt1((uint32_t)(0ULL - 1)), "");
 
 
     st_ut_eq(0, st_bit_cnt1((uint64_t)0), "");
@@ -195,17 +203,18 @@ st_test(util, bit_cnt1) {
     st_ut_eq(1, st_bit_cnt1((uint64_t)2), "");
     st_ut_eq(1, st_bit_cnt1((uint64_t)4), "");
     st_ut_eq(1, st_bit_cnt1((uint64_t)8), "");
-    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL<<30)), "");
-    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL<<31)), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL << 30)), "");
+    st_ut_eq(1, st_bit_cnt1((uint64_t)(1ULL << 31)), "");
 
-    st_ut_eq(30, st_bit_cnt1((uint64_t)((1ULL<<30)-1)), "");
-    st_ut_eq(31, st_bit_cnt1((uint64_t)((1ULL<<31)-1)), "");
+    st_ut_eq(30, st_bit_cnt1((uint64_t)((1ULL << 30) - 1)), "");
+    st_ut_eq(31, st_bit_cnt1((uint64_t)((1ULL << 31) - 1)), "");
 
-    st_ut_eq(63, st_bit_cnt1((uint64_t)((1ULL<<63)-1)), "");
-    st_ut_eq(64, st_bit_cnt1((uint64_t)(0ULL-1)), "");
+    st_ut_eq(63, st_bit_cnt1((uint64_t)((1ULL << 63) - 1)), "");
+    st_ut_eq(64, st_bit_cnt1((uint64_t)(0ULL - 1)), "");
 }
 
-st_test(util, bit_cnt1_before) {
+st_test(util, bit_cnt1_before)
+{
 
     st_ut_eq(0, st_bit_cnt1_before((uint32_t)0ULL, -1), "");
     st_ut_eq(0, st_bit_cnt1_before((uint32_t)1ULL, -1), "");
@@ -218,23 +227,23 @@ st_test(util, bit_cnt1_before) {
     st_ut_eq(1, st_bit_cnt1_before((uint32_t)3ULL, 1), "");
     st_ut_eq(2, st_bit_cnt1_before((uint32_t)3ULL, 2), "");
 
-    st_ut_eq(0, st_bit_cnt1_before((uint32_t)(0ULL-1), 0), "");
-    st_ut_eq(1, st_bit_cnt1_before((uint32_t)(0ULL-1), 1), "");
-    st_ut_eq(2, st_bit_cnt1_before((uint32_t)(0ULL-1), 2), "");
-    st_ut_eq(31, st_bit_cnt1_before((uint32_t)(0ULL-1), 31), "");
-    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL-1), 32), "");
-    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL-1), 33), "");
+    st_ut_eq(0, st_bit_cnt1_before((uint32_t)(0ULL - 1), 0), "");
+    st_ut_eq(1, st_bit_cnt1_before((uint32_t)(0ULL - 1), 1), "");
+    st_ut_eq(2, st_bit_cnt1_before((uint32_t)(0ULL - 1), 2), "");
+    st_ut_eq(31, st_bit_cnt1_before((uint32_t)(0ULL - 1), 31), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL - 1), 32), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint32_t)(0ULL - 1), 33), "");
 
 
-    st_ut_eq(0,  st_bit_cnt1_before((uint64_t)(0ULL-1), 0), "");
-    st_ut_eq(1,  st_bit_cnt1_before((uint64_t)(0ULL-1), 1), "");
-    st_ut_eq(2,  st_bit_cnt1_before((uint64_t)(0ULL-1), 2), "");
-    st_ut_eq(31, st_bit_cnt1_before((uint64_t)(0ULL-1), 31), "");
-    st_ut_eq(32, st_bit_cnt1_before((uint64_t)(0ULL-1), 32), "");
-    st_ut_eq(33, st_bit_cnt1_before((uint64_t)(0ULL-1), 33), "");
-    st_ut_eq(63, st_bit_cnt1_before((uint64_t)(0ULL-1), 63), "");
-    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL-1), 64), "");
-    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL-1), 65), "");
+    st_ut_eq(0,  st_bit_cnt1_before((uint64_t)(0ULL - 1), 0), "");
+    st_ut_eq(1,  st_bit_cnt1_before((uint64_t)(0ULL - 1), 1), "");
+    st_ut_eq(2,  st_bit_cnt1_before((uint64_t)(0ULL - 1), 2), "");
+    st_ut_eq(31, st_bit_cnt1_before((uint64_t)(0ULL - 1), 31), "");
+    st_ut_eq(32, st_bit_cnt1_before((uint64_t)(0ULL - 1), 32), "");
+    st_ut_eq(33, st_bit_cnt1_before((uint64_t)(0ULL - 1), 33), "");
+    st_ut_eq(63, st_bit_cnt1_before((uint64_t)(0ULL - 1), 63), "");
+    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL - 1), 64), "");
+    st_ut_eq(64, st_bit_cnt1_before((uint64_t)(0ULL - 1), 65), "");
 }
 
 /*
