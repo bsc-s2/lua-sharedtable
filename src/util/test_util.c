@@ -83,6 +83,50 @@ st_test(util, cmp)
     }
 }
 
+st_test(util, side)
+{
+    st_ut_eq(0, ST_SIDE_LEFT, "");
+    st_ut_eq(1, ST_SIDE_MID, "");
+    st_ut_eq(1, ST_SIDE_EQ, "");
+    st_ut_eq(2, ST_SIDE_RIGHT, "");
+
+    st_ut_eq(0x10, ST_SIDE_LEFT_EQ, "");
+    st_ut_eq(0x12, ST_SIDE_RIGHT_EQ, "");
+
+    st_ut_eq(ST_SIDE_EQ, ST_SIDE_MID, "EQ is alias of MID");
+
+    /* opposite */
+
+    st_ut_eq(ST_SIDE_LEFT,     st_side_opposite(ST_SIDE_RIGHT), "");
+    st_ut_eq(ST_SIDE_LEFT_EQ,  st_side_opposite(ST_SIDE_RIGHT_EQ), "");
+    st_ut_eq(ST_SIDE_RIGHT,    st_side_opposite(ST_SIDE_LEFT), "");
+    st_ut_eq(ST_SIDE_RIGHT_EQ, st_side_opposite(ST_SIDE_LEFT_EQ), "");
+    st_ut_eq(ST_SIDE_MID,      st_side_opposite(ST_SIDE_MID), "");
+    st_ut_eq(ST_SIDE_EQ,       st_side_opposite(ST_SIDE_EQ), "");
+
+
+    /* strip */
+
+    st_ut_eq(ST_SIDE_LEFT, st_side_strip_eq(ST_SIDE_LEFT), "");
+    st_ut_eq(ST_SIDE_LEFT, st_side_strip_eq(ST_SIDE_LEFT_EQ), "");
+
+    st_ut_eq(ST_SIDE_RIGHT, st_side_strip_eq(ST_SIDE_RIGHT), "");
+    st_ut_eq(ST_SIDE_RIGHT, st_side_strip_eq(ST_SIDE_RIGHT_EQ), "");
+
+    st_ut_eq(ST_SIDE_MID, st_side_strip_eq(ST_SIDE_MID), "");
+    st_ut_eq(ST_SIDE_EQ,  st_side_strip_eq(ST_SIDE_EQ), "");
+
+    /* if a side var has `eq` flag */
+
+    st_ut_true(st_side_has_eq(ST_SIDE_LEFT_EQ), "");
+    st_ut_true(st_side_has_eq(ST_SIDE_RIGHT_EQ), "");
+    st_ut_true(st_side_has_eq(ST_SIDE_EQ), "");
+    st_ut_true(st_side_has_eq(ST_SIDE_MID), "");
+
+    st_ut_false(st_side_has_eq(ST_SIDE_LEFT), "");
+    st_ut_false(st_side_has_eq(ST_SIDE_RIGHT), "");
+}
+
 st_test(util, switcher_get)
 {
 

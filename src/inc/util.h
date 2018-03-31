@@ -10,6 +10,27 @@
 #define ST_EQ 0
 #define ST_GT 1
 
+
+#define ST_SIDE_LEFT     0x00
+#define ST_SIDE_MID      0x01
+#define ST_SIDE_RIGHT    0x02
+#define ST_SIDE_LEFT_EQ  0x10
+#define ST_SIDE_RIGHT_EQ 0x12
+
+#define ST_SIDE_EQ    ST_SIDE_MID
+
+/*
+ * x = 0, 1, 2
+ * (2 - (16 + x)) % 32 = 16 + (2-x)
+ */
+#define st_side_opposite(sd) ((2-(sd)) & (0x1f))
+
+#define st_side_strip_eq(sd) ((sd) & 0x0f)
+
+/* the 0x10 bit set, or it is MID */
+#define st_side_has_eq(sd) ((sd) & 0x11)
+
+
 /* TODO  */
 /* #define st_pause() __asm__("pause\n") */
 #define st_pause() _mm_pause()
