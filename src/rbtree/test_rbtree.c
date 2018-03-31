@@ -388,7 +388,8 @@ st_test(rbtree, add_with_delete) {
 
 st_test(rbtree, replace) {
     st_rbtree_t tree;
-    st_rbtree_node_t *original, *replacement;
+    st_rbtree_node_t *original = NULL;
+    st_rbtree_node_t *replacement = NULL;
 
     /** test: NULL values */
     st_ut_eq(ST_ARG_INVALID,
