@@ -440,118 +440,76 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node) {
     return ST_OK;
 }
 
-st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node) {
+/* st_rbtree_search(tree, target, ST_SIDE_EQ)      looks for equal node or NULL.
+ * st_rbtree_search(tree, target, ST_SIDE_LEFT)    looks for a unequal node on the left to `target`.
+ * st_rbtree_search(tree, target, ST_SIDE_LEFT_EQ) looks for equal node or nearset node on the left to `target`.
+ */
+st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, int expected_side) {
+
+    /* TODO search from any specified node */
 
     st_must(tree != NULL, NULL);
-    st_must(node != NULL, NULL);
+    st_must(target != NULL, NULL);
 
-    st_rbtree_node_t *curr = tree->root;
-    st_rbtree_node_t *sentinel = &tree->sentinel;
+    st_rbtree_node_t *cur = tree->root;
 
+    /* left:0, equal:1, right:2 */
+    st_rbtree_node_t *ler[3] = {NULL, NULL, NULL};
+
+    int cur_side;
+    int side_for_next;
     int ret;
 
-    while (curr != sentinel) {
+    while (cur != &tree->sentinel) {
 
-        ret = tree->cmp(node, curr);
-        if (ret < 0) {
-            curr = curr->left;
-        } else if (ret > 0) {
-            curr = curr->right;
-        } else {
-            return curr;
+        ret = tree->cmp(cur, target);
+        if (ret == 0) {
+            if (st_side_has_eq(expected_side)) {
+                /* if equal node is acceptable, return at once */
+                return cur;
+            }
+            else {
+                /* equal node not allowed, continue searching */
+                side_for_next = st_side_strip_eq(expected_side);
+            }
         }
+        else {
+            /* `cur` is now on the `cur_side` side to `target` */
+            cur_side = ret + 1;
+
+            /* On one side: the last seen is the nearest one. */
+            ler[cur_side] = cur;
+
+            /* move `cur` torwards the opposite direction of `cur_side`, get closer to `target`. */
+            side_for_next = st_side_opposite(cur_side);
+        }
+
+        cur = cur->branches[side_for_next];
     }
 
-    return NULL;
+    return ler[st_side_strip_eq(expected_side)];
+}
+
+st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node) {
+    /* deprecated */
+    return st_rbtree_search(tree, node, ST_SIDE_EQ);
 }
 
 st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node) {
-
-    st_must(tree != NULL, NULL);
-    st_must(node != NULL, NULL);
-
-    st_rbtree_node_t *curr = tree->root;
-    st_rbtree_node_t *sentinel = &tree->sentinel;
-
-    st_rbtree_node_t *smaller = NULL;
-
-    int ret;
-
-    while (curr != sentinel) {
-
-        ret = tree->cmp(node, curr);
-        if (ret < 0) {
-            curr = curr->left;
-        } else if (ret > 0) {
-            smaller = curr;
-            curr = curr->right;
-        } else {
-            break;
-        }
-    }
-
-    return curr != sentinel ? curr : smaller;
+    /* deprecated */
+    return st_rbtree_search(tree, node, ST_SIDE_LEFT_EQ);
 }
 
 st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node) {
-
-    st_must(tree != NULL, NULL);
-    st_must(node != NULL, NULL);
-
-    st_rbtree_node_t *curr = tree->root;
-    st_rbtree_node_t *sentinel = &tree->sentinel;
-
-    st_rbtree_node_t *bigger = NULL;
-
-    int ret;
-
-    while (curr != sentinel) {
-
-        ret = tree->cmp(node, curr);
-        if (ret < 0) {
-            bigger = curr;
-            curr = curr->left;
-        } else if (ret > 0) {
-            curr = curr->right;
-        } else {
-            break;
-        }
-    }
-
-    return curr != sentinel ? curr : bigger;
+    /* deprecated */
+    return st_rbtree_search(tree, node, ST_SIDE_RIGHT_EQ);
 }
 
 // node maybe not in tree, so need search node.
 st_rbtree_node_t *st_rbtree_search_next(st_rbtree_t *tree, st_rbtree_node_t *node) {
-
-    st_must(tree != NULL, NULL);
-    st_must(node != NULL, NULL);
-
-    st_rbtree_node_t *curr = tree->root;
-    st_rbtree_node_t *sentinel = &tree->sentinel;
-
-    st_rbtree_node_t *next = NULL;
-
-    int ret;
-
-    while (curr != sentinel) {
-
-        ret = tree->cmp(node, curr);
-        if (ret < 0) {
-            next = curr;
-            curr = curr->left;
-        } else if (ret > 0) {
-            curr = curr->right;
-        } else {
-            break;
-        }
-    }
-
-    if (curr == sentinel || curr->right == sentinel) {
-        return next;
-    } else {
-        return get_left_most(curr->right, sentinel);
-    }
+    /* deprecated */
+    /* TODO if node->sentinel == tree->sentinel, find next with get_next instead of a tree traverse */
+    return st_rbtree_search(tree, node, ST_SIDE_RIGHT);
 }
 
 // node must be in tree, so need search node, just get node next.

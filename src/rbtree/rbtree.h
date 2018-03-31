@@ -12,9 +12,20 @@ typedef struct st_rbtree_s  st_rbtree_t;
 typedef int (*st_rbtree_compare_pt)(st_rbtree_node_t *a, st_rbtree_node_t *b);
 
 struct st_rbtree_node_s {
-    st_rbtree_node_t *left;
-    st_rbtree_node_t *right;
-    st_rbtree_node_t *parent;
+    /*
+     * Used to choose a branch dynamically:
+     * x.branches[ST_SIDE_LEFT]  == x.left
+     * x.branches[ST_SIDE_MID]   == x.parent
+     * x.branches[ST_SIDE_RIGHT] == x.right
+     */
+    union {
+        st_rbtree_node_t *branches[3];
+        struct  {
+            st_rbtree_node_t *left;
+            st_rbtree_node_t *parent;
+            st_rbtree_node_t *right;
+        };
+    };
     uint8_t color;
 };
 
@@ -26,8 +37,8 @@ struct st_rbtree_s {
 
 #define st_rbtree_node_empty { \
     .left   = NULL,            \
-    .right  = NULL,            \
     .parent = NULL,            \
+    .right  = NULL,            \
     .color  = 0,               \
 }
 
@@ -38,6 +49,9 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node);
 
 st_rbtree_node_t *st_rbtree_left_most(st_rbtree_t *tree);
 st_rbtree_node_t *st_rbtree_right_most(st_rbtree_t *tree);
+
+/* Search for a equal node or the nearest node on the <side> to <target> */
+st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, int expected_side);
 
 st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node);

@@ -118,32 +118,33 @@ st_test(rbtree, search) {
 
     struct case_s {
         int key;
+        int left_key;
         int le_key;
         int equal_key;
         int ge_key;
-        int next_key;
+        int right_key;
     } cases[] = {
-        {1, -1, -1, 2, 2},
-        {2, 2, 2, 2, 5},
-        {3, 2, -1, 5, 5},
-        {5, 5, 5, 5, 10},
-        {7, 5, -1, 10, 10},
-        {10, 10, 10, 10, 14},
-        {12, 10, -1, 14, 14},
-        {14, 14, 14, 14, 19},
-        {17, 14, -1, 19, 19},
-        {19, 19, 19, 19, 23},
-        {20, 19, -1, 23, 23},
-        {23, 23, 23, 23, 26},
-        {25, 23, -1, 26, 26},
-        {26, 26, 26, 26, 30},
-        {28, 26, -1, 30, 30},
-        {30, 30, 30, 30, 40},
-        {31, 30, -1, 40, 40},
-        {40, 40, 40, 40, 43},
-        {42, 40, -1, 43, 43},
-        {43, 43, 43, 43, -1},
-        {44, 43, -1, -1, -1},
+        {1,  -1, -1, -1, 2,  2},
+        {2,  -1, 2,  2,  2,  5},
+        {3,  2,  2,  -1, 5,  5},
+        {5,  2,  5,  5,  5,  10},
+        {7,  5,  5,  -1, 10, 10},
+        {10, 5,  10, 10, 10, 14},
+        {12, 10, 10, -1, 14, 14},
+        {14, 10, 14, 14, 14, 19},
+        {17, 14, 14, -1, 19, 19},
+        {19, 14, 19, 19, 19, 23},
+        {20, 19, 19, -1, 23, 23},
+        {23, 19, 23, 23, 23, 26},
+        {25, 23, 23, -1, 26, 26},
+        {26, 23, 26, 26, 26, 30},
+        {28, 26, 26, -1, 30, 30},
+        {30, 26, 30, 30, 30, 40},
+        {31, 30, 30, -1, 40, 40},
+        {40, 30, 40, 40, 40, 43},
+        {42, 40, 40, -1, 43, 43},
+        {43, 40, 43, 43, 43, -1},
+        {44, 43, 43, -1, -1, -1},
     };
 
     st_rbtree_init(&tree, rbtree_cmp);
@@ -157,12 +158,16 @@ st_test(rbtree, search) {
 
         tmp.key = c.key;
 
-        obj = (test_object *)st_rbtree_search_eq(&tree,  &tmp.rb_node);
-        if (c.equal_key == -1) {
+        /* less */
+
+        obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_LEFT);
+        if (c.left_key == -1) {
             st_ut_eq(NULL, obj, "");
         } else {
-            st_ut_eq(c.equal_key, obj->key, "");
+            st_ut_eq(c.left_key, obj->key, "");
         }
+
+        /* less equal */
 
         obj = (test_object *)st_rbtree_search_le(&tree,  &tmp.rb_node);
         if (c.le_key == -1) {
@@ -171,6 +176,31 @@ st_test(rbtree, search) {
             st_ut_eq(c.le_key, obj->key, "");
         }
 
+        obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_LEFT_EQ);
+        if (c.le_key == -1) {
+            st_ut_eq(NULL, obj, "");
+        } else {
+            st_ut_eq(c.le_key, obj->key, "");
+        }
+
+        /* equal */
+
+        obj = (test_object *)st_rbtree_search_eq(&tree,  &tmp.rb_node);
+        if (c.equal_key == -1) {
+            st_ut_eq(NULL, obj, "");
+        } else {
+            st_ut_eq(c.equal_key, obj->key, "");
+        }
+
+        obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_EQ);
+        if (c.equal_key == -1) {
+            st_ut_eq(NULL, obj, "");
+        } else {
+            st_ut_eq(c.equal_key, obj->key, "");
+        }
+
+        /* greater equal */
+
         obj = (test_object *)st_rbtree_search_ge(&tree,  &tmp.rb_node);
         if (c.ge_key == -1) {
             st_ut_eq(NULL, obj, "");
@@ -178,11 +208,27 @@ st_test(rbtree, search) {
             st_ut_eq(c.ge_key, obj->key, "");
         }
 
-        obj = (test_object *)st_rbtree_search_next(&tree,  &tmp.rb_node);
-        if (c.next_key == -1) {
+        obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_RIGHT_EQ);
+        if (c.ge_key == -1) {
             st_ut_eq(NULL, obj, "");
         } else {
-            st_ut_eq(c.next_key, obj->key, "");
+            st_ut_eq(c.ge_key, obj->key, "");
+        }
+
+        /* greater */
+
+        obj = (test_object *)st_rbtree_search_next(&tree,  &tmp.rb_node);
+        if (c.right_key == -1) {
+            st_ut_eq(NULL, obj, "");
+        } else {
+            st_ut_eq(c.right_key, obj->key, "");
+        }
+
+        obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_RIGHT);
+        if (c.right_key == -1) {
+            st_ut_eq(NULL, obj, "");
+        } else {
+            st_ut_eq(c.right_key, obj->key, "");
         }
     }
 }
@@ -197,7 +243,7 @@ st_test(rbtree, search_times) {
     st_rbtree_init(&tree, rbtree_cmp);
 
     tmp.key = 11;
-    obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+    obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
     st_ut_eq(NULL, obj, "tree is empty");
 
     for (int i = 0; i < 1000; i++) {
@@ -205,7 +251,7 @@ st_test(rbtree, search_times) {
         // not add same key in rbtree
         while (1) {
             tmp.key = random() % 100000;
-            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
             if (obj == NULL) {
                 break;
             }
@@ -217,12 +263,12 @@ st_test(rbtree, search_times) {
 
     for (int i = 0; i < 1000; i++) {
         tmp.key = objects[i].key;
-        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
         st_ut_eq(&objects[i], obj, "found object");
     }
 
     tmp.key = 100000 + 1;
-    obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+    obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
     st_ut_eq(NULL, obj, "not found key");
 }
 
@@ -245,7 +291,7 @@ void test_insert_with_search(int object_num) {
         for (int j = 0; j <= i; j++) {
             tmp.key = objects[j].key;
 
-            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
 
             st_ut_eq(&objects[j], obj, "search object is right");
         }
@@ -278,19 +324,19 @@ void test_delete_with_search(int object_num) {
 
     for (int i = object_num - 1; i >= 0; i--) {
         tmp.key = objects[i].key;
-        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
         st_ut_eq(&objects[i], obj, "search object is right");
 
         node = &objects[i].rb_node;
         st_rbtree_delete(&tree, node);
         st_ut_eq(0, st_rbtree_node_is_inited(node), "");
 
-        obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+        obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
         st_ut_eq(NULL, obj, "object has been deleted");
 
         for (int j = 0; j <= i - 1; j++) {
             tmp.key = objects[j].key;
-            obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+            obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
             st_ut_eq(&objects[j], obj, "search object is right");
         }
     }
@@ -343,10 +389,10 @@ void test_add_with_delete(int object_num, int average_add, int average_delete) {
 
             // check the node wether has been deleted
             if (j >= start && j < end) {
-                obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+                obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
                 st_ut_eq(&objects[j], obj, "found object");
             } else {
-                obj = (test_object *)st_rbtree_search_eq(&tree, &tmp.rb_node);
+                obj = (test_object *)st_rbtree_search(&tree, &tmp.rb_node, ST_SIDE_EQ);
                 st_ut_eq(NULL, obj, "object has been deleted");
             }
         }
