@@ -96,6 +96,12 @@ char *st_ut_get_tostring_buf();
 #define st_ut_does_fail() (st_ut_ret__ != 0)
 
 /* assertions */
+#define st_ut_true(actual, fmt, ...) \
+        st_ut_assert_cmp_(!=, 0, actual, fmt, ##__VA_ARGS__)
+
+#define st_ut_false(actual, fmt, ...) \
+        st_ut_assert_cmp_(==, 0, actual, fmt, ##__VA_ARGS__)
+
 #define st_ut_eq(expected, actual, fmt, ...)                                  \
         st_ut_assert_cmp_(==, expected, actual, fmt, ##__VA_ARGS__)
 
