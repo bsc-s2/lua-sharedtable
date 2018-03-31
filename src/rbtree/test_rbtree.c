@@ -436,7 +436,7 @@ st_test(rbtree, replace) {
              "failed to handle sentinel replacement");
 
     /** test: nodes not equal */
-    test_object obj         = { .key = 100, .rb_node = {NULL, NULL, NULL} };
+    test_object obj         = { .key = 100, .rb_node = st_rbtree_node_empty };
     replacement             = &obj.rb_node;
     original                = &nodes[0].rb_node;
     st_rbtree_node_t backup = *original;
