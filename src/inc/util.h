@@ -5,6 +5,11 @@
 #include <immintrin.h>
 #include "inc/bit.h"
 
+
+#define ST_LT (-1)
+#define ST_EQ 0
+#define ST_GT 1
+
 /* TODO  */
 /* #define st_pause() __asm__("pause\n") */
 #define st_pause() _mm_pause()
@@ -28,10 +33,10 @@
 #define st_min(a, b) ( (a) < (b) ? (a) : (b) )
 #define st_max(a, b) ( (a) > (b) ? (a) : (b) )
 #define st_cmp(a, b) ((a) > (b)                                               \
-                      ? 1                                                     \
+                      ? ST_GT                                                 \
                       : ((a) < (b)                                            \
-                         ? -1                                                 \
-                         : 0))
+                         ? ST_LT                                              \
+                         : ST_EQ))
 
 #define st_return_if(cond, val)                                               \
         do {                                                                  \

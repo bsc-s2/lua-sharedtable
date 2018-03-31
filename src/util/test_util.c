@@ -49,6 +49,13 @@ st_test(util, st_align)
     }
 }
 
+st_test(util, cmp_const)
+{
+    st_ut_eq(-1, ST_LT, "");
+    st_ut_eq(0,  ST_EQ, "");
+    st_ut_eq(1,  ST_GT, "");
+}
+
 st_test(util, cmp)
 {
 
