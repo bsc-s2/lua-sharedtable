@@ -25,9 +25,7 @@ typedef struct {
 } setup_info_t;
 
 
-#define PAGE_SIZE                        (1 << 12)
-#define ST_TEST_SLAB_HUGE_OBJ_SIZE       (PAGE_SIZE + 1)
-
+#define ST_TEST_SLAB_HUGE_OBJ_SIZE       (st_page_size() + 1)
 #define ST_TEST_SLAB_REGION_CNT          10
 #define ST_TEST_SLAB_SHARED_SPACE_LENGTH (1024 * 1024 * 200)
 
@@ -53,21 +51,22 @@ st_slab_setup(setup_info_t *info)
                                    &info->shm_fd);
     st_assert(ret == ST_OK);
 
+    ssize_t page_size = st_page_size();
     info->slab_pool = (st_slab_pool_t *)info->base;
     info->data = (void *)(st_align((uintptr_t)info->base + sizeof(*info->slab_pool),
-                                   PAGE_SIZE));
+                                   page_size));
 
     ssize_t cfg_len = (uintptr_t)info->data - (uintptr_t)info->base;
     ssize_t data_len = ST_TEST_SLAB_SHARED_SPACE_LENGTH - cfg_len;
 
     ret = st_region_init(&info->slab_pool->page_pool.region_cb,
                          info->data,
-                         data_len / PAGE_SIZE / ST_TEST_SLAB_REGION_CNT,
+                         data_len / page_size / ST_TEST_SLAB_REGION_CNT,
                          ST_TEST_SLAB_REGION_CNT,
                          1);
     st_assert(ret == ST_OK);
 
-    ret = st_pagepool_init(&info->slab_pool->page_pool, PAGE_SIZE);
+    ret = st_pagepool_init(&info->slab_pool->page_pool, page_size);
     st_assert(ret == ST_OK);
 
     ret = st_slab_pool_init(info->slab_pool);
@@ -626,7 +625,7 @@ st_test_slab_get_master_from_addr(setup_info_t *info, void *addr)
     st_pagepool_page_t *page;
 
     int ret = st_pagepool_addr_to_page(&info->slab_pool->page_pool,
-                                       ADDR_PAGE_BASE(addr, PAGE_SIZE),
+                                       ADDR_PAGE_BASE(addr, st_page_size()),
                                        &page);
     if (ret != ST_OK) {
         return NULL;
@@ -940,7 +939,7 @@ st_test(st_slab, obj_alloc_free_invalid)
 }
 
 #define ST_BENCH_SLAB_MIN_SIZE   1
-#define ST_BENCH_SLAB_MAX_SIZE   (PAGE_SIZE * 4)
+#define ST_BENCH_SLAB_MAX_SIZE   (st_page_size() * 4)
 #define ST_BENCH_SLAB_RESULT_DIR "profile"
 
 typedef struct {

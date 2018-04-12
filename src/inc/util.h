@@ -30,6 +30,7 @@
 /* the 0x10 bit set, or it is MID */
 #define st_side_has_eq(sd) ((sd) & 0x11)
 
+#define st_page_size() sysconf(_SC_PAGESIZE)
 
 /* TODO  */
 /* #define st_pause() __asm__("pause\n") */

@@ -19,7 +19,6 @@
 #define CONFIG_REGION               10
 #define PAGES_PER_REGION            1024
 #define REGION_NUM                  10
-#define PAGE_SIZE                   sysconf(_SC_PAGESIZE)
 #define ST_REGION_SHM_OBJ_REAL_PATH "/dev/shm/st_shm_area"
 
 
@@ -74,7 +73,7 @@ test_st_region_shm_destroy(int shm_fd, uint8_t *addr, int length)
 st_test(st_region, shm_create_destroy)
 {
     int shm_fd     = 0;
-    ssize_t length = PAGES_PER_REGION * REGION_NUM * PAGE_SIZE;
+    ssize_t length = PAGES_PER_REGION * REGION_NUM * st_page_size();
     uint8_t *addr  = NULL;
 
     test_st_region_shm_create(&shm_fd, &addr, length);
@@ -86,9 +85,10 @@ st_test(st_region, init_alloc_release)
 {
     int shm_fd        = 0;
     uint8_t *addr     = NULL;
-    ssize_t reg_size  = PAGES_PER_REGION * PAGE_SIZE;
+    ssize_t page_size = st_page_size();
+    ssize_t reg_size  = PAGES_PER_REGION * page_size;
     ssize_t data_len  = reg_size * REGION_NUM;
-    ssize_t cfg_len   = CONFIG_REGION * PAGE_SIZE;
+    ssize_t cfg_len   = CONFIG_REGION * page_size;
     ssize_t length    = data_len + cfg_len;
 
     /** create shm area */
@@ -107,7 +107,7 @@ st_test(st_region, init_alloc_release)
 
     st_ut_eq(REGION_NUM, rcb->reg_cnt, "reg_cnt not right");
     st_ut_eq(data_base_ptr, rcb->base_addr, "base_addr is right");
-    st_ut_eq(PAGE_SIZE, rcb->page_size, "page_size not right");
+    st_ut_eq(page_size, rcb->page_size, "page_size not right");
     st_ut_eq(reg_size, rcb->reg_size, "reg_size not right");
 
     /** check each reg init state */
@@ -197,11 +197,12 @@ test_st_shm_alloc_all_regions(st_region_t *rcb)
 static uint32_t
 force_load_pages(const st_region_t *rcb)
 {
+    ssize_t page_size = st_page_size();
     for (int idx = 0; idx < rcb->reg_cnt; idx++) {
         uint8_t *base = st_region_base_addr_by_idx(rcb, idx);
 
         for (int cnt = 0; cnt < PAGES_PER_REGION; cnt++) {
-            uint8_t *ptr = base + cnt * PAGE_SIZE;
+            uint8_t *ptr = base + cnt * page_size;
 
             ptr[0] = 1;
         }
@@ -363,9 +364,10 @@ test_st_region_op_multi_proc(uint32_t lock)
     /** create and initialize shm regions */
     int shm_fd        = 0;
     uint8_t *addr     = NULL;
-    ssize_t reg_size  = PAGES_PER_REGION * PAGE_SIZE;
+    ssize_t page_size = st_page_size();
+    ssize_t reg_size  = PAGES_PER_REGION * page_size;
     ssize_t data_len  = reg_size * REGION_NUM;
-    ssize_t cfg_len   = CONFIG_REGION * PAGE_SIZE;
+    ssize_t cfg_len   = CONFIG_REGION * page_size;
     ssize_t length    = data_len + cfg_len;
 
     test_st_region_shm_create(&shm_fd, &addr, length);
