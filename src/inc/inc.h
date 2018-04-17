@@ -6,5 +6,6 @@
 #include "inc/log.h"
 #include "inc/util.h"
 #include "inc/types.h"
+#include "inc/callback.h"
 
 #endif

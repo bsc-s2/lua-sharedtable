@@ -1,5 +1,7 @@
 src       = str.c
 target    = str.a
+deps      = \
+	    util \
 
 test_exec = test_str
 

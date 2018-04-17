@@ -12,7 +12,7 @@
 #   define dd( _fmt, ... )   st_log_printf(_fmt "\n", "[DEBUG]", ##__VA_ARGS__)
 #   define dlog( _fmt, ... ) st_log_printf(_fmt, "[DEBUG]", ##__VA_ARGS__)
 #   define ddv( _fmt, ... )  st_stderr_printf( _fmt, ##__VA_ARGS__)
-#   define ddx(n)            st_stderr_printf(st_fmt_of(#n "=", n, "\n"), n)
+#   define ddx(n)            st_stderr_printf(st_fmt_wrap(#n "=", n, "\n"), n)
 #else
 #   define dd( _fmt, ... )
 #   define dlog( _fmt, ... )

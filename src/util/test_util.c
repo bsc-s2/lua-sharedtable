@@ -307,4 +307,13 @@ st_test(util, bit_cnt1_before)
  *     foreach
  */
 
+st_test(util, bug_handler)
+{
+    st_util_bughandler_t f = st_util_bughandler_raise;
+    st_ut_eq((void*)f, (void*)st_util_bughandler_);
+
+    st_ut_bug(st_bug(), "st_bug() should make a bug");
+    st_ut_nobug((void)1, "(void)1 should not make a bug");
+}
+
 st_ut_main;

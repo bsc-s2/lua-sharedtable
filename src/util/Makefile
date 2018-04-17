@@ -1,5 +1,5 @@
-# src = util.c
-# target = util.a
+src = util.c
+target = util.a
 
 test_exec = test_util
 

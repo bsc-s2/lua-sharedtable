@@ -11,10 +11,10 @@
 
 #define st_bit_clz_positive_int_(i) _Generic(                                 \
         (i),                                                                  \
-        unsigned int:       __builtin_clz(i),                                 \
-        unsigned long:      __builtin_clzl(i),                                \
-        unsigned long long: __builtin_clzll(i)                                \
-)
+        unsigned int:       __builtin_clz,                                    \
+        unsigned long:      __builtin_clzl,                                   \
+        unsigned long long: __builtin_clzll                                   \
+)(i)
 
 
 /**
@@ -62,9 +62,9 @@
  */
 #define st_bit_cnt1(n) _Generic(                                              \
     (n),                                                                      \
-    unsigned int:       __builtin_popcount(n),                                \
-    unsigned long:      __builtin_popcountl(n),                               \
-    unsigned long long: __builtin_popcountll(n)                               \
-)
+    unsigned int:       __builtin_popcount,                                   \
+    unsigned long:      __builtin_popcountl,                                  \
+    unsigned long long: __builtin_popcountll                                  \
+)(n)
 
 #endif /* INC_BIT_H */

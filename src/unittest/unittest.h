@@ -8,11 +8,10 @@
 #include <sys/time.h>
 #include <inttypes.h>
 
-#include "inc/log.h"
-#include "inc/util.h"
+#include "inc/inc.h"
 
 #ifdef ST_DEBUG_UNITTEST
-#   define OK_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST]", ##__VA_ARGS__ )
+#   define OK_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST]  OK", ##__VA_ARGS__ )
 #   define BENCH_DEBUG( _fmt, ... ) st_log_printf( _fmt "\n", "[BENCH]", ##__VA_ARGS__ )
 #   define st_ut_debug( _fmt, ... ) st_log_printf( _fmt "\n", "[UT-DEBUG]", ##__VA_ARGS__ )
 #else
@@ -21,7 +20,7 @@
 #   define st_ut_debug( _fmt, ... )
 #endif /* ST_DEBUG_UNITTEST */
 
-#define ERR_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST]", ##__VA_ARGS__ )
+#define ERR_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST] ERR", ##__VA_ARGS__ )
 
 #define BENCH_INFO( _fmt, ... ) st_log_printf( _fmt "\n", "[BENCH]", ##__VA_ARGS__ )
 
@@ -35,11 +34,11 @@ extern st_ut_case_t *st_ut_cases_;
 extern int64_t       st_ut_case_n_;
 extern int64_t       st_ut_case_capacity_;
 extern int           st_ut_ret__;
+extern int           st_ut_bug_tracker_;
 
 extern st_ut_bench_t *st_ut_benches_;
 extern int64_t        st_ut_bench_n_;
 extern int64_t        st_ut_bench_capacity_;
-extern int            st_ut_ret__;
 
 typedef void (*st_ut_case_f)();
 
@@ -62,6 +61,7 @@ st_ut_run_bench(st_ut_bench_t *b);
 
 
 char *st_ut_get_tostring_buf();
+void st_ut_bughandler_track();
 
 
 /* define test */
@@ -96,42 +96,49 @@ char *st_ut_get_tostring_buf();
 #define st_ut_does_fail() (st_ut_ret__ != 0)
 
 /* assertions */
-#define st_ut_true(actual, fmt, ...) \
-        st_ut_assert_cmp_(!=, 0, actual, fmt, ##__VA_ARGS__)
+#define st_ut_true(actual, fmt...)         st_ut_assert_cmp_(0,        !=, actual, fmt)
+#define st_ut_false(actual, fmt...)        st_ut_assert_cmp_(0,        ==, actual, fmt)
+#define st_ut_eq(expected, actual, fmt...) st_ut_assert_cmp_(expected, ==, actual, fmt)
+#define st_ut_ne(expected, actual, fmt...) st_ut_assert_cmp_(expected, !=, actual, fmt)
+#define st_ut_ge(expected, actual, fmt...) st_ut_assert_cmp_(expected, >=, actual, fmt)
+#define st_ut_gt(expected, actual, fmt...) st_ut_assert_cmp_(expected, >,  actual, fmt)
+#define st_ut_le(expected, actual, fmt...) st_ut_assert_cmp_(expected, <=, actual, fmt)
+#define st_ut_lt(expected, actual, fmt...) st_ut_assert_cmp_(expected, <,  actual, fmt)
+#define st_ut_fail(fmt...)                 st_ut_assert_(0, fmt)
 
-#define st_ut_false(actual, fmt, ...) \
-        st_ut_assert_cmp_(==, 0, actual, fmt, ##__VA_ARGS__)
+#define st_ut_bug(make_bug_, mes...)                                          \
+        do {                                                                  \
+            st_ut_bug_tracker_ = 0;                                           \
+            st_util_bughandler_t old = st_util_bughandler_;                   \
+            st_util_bughandler_ = st_ut_bughandler_track;                     \
+                                                                              \
+            make_bug_;                                                        \
+                                                                              \
+            st_util_bughandler_ = old;                                        \
+            st_ut_assert_(st_ut_bug_tracker_ == 1, mes);                      \
+        } while (0)
 
-#define st_ut_eq(expected, actual, fmt, ...)                                  \
-        st_ut_assert_cmp_(==, expected, actual, fmt, ##__VA_ARGS__)
+#define st_ut_nobug(make_nobug_, mes...)                                      \
+        do {                                                                  \
+            st_ut_bug_tracker_ = 0;                                           \
+            st_util_bughandler_t old = st_util_bughandler_;                   \
+            st_util_bughandler_ = st_ut_bughandler_track;                     \
+                                                                              \
+            make_nobug_;                                                      \
+                                                                              \
+            st_util_bughandler_ = old;                                        \
+            st_ut_assert_(st_ut_bug_tracker_ == 0, mes);                      \
+        } while (0)
 
-#define st_ut_ne(expected, actual, fmt, ... )                                 \
-        st_ut_assert_cmp_(!=, expected, actual, fmt, ##__VA_ARGS__)
-
-#define st_ut_ge(expected, actual, fmt, ...)                                  \
-        st_ut_assert_cmp_(>=, expected, actual, fmt, ##__VA_ARGS__)
-
-#define st_ut_gt(expected, actual, fmt, ...)                                  \
-        st_ut_assert_cmp_(>,  expected, actual, fmt, ##__VA_ARGS__)
-
-#define st_ut_le(expected, actual, fmt, ...)                                  \
-        st_ut_assert_cmp_(<=, expected, actual, fmt, ##__VA_ARGS__)
-
-#define st_ut_lt(expected, actual, fmt, ...)                                  \
-        st_ut_assert_cmp_(<,  expected, actual, fmt, ##__VA_ARGS__)
-
-#define st_ut_fail(mes, ...)                                                  \
-        st_ut_assert_(0, mes, ##__VA_ARGS__)
-
-#define st_ut_assert_cmp_(_operator, __e, __a, fmt, ...)                      \
+#define st_ut_assert_cmp_(expected__, operator__, actual__, fmt, ...)         \
     do {                                                                      \
-        st_typeof(__e) _e = (__e);                                            \
-        st_typeof(__a) _a = (__a);                                            \
-        int __rst = st_ut_compare(_e, _a);                                    \
-        st_ut_assert_(__rst _operator 0,                                      \
-             "Expected: '%s' " #_operator " '%s'; " fmt,                      \
-             st_ut_print_func_(_e)(_e),                                       \
-             st_ut_print_func_(_e)(_a),                                       \
+        st_typeof(expected__) e__ = (expected__);                             \
+        st_typeof(actual__)   a__ = (actual__);                               \
+        int rst_ = st_ut_compare(e__, a__);                                   \
+        st_ut_assert_(rst_ operator__ 0,                                      \
+             "Expected: '%s' " #operator__ " '%s'; " fmt,                     \
+             st_ut_printf_(e__),                                              \
+             st_ut_printf_(a__),                                              \
              ##__VA_ARGS__ );                                                 \
     } while (0)
 
@@ -211,19 +218,6 @@ st_ut_run_bench(st_ut_bench_t *b) {
 
 #define st_ut_compare(a, b) st_ut_norm_cmp(a, b)
 
-#define st_ut_print_func_(v) _Generic((v),                                    \
-                 char      : st_print_char        ,                           \
-                 int       : st_print_int         ,                           \
-                 long      : st_print_long        ,                           \
-                 long long : st_print_longlong    ,                           \
-        unsigned char      : st_print_uchar       ,                           \
-        unsigned int       : st_print_uint        ,                           \
-        unsigned long      : st_print_ulong       ,                           \
-        unsigned long long : st_print_ulonglong   ,                           \
-                 void*     : st_print_void_ptr    ,                           \
-                 default   : st_print_void_ptr                                \
-)
-
 
 /* force type conversion */
 #define st_ut_norm_cmp(a, b) st_ut_norm_cmp_(a, (st_typeof(a))b)
@@ -231,21 +225,12 @@ st_ut_run_bench(st_ut_bench_t *b) {
 
 static inline int st_cmp_void_ptr(void  *a, void *b) { return st_ut_norm_cmp(a, b); }
 
-#define st_ut_print_(fmt, v) do { \
-        char *__buf = st_ut_get_tostring_buf(); \
-        snprintf(__buf, 64, fmt, v); \
-        return __buf; \
-    } while(0)
+#define st_ut_printf_(v) ({                                                   \
+        char *buf__ = st_ut_get_tostring_buf();                               \
+        snprintf(buf__, 64, st_fmt_of(v), v);                                 \
+        buf__;                                                                \
+    })
 
-static inline char *st_print_char      (char               a) { st_ut_print_("%c",   a); }
-static inline char *st_print_int       (int                a) { st_ut_print_("%d",   a); }
-static inline char *st_print_long      (long               a) { st_ut_print_("%ld",  a); }
-static inline char *st_print_longlong  (long long          a) { st_ut_print_("%lld", a); }
-static inline char *st_print_uchar     (unsigned char      a) { st_ut_print_("%u",   a); }
-static inline char *st_print_uint      (unsigned int       a) { st_ut_print_("%u",   a); }
-static inline char *st_print_ulong     (unsigned long      a) { st_ut_print_("%lu",  a); }
-static inline char *st_print_ulonglong (unsigned long long a) { st_ut_print_("%llu", a); }
-static inline char *st_print_void_ptr  (void*              a) { st_ut_print_("%p",   a); }
 
 static inline int st_ut_is_bench(int argc, char **argv) {
     return (argc >= 2)
@@ -301,14 +286,15 @@ static inline int main_(int argc, char **argv) {
 
     /* test */
     for (int i = 0; i < st_ut_case_n_; i++) {
+        printf("### Test Start: %s\n", st_ut_cases_[i].name);
         st_ut_cases_[i].func();
         if (st_ut_ret__ == -1) {
             printf("test fail: %s\n", st_ut_cases_[i].name);
             return -1;
         }
-        printf("test   ok: %s\n", st_ut_cases_[i].name);
+        printf("### Test    OK: %s\n", st_ut_cases_[i].name);
     }
-    printf("all passed, n_cases = %lld\n", st_ut_case_n_);
+    printf("All passed, n_cases = %lld\n", st_ut_case_n_);
 
     /* bench */
     if (st_ut_is_bench(argc, argv)) {
@@ -326,19 +312,26 @@ static inline int main_(int argc, char **argv) {
 }
 
 #define st_ut_main                                                            \
-    st_ut_case_t *st_ut_cases_;                                               \
-    int64_t st_ut_case_n_;                                                    \
-    int64_t st_ut_case_capacity_;                                             \
-    int st_ut_ret__;                                                          \
+    st_ut_case_t  *st_ut_cases_;                                              \
+    int64_t        st_ut_case_n_;                                             \
+    int64_t        st_ut_case_capacity_;                                      \
+    int            st_ut_ret__;                                               \
+    int            st_ut_bug_tracker_;                                        \
     st_ut_bench_t *st_ut_benches_;                                            \
-    int64_t st_ut_bench_n_;                                                   \
-    int64_t st_ut_bench_capacity_;                                            \
+    int64_t        st_ut_bench_n_;                                            \
+    int64_t        st_ut_bench_capacity_;                                     \
+                                                                              \
     char *st_ut_get_tostring_buf() {                                          \
         static __thread char buffers[128][64];                                \
         static __thread uint64_t i = 0;                                       \
         char *buffer = buffers[i++ % 128];                                    \
         return buffer;                                                        \
     }                                                                         \
+                                                                              \
+    void st_ut_bughandler_track() {                                           \
+        st_ut_bug_tracker_ = 1;                                               \
+    }                                                                         \
+                                                                              \
     int main(int argc, char **argv) {                                         \
         return main_(argc, argv);                                             \
     }

@@ -67,7 +67,7 @@
             }                                                                 \
         } while (0);
 
-#define st_bug(_fmt, ...) raise(SIGABRT)
+#define st_bug(_fmt, ...) st_util_bughandler_()
 
 
 #define st_arg1(a, ...) a
@@ -177,10 +177,10 @@
       }                                                                       \
   } while (0)
 
-#define st_assert(expr) do {                                                  \
+#define st_assert(expr, _fmt...) do {                                         \
       if (! (expr)) {                                                         \
-          derr("assertion fail: "#expr);                                      \
-          st_bug("assertion fail: "#expr);                                    \
+          derr("assertion fail: ["#expr"] "_fmt);                             \
+          st_bug("assertion fail: ["#expr"] "_fmt);                           \
       }                                                                       \
   } while (0)
 
@@ -219,5 +219,11 @@ st_free( void* pnt )
     free( pnt );
 }
 #endif
+
+typedef void (*st_util_bughandler_t)();
+
+void st_util_bughandler_raise();
+
+extern st_util_bughandler_t st_util_bughandler_;
 
 #endif /* __INC__UTIL_H__ */

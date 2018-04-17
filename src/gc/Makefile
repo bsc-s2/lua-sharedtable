@@ -2,8 +2,17 @@
 src       = gc.c
 target    = gc.a
 libs      = pthread rt
-deps      = robustlock pagepool rbtree array\
-            region slab bitmap table str
+deps      = \
+	    table      \
+	    pagepool   \
+	    rbtree     \
+	    region     \
+	    robustlock \
+	    slab       \
+	    bitmap     \
+	    array      \
+	    str        \
+	    util       \
 
 test_exec = test_gc
 

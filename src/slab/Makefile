@@ -2,7 +2,14 @@
 src       = slab.c
 target    = slab.a
 libs      = pthread rt
-deps      = robustlock bitmap pagepool rbtree array region
+deps      = \
+	    bitmap \
+	    pagepool \
+	    array \
+	    rbtree \
+	    region \
+	    robustlock \
+	    util \
 
 test_exec = test_slab
 

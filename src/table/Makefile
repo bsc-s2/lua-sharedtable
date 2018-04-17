@@ -2,8 +2,17 @@
 src       = table.c
 target    = table.a
 libs      = pthread rt
-deps      = robustlock pagepool rbtree\
-            array region slab bitmap str gc
+deps      = \
+	    robustlock \
+	    pagepool \
+	    rbtree\
+	    array \
+	    region \
+	    slab \
+	    bitmap \
+	    str \
+	    gc \
+	    util \
 
 test_exec = test_table
 

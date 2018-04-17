@@ -21,7 +21,7 @@ int get_fib_variance(enum fib_size_e fib_size)
     int n_bucket = 256;
     int buckets[n_bucket];
     int i;
-    uint64_t hash;
+    uint64_t hash = 0;
 
     for (i = 0; i < n_bucket; i++) {
         buckets[i] = 0;
@@ -40,6 +40,9 @@ int get_fib_variance(enum fib_size_e fib_size)
                 break;
             case fib64:
                 hash = fib_hash64(i) % n_bucket;
+                break;
+            default:
+                st_bug("unknown fib_size");
                 break;
         }
         buckets[(int)hash] += 1;
