@@ -249,12 +249,14 @@ int wait_sem(int sem_id) {
     return ST_OK;
 }
 
+#define SUB_PROC_OP_CNT (1*1000*1000)
+
 int test_add_sub_in_process(int64_t init_v, int64_t step_v, int op) {
     int ret;
     int child;
     int pids[10] = {0};
 
-    int sem_id = semget(5678, 1, 06666 | IPC_CREAT);
+    int sem_id = semget(5678, 1, 0666 | IPC_CREAT);
     if (sem_id == -1) {
         return ST_ERR;
     }
@@ -279,7 +281,7 @@ int test_add_sub_in_process(int64_t init_v, int64_t step_v, int op) {
                 return ret;
             }
 
-            for (int j = 0; j < 100000000; j++) {
+            for (int j = 0; j < SUB_PROC_OP_CNT; j++) {
 
                 switch (op) {
                     case ST_ATOMIC_FETCH_ADD:
@@ -329,9 +331,9 @@ int test_add_sub_in_process(int64_t init_v, int64_t step_v, int op) {
     int64_t expect_v;
 
     if (op == ST_ATOMIC_FETCH_ADD || op == ST_ATOMIC_ADD || op == ST_ATOMIC_INC) {
-        expect_v = init_v + step_v * 100000000 * 10;
+        expect_v = init_v + step_v * SUB_PROC_OP_CNT * 10;
     } else {
-        expect_v = init_v - step_v * 100000000 * 10;
+        expect_v = init_v - step_v * SUB_PROC_OP_CNT * 10;
     }
 
     if (expect_v != *value) {
@@ -380,7 +382,9 @@ st_test(atomic, store_load_in_multi_process) {
     int64_t *value = alloc_buf(sizeof(int64_t));
     *value = store_values[0];
 
-    int sem_id = semget(6789, 1, 06666 | IPC_CREAT);
+    /* semctl(sem_id, 0, IPC_RMID); */
+
+    int sem_id = semget(6789, 1, 0666 | IPC_CREAT);
     st_ut_ne(-1, sem_id, "");
 
     st_ut_eq(ST_OK, block_all_children(sem_id), "");
@@ -400,7 +404,7 @@ st_test(atomic, store_load_in_multi_process) {
                 exit(ret);
             }
 
-            for (int j = 0; j < 100000000; j++) {
+            for (int j = 0; j < SUB_PROC_OP_CNT; j++) {
 
                 if (j % 2 == 0) {
                     st_atomic_store(value, store_values[j % 5]);
@@ -447,7 +451,7 @@ st_test(atomic, swap_in_multi_process) {
     int64_t *value = alloc_buf(sizeof(int64_t));
     *value = 0;
 
-    int sem_id = semget(7890, 1, 06666 | IPC_CREAT);
+    int sem_id = semget(7890, 1, 0666 | IPC_CREAT);
     st_ut_ne(-1, sem_id, "");
 
     st_ut_eq(ST_OK, block_all_children(sem_id), "");
@@ -464,7 +468,7 @@ st_test(atomic, swap_in_multi_process) {
                 exit(ret);
             }
 
-            for (int j = 0; j < 100000000; j++) {
+            for (int j = 0; j < SUB_PROC_OP_CNT; j++) {
                 st_atomic_swap(value, store_values[j % 5]);
 
                 st_atomic_cas(value, &store_values[j % 5], store_values[(j + 1) % 5]);
