@@ -26,10 +26,8 @@ static int st_gc_table_unknown_children_to_queue(st_gc_t *gc, st_table_t *table,
     st_table_iter_t iter;
     st_list_t *lnode = NULL;
 
-    int ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&table->lock);
 
     ret = st_table_iter_init(table, &iter, NULL, 0);
     if (ret != ST_OK) {
@@ -72,7 +70,7 @@ static int st_gc_table_unknown_children_to_queue(st_gc_t *gc, st_table_t *table,
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
+    st_robustlock_unlock(&table->lock);
     return ret;
 }
 
@@ -256,10 +254,8 @@ int st_gc_run(st_gc_t *gc) {
     gc->curr_visit_cnt = 0;
     gc->curr_free_cnt = 0;
 
-    int ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&gc->lock);
 
     if (!gc->begin) {
 
@@ -299,7 +295,7 @@ int st_gc_run(st_gc_t *gc) {
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&gc->lock);
     return ret;
 }
 
@@ -345,10 +341,8 @@ int st_gc_add_root(st_gc_t *gc, st_gc_head_t *gc_head) {
 
     ssize_t idx;
 
-    int ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&gc->lock);
 
     ret = st_array_bsearch_right(&gc->roots, &gc_head, NULL, &idx);
     if (ret == ST_OK) {
@@ -361,7 +355,7 @@ int st_gc_add_root(st_gc_t *gc, st_gc_head_t *gc_head) {
     ret = st_array_insert(&gc->roots, idx, &gc_head);
 
 quit:
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&gc->lock);
     return ret;
 }
 
@@ -372,10 +366,8 @@ int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head) {
     st_must(gc != NULL, ST_ARG_INVALID);
     st_must(gc_head != NULL, ST_ARG_INVALID);
 
-    int ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&gc->lock);
 
     ret = st_array_bsearch_left(&gc->roots, &gc_head, NULL, &idx);
     if (ret != ST_OK) {
@@ -385,7 +377,7 @@ int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head) {
     ret = st_array_remove(&gc->roots, idx);
 
 quit:
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&gc->lock);
     return ret;
 }
 

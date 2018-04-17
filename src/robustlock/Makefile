@@ -4,6 +4,9 @@ target    = robustlock.a
 libs      = pthread
 cflags    = -pthread
 
+deps      = \
+	    util \
+
 test_exec = test_robustlock
 
 BASE_DIR ?= $(CURDIR)/..

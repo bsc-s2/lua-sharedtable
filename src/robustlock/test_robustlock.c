@@ -31,7 +31,6 @@ void free_lock(pthread_mutex_t *lock) {
 
 void create_lock_loop_children(pthread_mutex_t *lock, int *pids,
                                int pid_num, int *stop_flag, int interval) {
-    int ret = 0;
     int child = 0;
 
     for (int i = 0; i < pid_num; i++) {
@@ -41,17 +40,11 @@ void create_lock_loop_children(pthread_mutex_t *lock, int *pids,
         if (child == 0) {
 
             while (1) {
-                ret = st_robustlock_lock(lock);
-                if (ret != ST_OK) {
-                    exit(ret);
-                }
+                st_robustlock_lock(lock);
 
                 usleep(interval);
 
-                ret = st_robustlock_unlock(lock);
-                if (ret != ST_OK) {
-                    exit(ret);
-                }
+                st_robustlock_unlock(lock);
 
                 usleep(1);
 
@@ -106,40 +99,30 @@ st_test(robustlock, destroy) {
 
 
 st_test(robustlock, lock) {
-    int ret = -1;
     pthread_mutex_t *lock = NULL;
 
     lock = alloc_lock();
 
-    ret = st_robustlock_lock(lock);
-    st_ut_eq(ST_OK, ret, "lock with alloced lock");
+    st_ut_nobug(st_robustlock_lock(lock), "lock with alloced lock");
 
-    ret = st_robustlock_lock(lock);
-    st_ut_eq(EDEADLK, ret, "lock with already locked lock");
-
-    ret = st_robustlock_lock(NULL);
-    st_ut_eq(ST_ARG_INVALID, ret, "lock with unalloced lock");
+    st_ut_bug(st_robustlock_lock(lock), "lock twice");
+    st_ut_bug(st_robustlock_lock(NULL), "lock NULL");
 
     free_lock(lock);
 }
 
 st_test(robustlock, unlock) {
-    int ret = -1;
     pthread_mutex_t *lock = NULL;
 
     lock = alloc_lock();
 
-    ret = st_robustlock_unlock(lock);
-    st_ut_eq(EPERM, ret, "unlock with not locked lock");
+    st_ut_bug(st_robustlock_unlock(lock), "unlock with not locked lock");
 
-    ret = st_robustlock_lock(lock);
-    st_ut_eq(ST_OK, ret, "lock");
+    st_ut_nobug(st_robustlock_lock(lock), "lock a valid lock");
 
-    ret = st_robustlock_unlock(lock);
-    st_ut_eq(ST_OK, ret, "unlock with locked lock");
+    st_ut_nobug(st_robustlock_unlock(lock), "unlock with locked lock");
 
-    ret = st_robustlock_unlock(NULL);
-    st_ut_eq(ST_ARG_INVALID, ret, "unlock with unalloced lock");
+    st_ut_bug(st_robustlock_unlock(NULL), "unlock with unalloced lock");
 
     free_lock(lock);
 }
@@ -179,8 +162,9 @@ st_test(robustlock, concurrent_deadlock) {
     for (int i = 0; i < 500; i++) {
         child = fork();
         if (child == 0) {
-            ret = st_robustlock_lock(lock);
-            exit(ret);
+            /* if st_bug() triggered, process receives a signal abort and quit */
+            st_robustlock_lock(lock);
+            exit(0);
         }
         waitpid(child, &ret, 0);
         st_ut_eq(ST_OK, ret, "concurrent deadlock");

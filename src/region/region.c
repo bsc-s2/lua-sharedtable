@@ -11,30 +11,18 @@
 #define ST_REGION_SHM_OBJ_PATH       "/st_shm_area"
 #define ST_REGION_SHM_OBJ_MODE       0660
 
-#define st_region_lock(rcb) do {                       \
-    st_typeof(rcb) _rcb = rcb;                         \
-    if (_rcb->use_lock) {                              \
-        int ret = st_robustlock_lock(&_rcb->lock);     \
-                                                       \
-        if (ret != 0) {                                \
-            derrno("failed to lock rcb: %d", ret);     \
-                                                       \
-            return ret;                                \
-        }                                              \
-    }                                                  \
+#define st_region_lock(rcb) do {                                              \
+    st_typeof(rcb) _rcb = rcb;                                                \
+    if (_rcb->use_lock) {                                                     \
+        st_robustlock_lock(&_rcb->lock);                                      \
+    }                                                                         \
 } while(0)
 
-#define st_region_unlock(rcb) do {                     \
-    st_typeof(rcb) _rcb = rcb;                         \
-    if (_rcb->use_lock) {                              \
-        int ret = st_robustlock_unlock(&_rcb->lock);   \
-                                                       \
-        if (ret != 0) {                                \
-            derrno("failed to unlock rcb: %d", ret);   \
-                                                       \
-            return ret;                                \
-        }                                              \
-    }                                                  \
+#define st_region_unlock(rcb) do {                                            \
+    st_typeof(rcb) _rcb = rcb;                                                \
+    if (_rcb->use_lock) {                                                     \
+        st_robustlock_unlock(&_rcb->lock);                                    \
+    }                                                                         \
 } while(0)
 
 

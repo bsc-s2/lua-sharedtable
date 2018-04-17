@@ -11,10 +11,7 @@ static int st_pagepool_add_region(st_pagepool_t *pool, uint8_t *region) {
     ssize_t idx;
     int ret;
 
-    ret = st_robustlock_lock(&pool->regions_lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_robustlock_lock(&pool->regions_lock);
 
     ret = st_array_bsearch_right(&pool->regions, &region, NULL, &idx);
     if (ret == ST_OK) {
@@ -26,7 +23,7 @@ static int st_pagepool_add_region(st_pagepool_t *pool, uint8_t *region) {
     ret = st_array_insert(&pool->regions, idx, &region);
 
 quit:
-    st_robustlock_unlock_err_abort(&pool->regions_lock);
+    st_robustlock_unlock(&pool->regions_lock);
     return ret;
 }
 
@@ -34,10 +31,7 @@ static int st_pagepool_remove_region(st_pagepool_t *pool, uint8_t *region) {
     int ret;
     ssize_t idx;
 
-    ret = st_robustlock_lock(&pool->regions_lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_robustlock_lock(&pool->regions_lock);
 
     ret = st_array_bsearch_left(&pool->regions, &region, NULL, &idx);
     if (ret != ST_OK) {
@@ -47,7 +41,7 @@ static int st_pagepool_remove_region(st_pagepool_t *pool, uint8_t *region) {
     ret = st_array_remove(&pool->regions, idx);
 
 quit:
-    st_robustlock_unlock_err_abort(&pool->regions_lock);
+    st_robustlock_unlock(&pool->regions_lock);
     return ret;
 }
 
@@ -56,10 +50,7 @@ static int st_pagepool_get_region(st_pagepool_t *pool, uint8_t *addr, uint8_t **
     ssize_t idx;
     int ret;
 
-    ret = st_robustlock_lock(&pool->regions_lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_robustlock_lock(&pool->regions_lock);
 
     ret = st_array_bsearch_left(&pool->regions, &addr, NULL, &idx);
     if (ret == ST_OK) {
@@ -82,7 +73,7 @@ static int st_pagepool_get_region(st_pagepool_t *pool, uint8_t *addr, uint8_t **
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&pool->regions_lock);
+    st_robustlock_unlock(&pool->regions_lock);
     return ret;
 }
 
@@ -337,10 +328,7 @@ int st_pagepool_alloc_pages(st_pagepool_t *pool, int cnt,
     st_must(pages != NULL, ST_ARG_INVALID);
     st_must(0 < cnt && cnt <= pool->pages_per_region, ST_ARG_INVALID);
 
-    ret = st_robustlock_lock(&pool->pages_lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_robustlock_lock(&pool->pages_lock);
 
     ret = st_pagepool_get_free_pages(pool, cnt, pages);
     if (ret == ST_OK) {
@@ -369,23 +357,20 @@ int st_pagepool_alloc_pages(st_pagepool_t *pool, int cnt,
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&pool->pages_lock);
+    st_robustlock_unlock(&pool->pages_lock);
     return ret;
 }
 
 int st_pagepool_free_pages(st_pagepool_t *pool, st_pagepool_page_t *pages) {
     st_pagepool_page_t *merge;
-    int ret;
+    int ret = ST_OK;
 
     st_must(pool != NULL, ST_ARG_INVALID);
     st_must(pages != NULL, ST_ARG_INVALID);
     st_must(pages[0].type == ST_PAGEPOOL_PAGE_MASTER, ST_ARG_INVALID);
     st_must(pages[0].state == ST_PAGEPOOL_PAGE_ALLOCATED, ST_ARG_INVALID);
 
-    ret = st_robustlock_lock(&pool->pages_lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_robustlock_lock(&pool->pages_lock);
 
     merge = st_pagepool_merge_pages(pool, pages);
 
@@ -404,7 +389,7 @@ int st_pagepool_free_pages(st_pagepool_t *pool, st_pagepool_page_t *pages) {
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&pool->pages_lock);
+    st_robustlock_unlock(&pool->pages_lock);
     return ret;
 }
 

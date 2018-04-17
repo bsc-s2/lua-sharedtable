@@ -289,12 +289,8 @@ st_test(st_slab, pool_init_destroy)
                  st_list_empty(&group->slabs_partial),
                  "slabs_partial failed %d", cnt);
 
-        st_ut_eq(ST_OK,
-                 st_robustlock_lock(&group->lock),
-                 "lock lock failed %d", cnt);
-        st_ut_eq(ST_OK,
-                 st_robustlock_unlock(&group->lock),
-                 "lock unlock failed %d", cnt);
+        st_ut_nobug(st_robustlock_lock(&group->lock), "lock group lock %d", cnt);
+        st_ut_nobug(st_robustlock_unlock(&group->lock), "unlock group lock %d", cnt);
 
         st_ut_eq(1, group->inited, "failed to set inited %d", cnt);
 

@@ -259,10 +259,8 @@ static int check_table_children_reachable(st_table_t *table, st_gc_t *gc) {
     st_str_t value;
     st_table_iter_t iter;
 
-    int ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&table->lock);
 
     ret = st_table_iter_init(table, &iter, NULL, 0);
     if (ret != ST_OK) {
@@ -292,7 +290,7 @@ static int check_table_children_reachable(st_table_t *table, st_gc_t *gc) {
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
+    st_robustlock_unlock(&table->lock);
     return ret;
 }
 

@@ -330,6 +330,7 @@ static inline int main_(int argc, char **argv) {
                                                                               \
     void st_ut_bughandler_track() {                                           \
         st_ut_bug_tracker_ = 1;                                               \
+        longjmp(st_ut_bug_jmp_buf_, 1);                                       \
     }                                                                         \
                                                                               \
     int main(int argc, char **argv) {                                         \

@@ -263,12 +263,7 @@ st_slab_get_obj_from_group(st_slab_group_t *group, ssize_t obj_size, void **obj)
 
     }
 
-    ret = st_robustlock_lock(&group->lock);
-    if (ret != 0) {
-        derrno("failed to lock group");
-
-        return ret;
-    }
+    st_robustlock_lock(&group->lock);
 
     if (st_list_empty(&group->slabs_partial)) {
         ret = st_slab_alloc_pages(group, obj_size, obj_cnt);
@@ -304,7 +299,7 @@ st_slab_get_obj_from_group(st_slab_group_t *group, ssize_t obj_size, void **obj)
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&group->lock);
+    st_robustlock_unlock(&group->lock);
     return ret;
 }
 
@@ -375,12 +370,8 @@ st_slab_free_obj_from_group(st_slab_group_t *group,
                             st_pagepool_page_t *master,
                             void *addr)
 {
-    int ret = st_robustlock_lock(&group->lock);
-    if (ret != ST_OK) {
-        derr("failed to lock group");
-
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&group->lock);
 
     /** clear according bitmap */
     int was_in_full = st_slab_is_full(master);
@@ -416,7 +407,7 @@ st_slab_free_obj_from_group(st_slab_group_t *group,
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&group->lock);
+    st_robustlock_unlock(&group->lock);
     return ret;
 }
 

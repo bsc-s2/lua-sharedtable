@@ -47,10 +47,8 @@ static int st_table_add_element(st_table_t *table, st_table_element_t *new_elem,
 
     st_rbtree_node_t *existed_node = NULL;
 
-    int ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&table->lock);
 
     ret = st_rbtree_insert(&table->elements, &new_elem->rbnode, 0, &existed_node);
     if (ret != ST_OK && ret != ST_EXISTED) {
@@ -77,7 +75,7 @@ static int st_table_add_element(st_table_t *table, st_table_element_t *new_elem,
     }
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
+    st_robustlock_unlock(&table->lock);
     return ret;
 }
 
@@ -97,10 +95,8 @@ static int st_table_get_element(st_table_t *table, st_str_t key, st_table_elemen
 
 static int st_table_remove_element(st_table_t *table, st_str_t key, st_table_element_t **removed) {
 
-    int ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&table->lock);
 
     ret = st_table_get_element(table, key, removed);
     if (ret != ST_OK) {
@@ -112,7 +108,7 @@ static int st_table_remove_element(st_table_t *table, st_str_t key, st_table_ele
     table->element_cnt--;
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
+    st_robustlock_unlock(&table->lock);
     return ret;
 }
 
@@ -261,10 +257,8 @@ int st_table_remove_all_for_gc(st_table_t *table) {
     st_must(table != NULL, ST_ARG_INVALID);
     st_must(table->inited, ST_UNINITED);
 
-    int ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&table->lock);
 
     ret = st_table_remove_all_elements(table, table->elements.root, ST_TABLE_NOT_PUSH_TO_GC);
     if (ret != ST_OK) {
@@ -275,7 +269,7 @@ int st_table_remove_all_for_gc(st_table_t *table) {
     table->element_cnt = 0;
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
+    st_robustlock_unlock(&table->lock);
     return ret;
 }
 
@@ -286,16 +280,9 @@ int st_table_remove_all(st_table_t *table) {
 
     st_gc_t *gc = &table->pool->gc;
 
-    int ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
-
-    ret = st_robustlock_lock(&table->lock);
-    if (ret != ST_OK) {
-        st_robustlock_unlock_err_abort(&gc->lock);
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&gc->lock);
+    st_robustlock_lock(&table->lock);
 
     ret = st_table_remove_all_elements(table, table->elements.root, ST_TABLE_PUSH_TO_GC);
     if (ret != ST_OK) {
@@ -306,8 +293,8 @@ int st_table_remove_all(st_table_t *table) {
     table->element_cnt = 0;
 
 quit:
-    st_robustlock_unlock_err_abort(&table->lock);
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&table->lock);
+    st_robustlock_unlock(&gc->lock);
 
     if (ret == ST_OK) {
         return st_table_run_gc_if_needed(table);
@@ -334,16 +321,12 @@ int st_table_set_key_value(st_table_t *table, st_str_t key, st_str_t value) {
         return ret;
     }
 
-    ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        st_table_free_element(table, elem);
-        return ret;
-    }
+    st_robustlock_lock(&gc->lock);
 
     ret = st_table_add_element(table, elem, 1, &existed_elem);
     if (ret != ST_OK && ret != ST_EXISTED) {
         st_table_free_element(table, elem);
-        st_robustlock_unlock_err_abort(&gc->lock);
+        st_robustlock_unlock(&gc->lock);
         return ret;
     }
 
@@ -363,7 +346,7 @@ int st_table_set_key_value(st_table_t *table, st_str_t key, st_str_t value) {
         st_assert(ret == ST_OK);
     }
 
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&gc->lock);
 
     if (existed_elem != NULL) {
         ret = st_table_free_element(table, existed_elem);
@@ -394,21 +377,18 @@ int st_table_add_key_value(st_table_t *table, st_str_t key, st_str_t value) {
         st_table_t *t = st_table_get_table_addr_from_value(value);
         st_gc_t *gc = &table->pool->gc;
 
-        ret = st_robustlock_lock(&gc->lock);
-        if (ret != ST_OK) {
-            goto quit;
-        }
+        st_robustlock_lock(&gc->lock);
 
         ret = st_table_add_element(table, elem, 0, NULL);
         if (ret != ST_OK) {
-            st_robustlock_unlock_err_abort(&gc->lock);
+            st_robustlock_unlock(&gc->lock);
             goto quit;
         }
 
         ret = st_gc_push_to_mark(gc, &t->gc_head);
         st_assert(ret == ST_OK);
 
-        st_robustlock_unlock_err_abort(&gc->lock);
+        st_robustlock_unlock(&gc->lock);
 
     } else {
         ret = st_table_add_element(table, elem, 0, NULL);
@@ -433,14 +413,12 @@ int st_table_remove_key(st_table_t *table, st_str_t key) {
     st_table_element_t *removed = NULL;
     st_gc_t *gc = &table->pool->gc;
 
-    int ret = st_robustlock_lock(&gc->lock);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    int ret;
+    st_robustlock_lock(&gc->lock);
 
     ret = st_table_remove_element(table, key, &removed);
     if (ret != ST_OK) {
-        st_robustlock_unlock_err_abort(&gc->lock);
+        st_robustlock_unlock(&gc->lock);
         return ret;
     }
 
@@ -451,7 +429,7 @@ int st_table_remove_key(st_table_t *table, st_str_t key) {
         st_assert(ret == ST_OK);
     }
 
-    st_robustlock_unlock_err_abort(&gc->lock);
+    st_robustlock_unlock(&gc->lock);
 
     ret = st_table_free_element(table, removed);
     if (ret != ST_OK) {
