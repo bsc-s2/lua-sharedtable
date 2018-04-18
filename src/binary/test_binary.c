@@ -42,9 +42,6 @@ void test_bin_varint(uint64_t i) {
 st_test(binary, varint) {
     for (uint64_t i = 0; i < 1024; i++) {
         test_bin_varint(i);
-        if (st_ut_does_fail()) {
-            return;
-        }
     }
 }
 
@@ -53,13 +50,8 @@ st_test(binary, varint_edge) {
     for (int64_t i = 0; i < 64; i++) {
 
         test_bin_varint((1llu << i) + 1);
-        st_ut_return_fail();
-
         test_bin_varint((1llu << i));
-        st_ut_return_fail();
-
         test_bin_varint((1llu << i) - 1);
-        st_ut_return_fail();
     }
 }
 

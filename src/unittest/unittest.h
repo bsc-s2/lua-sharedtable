@@ -2,6 +2,7 @@
 #define __UNITTEST__UNITTEST_H__
 
 #include <errno.h>
+#include <setjmp.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,8 +34,8 @@ typedef struct st_ut_bench_t st_ut_bench_t;
 extern st_ut_case_t *st_ut_cases_;
 extern int64_t       st_ut_case_n_;
 extern int64_t       st_ut_case_capacity_;
-extern int           st_ut_ret__;
-extern int           st_ut_bug_tracker_;
+extern jmp_buf       st_ut_bug_jmp_buf_;
+extern jmp_buf       st_ut_case_jmp_buf_;
 
 extern st_ut_bench_t *st_ut_benches_;
 extern int64_t        st_ut_bench_n_;
@@ -86,14 +87,6 @@ void st_ut_bughandler_track();
     }                                                                         \
     static void st_ut_bench_##name_##_##func_(void*data, int64_t times)
 
-#define st_ut_return_fail()                                                   \
-        do {                                                                  \
-            if (st_ut_does_fail()) {                                          \
-                return;                                                       \
-            }                                                                 \
-        } while(0)
-
-#define st_ut_does_fail() (st_ut_ret__ != 0)
 
 /* assertions */
 #define st_ut_true(actual, fmt...)         st_ut_assert_cmp_(0,        !=, actual, fmt)
@@ -104,30 +97,44 @@ void st_ut_bughandler_track();
 #define st_ut_gt(expected, actual, fmt...) st_ut_assert_cmp_(expected, >,  actual, fmt)
 #define st_ut_le(expected, actual, fmt...) st_ut_assert_cmp_(expected, <=, actual, fmt)
 #define st_ut_lt(expected, actual, fmt...) st_ut_assert_cmp_(expected, <,  actual, fmt)
+#define st_ut_succeed(fmt...)              st_ut_assert_(1, fmt)
 #define st_ut_fail(fmt...)                 st_ut_assert_(0, fmt)
 
 #define st_ut_bug(make_bug_, mes...)                                          \
         do {                                                                  \
-            st_ut_bug_tracker_ = 0;                                           \
             st_util_bughandler_t old = st_util_bughandler_;                   \
             st_util_bughandler_ = st_ut_bughandler_track;                     \
                                                                               \
-            make_bug_;                                                        \
+            int r_ = setjmp(st_ut_bug_jmp_buf_);                              \
+            if (r_ == 0) {                                                    \
+                /* after set jmp */                                           \
+                make_bug_;                                                    \
+                st_util_bughandler_ = old;                                    \
+                st_ut_fail("Expect but NO. " mes);                            \
+            } else {                                                          \
+                /* return from longjmp */                                     \
+                st_util_bughandler_ = old;                                    \
+                st_ut_succeed("Expected bug found. " mes);                    \
+            }                                                                 \
                                                                               \
-            st_util_bughandler_ = old;                                        \
-            st_ut_assert_(st_ut_bug_tracker_ == 1, mes);                      \
         } while (0)
 
 #define st_ut_nobug(make_nobug_, mes...)                                      \
         do {                                                                  \
-            st_ut_bug_tracker_ = 0;                                           \
             st_util_bughandler_t old = st_util_bughandler_;                   \
             st_util_bughandler_ = st_ut_bughandler_track;                     \
                                                                               \
-            make_nobug_;                                                      \
-                                                                              \
-            st_util_bughandler_ = old;                                        \
-            st_ut_assert_(st_ut_bug_tracker_ == 0, mes);                      \
+            int r_ = setjmp(st_ut_bug_jmp_buf_);                              \
+            if (r_ == 0) {                                                    \
+                /* after set jmp */                                           \
+                make_nobug_;                                                  \
+                st_util_bughandler_ = old;                                    \
+                st_ut_succeed("Expected no bug. " mes);                       \
+            } else {                                                          \
+                /* return from longjmp */                                     \
+                st_util_bughandler_ = old;                                    \
+                st_ut_fail("Expected no bug but found one. " mes);            \
+            }                                                                 \
         } while (0)
 
 #define st_ut_assert_cmp_(expected__, operator__, actual__, fmt, ...)         \
@@ -146,12 +153,10 @@ void st_ut_bughandler_track();
     do {                                                                      \
         if ( (to_be_true) ) {                                                 \
             OK_OUT( mes, ##__VA_ARGS__ );                                     \
-            st_ut_ret__ = 0;                                                  \
         }                                                                     \
         else {                                                                \
             ERR_OUT( mes, ##__VA_ARGS__ );                                    \
-            st_ut_ret__ = -1;                                                 \
-            return;                                                           \
+            longjmp(st_ut_case_jmp_buf_, 1);                                  \
         }                                                                     \
     } while ( 0 )
 
@@ -286,14 +291,19 @@ static inline int main_(int argc, char **argv) {
 
     /* test */
     for (int i = 0; i < st_ut_case_n_; i++) {
-        printf("### Test Start: %s\n", st_ut_cases_[i].name);
-        st_ut_cases_[i].func();
-        if (st_ut_ret__ == -1) {
-            printf("test fail: %s\n", st_ut_cases_[i].name);
+        printf("### Test Start: %d %s\n", i, st_ut_cases_[i].name);
+
+        int r = setjmp(st_ut_case_jmp_buf_);
+        if (r == 0) {
+            st_ut_cases_[i].func();
+            printf("### Test OK:    %d %s\n", i, st_ut_cases_[i].name);
+        } else {
+            /* longjmp triggered, there is a failure */
+            printf("### Test Fail:  %d %s\n", i, st_ut_cases_[i].name);
             return -1;
         }
-        printf("### Test    OK: %s\n", st_ut_cases_[i].name);
     }
+
     printf("All passed, n_cases = %lld\n", st_ut_case_n_);
 
     /* bench */
@@ -315,8 +325,8 @@ static inline int main_(int argc, char **argv) {
     st_ut_case_t  *st_ut_cases_;                                              \
     int64_t        st_ut_case_n_;                                             \
     int64_t        st_ut_case_capacity_;                                      \
-    int            st_ut_ret__;                                               \
-    int            st_ut_bug_tracker_;                                        \
+    jmp_buf        st_ut_bug_jmp_buf_;                                        \
+    jmp_buf        st_ut_case_jmp_buf_;                                       \
     st_ut_bench_t *st_ut_benches_;                                            \
     int64_t        st_ut_bench_n_;                                            \
     int64_t        st_ut_bench_capacity_;                                     \
@@ -329,7 +339,6 @@ static inline int main_(int argc, char **argv) {
     }                                                                         \
                                                                               \
     void st_ut_bughandler_track() {                                           \
-        st_ut_bug_tracker_ = 1;                                               \
         longjmp(st_ut_bug_jmp_buf_, 1);                                       \
     }                                                                         \
                                                                               \
