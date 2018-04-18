@@ -108,6 +108,28 @@ source /opt/rh/devtoolset-3/enable
 
 #   Contribute
 
+##  Preprocessor
+
+-   `st_assert(expr, fmt...)`:
+    is used to detect unsolvable problems.
+
+    If expr is evaluated to 0, it kills the entire process by sending a signal.
+
+    It is used to check critical conditions, such as operating on a NULL pointer.
+
+    A failure assert means there is severe problem happening, nothing else
+    should be done.
+
+    We assume arguments passed in are always valid.
+    Otherwise, there must be a programming mistake.
+
+-   `st_must(expr, optional_return_value)`:
+    is used to check non-critical invalid input,
+    such as:
+
+    -   freeing a NULL pointer(this is can be just ignored and return),
+
+
 ##  Code style
 
 -   Use [astyle][astyle] to format `.c` and `.h` source code.
