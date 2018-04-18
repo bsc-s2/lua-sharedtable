@@ -1,8 +1,10 @@
 #ifndef __INC__UTIL_H__
 #     define __INC__UTIL_H__
 
-#include <signal.h>
 #include <immintrin.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "inc/bit.h"
 
 
@@ -36,7 +38,8 @@
 /* #define st_pause() __asm__("pause\n") */
 #define st_pause() _mm_pause()
 
-#define st_typeof(x) __typeof__(x)
+#define st_typeof(x)  __typeof__(x)
+#define st_autotype   __auto_type
 #define st_nelts(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define st_unused(x) (void)(x)
@@ -178,11 +181,28 @@
   } while (0)
 
 #define st_assert(expr, _fmt...) do {                                         \
-      if (! (expr)) {                                                         \
-          derr("assertion fail: ["#expr"] "_fmt);                             \
-          st_bug("assertion fail: ["#expr"] "_fmt);                           \
-      }                                                                       \
-  } while (0)
+        if (! (expr)) {                                                       \
+            derr("assertion fail: ["#expr"] "_fmt);                           \
+            st_bug("assertion fail: ["#expr"] "_fmt);                         \
+        }                                                                     \
+    } while (0)
+
+#define st_assert_ok(ret, fmt, ...) do {                                      \
+        st_autotype r_ = (ret);                                               \
+        st_assert((r_) == ST_OK,                                              \
+                  "ret: %d, err: %s, pid: %d; "                               \
+                  "when [" #ret "] " \
+                  fmt,                                                        \
+                  (r_), strerror(r_), getpid(),                               \
+                  ##__VA_ARGS__);                                             \
+    } while (0)
+
+#define st_assert_nonull(v, fmt...) do {                                      \
+        st_autotype v_ = (v);                                                 \
+        st_assert((v_) != NULL,                                               \
+                  "[" #v "] must not be NULL. "                               \
+                  fmt);                                                       \
+    } while (0)
 
 /* must and assert works only in debug mode. */
 

@@ -76,8 +76,7 @@ st_test(robustlock, init) {
     ret = st_robustlock_init(lock);
     st_ut_eq(ST_OK, ret, "init with alloced lock");
 
-    ret = st_robustlock_init(NULL);
-    st_ut_eq(ST_ARG_INVALID, ret, "init with unalloced lock");
+    st_ut_bug(st_robustlock_init(NULL));
 
     free_lock(lock);
 }

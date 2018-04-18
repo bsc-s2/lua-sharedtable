@@ -1,57 +1,42 @@
 #include "robustlock.h"
 
 int st_robustlock_init(pthread_mutex_t *lock) {
+
+    st_assert_nonull(lock);
+
     int ret = ST_ERR;
     pthread_mutexattr_t attr;
 
     memset(&attr, 0, sizeof(attr));
 
-    st_must(lock != NULL, ST_ARG_INVALID);
-
+    /* possible error: ENOMEM */
     ret = pthread_mutexattr_init(&attr);
     if (ret != ST_OK) {
         derr("pthread_mutexattr_init ret: %d, err: %s\n", ret, strerror(ret));
         return ret;
     }
 
-    ret = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
-    if (ret != ST_OK) {
-        derr("pthread_mutexattr_settype ret: %d, err: %s\n", ret, strerror(ret));
-        goto exit;
-    }
+    /* possible error: EINVAL */
+    st_assert_ok(pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK), "");
+    st_assert_ok(pthread_mutexattr_setrobust(&attr, PTHREAD_MUTEX_ROBUST), "");
+    st_assert_ok(pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED), "");
 
-    ret = pthread_mutexattr_setrobust(&attr, PTHREAD_MUTEX_ROBUST);
-    if (ret != ST_OK) {
-        derr("pthread_mutexattr_setrobust ret: %d, err: %s\n", ret, strerror(ret));
-        goto exit;
-    }
+    /* possible error: EBUSY, EINVAL */
+    st_assert_ok(pthread_mutex_init(lock, &attr), "");
 
-    ret = pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-    if (ret != ST_OK) {
-        derr("pthread_mutexattr_setpshared ret: %d, err: %s\n", ret, strerror(ret));
-        goto exit;
-    }
-
-    ret = pthread_mutex_init(lock, &attr);
-    if (ret != ST_OK) {
-        derr("pthread_mutex_init ret: %d, err: %s\n", ret, strerror(ret));
-        goto exit;
-    }
-
-exit:
     pthread_mutexattr_destroy(&attr);
     return ret;
 }
 
 void st_robustlock_lock(pthread_mutex_t *lock) {
 
+    st_assert_nonull(lock);
+
     /* Lock recovery process ref:
      * http://man7.org/linux/man-pages/man3/pthread_mutex_lock.3p.html
      */
 
     int ret;
-
-    st_assert(lock != NULL, "lock is NULL");
 
     ret = pthread_mutex_lock(lock);
     dd("pthread_mutex_lock ret:%d, pid:%d, address:%p", ret, getpid(), lock);
