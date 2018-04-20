@@ -103,6 +103,28 @@ void st_robustlock_lock(pthread_mutex_t *lock) {
      */
 }
 
+
+/** please refer to comments of st_robustlock_lock */
+int st_robustlock_trylock(pthread_mutex_t *lock) {
+    st_assert_nonull(lock);
+
+    int ret = pthread_mutex_trylock(lock);
+    if (ret == ST_OK || ret == EBUSY) {
+        return ret;
+    }
+
+    st_assert(ret == EOWNERDEAD,
+              "pthread_mutex_unlock ret: %d, err: %s",
+              ret, strerror(ret));
+
+    st_assert_ok(pthread_mutex_consistent(lock),
+                 "pthyread_mutex_consistent: non-0 return: %p",
+                 lock);
+
+    return ST_OK;
+}
+
+
 void st_robustlock_unlock(pthread_mutex_t *lock) {
 
     st_assert(lock != NULL, "lock is NULL");

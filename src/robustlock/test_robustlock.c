@@ -29,6 +29,7 @@ void free_lock(pthread_mutex_t *lock) {
     munmap(lock, sizeof(*lock));
 }
 
+
 void create_lock_loop_children(pthread_mutex_t *lock, int *pids,
                                int pid_num, int *stop_flag, int interval) {
     int child = 0;
@@ -109,6 +110,47 @@ st_test(robustlock, lock) {
 
     free_lock(lock);
 }
+
+
+st_test(robustlock, trylock) {
+    pthread_mutex_t *lock = NULL;
+    pthread_mutex_t *lock_crash = NULL;
+
+    lock = alloc_lock();
+    lock_crash = alloc_lock();
+
+    int ret = st_robustlock_trylock(lock);
+    st_ut_eq(ST_OK, ret, "trylock unlocked lock");
+
+    st_ut_bug(st_robustlock_trylock(lock), "lock twice");
+    st_ut_bug(st_robustlock_trylock(NULL), "lock NULL");
+
+    int pid = fork();
+    st_ut_le(0, pid, "fork process");
+
+    if (pid == 0) {
+        ret = st_robustlock_trylock(lock);
+        st_ut_eq(EBUSY, ret, "trylock lock");
+
+        st_ut_nobug(st_robustlock_lock(lock_crash), "lock lock_crash");
+
+        exit(0);
+    }
+
+    waitpid(pid, NULL, 0);
+
+    ret = st_robustlock_trylock(lock_crash);
+    st_ut_eq(ST_OK, ret, "trylock lock_crash");
+    /** make sure lock_crash is locked */
+    st_ut_bug(st_robustlock_lock(lock_crash), "lock lock_crash twice");
+
+    st_ut_nobug(st_robustlock_unlock(lock_crash), "unlock lock_crash");
+    st_ut_nobug(st_robustlock_unlock(lock), "unlock lock");
+
+    free_lock(lock);
+    free_lock(lock_crash);
+}
+
 
 st_test(robustlock, unlock) {
     pthread_mutex_t *lock = NULL;
