@@ -235,8 +235,8 @@ st_test(table, add_key_value) {
     st_str_t value = st_str_const("bb");
 
     st_ut_eq(ST_ARG_INVALID, st_table_add_key_value(NULL, key, value), "");
-    st_ut_eq(ST_ARG_INVALID, st_table_add_key_value(t, (st_str_t)st_str_null, value), "");
-    st_ut_eq(ST_ARG_INVALID, st_table_add_key_value(t, key, (st_str_t)st_str_null), "");
+    st_ut_eq(ST_ARG_INVALID, st_table_add_key_value(t, (st_str_t)st_str_zero, value), "");
+    st_ut_eq(ST_ARG_INVALID, st_table_add_key_value(t, key, (st_str_t)st_str_zero), "");
 
     st_table_remove_all(t);
     st_table_free(t);
@@ -290,8 +290,8 @@ st_test(table, set_key_value) {
     st_str_t value = st_str_const("bb");
 
     st_ut_eq(ST_ARG_INVALID, st_table_set_key_value(NULL, key, value), "");
-    st_ut_eq(ST_ARG_INVALID, st_table_set_key_value(t, (st_str_t)st_str_null, value), "");
-    st_ut_eq(ST_ARG_INVALID, st_table_set_key_value(t, key, (st_str_t)st_str_null), "");
+    st_ut_eq(ST_ARG_INVALID, st_table_set_key_value(t, (st_str_t)st_str_zero, value), "");
+    st_ut_eq(ST_ARG_INVALID, st_table_set_key_value(t, key, (st_str_t)st_str_zero), "");
 
     st_table_remove_all(t);
     st_table_free(t);
@@ -376,7 +376,7 @@ st_test(table, remove_key) {
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
     st_ut_eq(ST_ARG_INVALID, st_table_remove_key(NULL, (st_str_t)st_str_const("val")), "");
-    st_ut_eq(ST_ARG_INVALID, st_table_remove_key(t, (st_str_t)st_str_null), "");
+    st_ut_eq(ST_ARG_INVALID, st_table_remove_key(t, (st_str_t)st_str_zero), "");
 
     st_table_remove_all(t);
     st_table_free(t);
