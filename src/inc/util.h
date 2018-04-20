@@ -191,7 +191,7 @@
         st_autotype r_ = (ret);                                               \
         st_assert((r_) == ST_OK,                                              \
                   "ret: %d, err: %s, pid: %d; "                               \
-                  "when [" #ret "] " \
+                  "when [" #ret "] "                                          \
                   fmt,                                                        \
                   (r_), strerror(r_), getpid(),                               \
                   ##__VA_ARGS__);                                             \
