@@ -38,15 +38,31 @@ struct st_str_s {
 struct st_MemPool;
 static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
 
-#define st_str_wrap_common(_charptr, t, _len) {.type=t, .len=(_len), .capacity=(_len), .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
-#define st_str_wrap(_charptr, _len)           st_str_wrap_common(_charptr, ST_TYPES_STRING, _len)
+#define st_str_wrap_(_type, _len, _capacity, _owned, _bytes)                  \
+        {                                                                     \
+            .type        =(_type),                                            \
+            .len         =(_len),                                             \
+            .capacity    =(_capacity),                                        \
+            .bytes_owned =(_owned),                                           \
+            .bytes       =(uint8_t*)(_bytes)                                  \
+        }
 
-#define st_str_const(s)               {.type=ST_TYPES_STRING, .len=sizeof(s)-1,    .capacity=sizeof(s),      .bytes_owned=0, .bytes=(uint8_t*)(s)}
-#define st_str_var(_len)              {.type=ST_TYPES_STRING, .len=(_len),         .capacity=(_len),         .bytes_owned=0, .bytes=(uint8_t*)((char[_len]){0})}
-#define st_str_wrap_0(_charptr, _len) {.type=ST_TYPES_STRING, .len=(_len),         .capacity=(_len) + 1,     .bytes_owned=0, .bytes=(uint8_t*)(_charptr)}
-#define st_str_wrap_chars(_chars)     {.type=ST_TYPES_STRING, .len=sizeof(_chars), .capacity=sizeof(_chars), .bytes_owned=0, .bytes=(uint8_t*)(_chars)}
-#define st_str_null                   {.type=ST_TYPES_STRING, .len=0,              .capacity=0,              .bytes_owned=0, .bytes=NULL}
-#define st_str_empty                  {.type=ST_TYPES_STRING, .len=0,              .capacity=1,              .bytes_owned=0, .bytes=(uint8_t*)empty_str_}
+#define st_str_wrap_common(_charptr, _type, _len) st_str_wrap_((_type), (_len), (_len), 0, (_charptr))
+
+/* lcb: len, capacity and bytes */
+#define st_str_wrap_lcb(_len, _capacity, _bytes) st_str_wrap_(ST_TYPES_STRING, (_len), (_capacity), 0, (_bytes))
+
+#define st_str_wrap(_charptr, _len)   st_str_wrap_lcb((_len),         (_len),         (_charptr))
+#define st_str_const(s)               st_str_wrap_lcb(sizeof(s)-1,    sizeof(s),      (s))
+#define st_str_local(_len)            st_str_wrap_lcb((_len),         (_len),         (char[_len]){0})
+#define st_str_wrap_0(_charptr, _len) st_str_wrap_lcb((_len),         (_len) + 1,     (_charptr))
+#define st_str_wrap_chars(_chars)     st_str_wrap_lcb(sizeof(_chars), sizeof(_chars), (_chars))
+#define st_str_zero                   st_str_wrap_lcb(0,              0,              NULL)
+#define st_str_empty                  st_str_wrap_lcb(0,              1,              empty_str_)
+
+/* deprecated: TODO remove _var and _null */
+#define st_str_var  st_str_local
+#define st_str_null st_str_zero
 
 #define st_str_equal(a, b)                                                    \
         st_str_equal_((st_str_t*)(a), (st_str_t*)(b))

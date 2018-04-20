@@ -18,7 +18,7 @@ st_test(str, const) {
     }
 
     {
-        st_str_t s = st_str_var(10);
+        st_str_t s = st_str_local(10);
 
         st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
         st_ut_eq(10,              s.len,         "len");
@@ -65,7 +65,7 @@ st_test(str, const) {
     }
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
 
         st_ut_eq(ST_TYPES_STRING, s.type,        "type is not string");
         st_ut_eq(0,               s.len,         "len");
@@ -127,7 +127,7 @@ st_test(str, init) {
     int ret;
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -148,7 +148,7 @@ st_test(str, init) {
     }
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -163,7 +163,7 @@ st_test(str, init) {
     }
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -183,7 +183,7 @@ st_test(str, init_0) {
     int ret;
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init_0(&s, 0);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -198,7 +198,7 @@ st_test(str, init_0) {
     }
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init_0(&s, 1);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -213,7 +213,7 @@ st_test(str, init_0) {
     }
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
         ret = st_str_init_0(&s, 102400);
         st_ut_eq(ST_OK, ret, "init ok");
 
@@ -268,7 +268,7 @@ st_test(str, equal) {
 
     {
         st_str_t *emp = &(st_str_t)st_str_empty;
-        st_str_t *nu = &(st_str_t)st_str_null;
+        st_str_t *nu = &(st_str_t)st_str_zero;
 
         st_ut_eq(0, st_str_equal(NULL, emp), "");
         st_ut_eq(0, st_str_equal(emp, NULL), "");
@@ -314,7 +314,7 @@ st_test(str, cmp) {
 
     {
         st_str_t *emp = &(st_str_t)st_str_empty;
-        st_str_t *nu  = &(st_str_t)st_str_null;
+        st_str_t *nu  = &(st_str_t)st_str_zero;
 
         st_ut_eq(ST_ARG_INVALID, st_str_cmp(NULL, NULL), "");
         st_ut_eq(ST_ARG_INVALID, st_str_cmp(NULL, emp),  "");
@@ -519,7 +519,7 @@ st_test(str, destroy) {
 
     int ret;
 
-    st_str_t s = st_str_null;
+    st_str_t s = st_str_zero;
     ret = st_str_init(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
@@ -542,8 +542,8 @@ st_test(str, destroy) {
 st_test(str, ref) {
 
     {
-        st_str_t s = st_str_null;
-        st_str_t t = st_str_null;
+        st_str_t s = st_str_zero;
+        st_str_t t = st_str_zero;
 
         st_ut_eq(ST_ARG_INVALID, st_str_ref(NULL, NULL), "");
         st_ut_eq(ST_ARG_INVALID, st_str_ref(NULL, &s), "");
@@ -556,11 +556,11 @@ st_test(str, ref) {
 
     int ret;
 
-    st_str_t s = st_str_null;
+    st_str_t s = st_str_zero;
     ret = st_str_init(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
-    st_str_t ref = st_str_null;
+    st_str_t ref = st_str_zero;
 
     ret = st_str_ref(&ref, &s);
     st_ut_eq(ST_OK, ret, "");
@@ -583,8 +583,8 @@ st_test(str, ref) {
 st_test(str, copy) {
 
     {
-        st_str_t s = st_str_null;
-        st_str_t t = st_str_null;
+        st_str_t s = st_str_zero;
+        st_str_t t = st_str_zero;
 
         st_ut_eq(ST_ARG_INVALID, st_str_copy(NULL, NULL), "");
         st_ut_eq(ST_ARG_INVALID, st_str_copy(NULL, &s), "");
@@ -597,11 +597,11 @@ st_test(str, copy) {
 
     int ret;
 
-    st_str_t s = st_str_null;
+    st_str_t s = st_str_zero;
     ret = st_str_init_0(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
-    st_str_t cpy = st_str_null;
+    st_str_t cpy = st_str_zero;
 
     ret = st_str_copy(&cpy, &s);
     st_ut_eq(ST_OK, ret, "");
@@ -627,7 +627,7 @@ st_test(str, copy) {
 st_test(str, copy_cstr) {
 
     {
-        st_str_t s = st_str_null;
+        st_str_t s = st_str_zero;
 
         st_ut_eq(ST_ARG_INVALID, st_str_copy_cstr(NULL, NULL), "");
         st_ut_eq(ST_ARG_INVALID, st_str_copy_cstr(NULL, FOO), "");
@@ -639,7 +639,7 @@ st_test(str, copy_cstr) {
 
     int ret;
 
-    st_str_t s = st_str_null;
+    st_str_t s = st_str_zero;
 
     ret = st_str_copy_cstr(&s, FOO);
     st_ut_eq(ST_OK, ret, "");
@@ -661,8 +661,8 @@ st_test(str, copy_cstr) {
 st_test(str, seize) {
 
     {
-        st_str_t s = st_str_null;
-        st_str_t t = st_str_null;
+        st_str_t s = st_str_zero;
+        st_str_t t = st_str_zero;
 
         st_ut_eq(ST_ARG_INVALID, st_str_seize(NULL, NULL), "");
         st_ut_eq(ST_ARG_INVALID, st_str_seize(NULL, &s), "");
@@ -675,11 +675,11 @@ st_test(str, seize) {
 
     int ret;
 
-    st_str_t s = st_str_null;
+    st_str_t s = st_str_zero;
     ret = st_str_init_0(&s, 10);
     st_ut_eq(ST_OK, ret, "init ok");
 
-    st_str_t seize = st_str_null;
+    st_str_t seize = st_str_zero;
 
     ret = st_str_seize(&seize, &s);
     st_ut_eq(ST_OK, ret, "");
