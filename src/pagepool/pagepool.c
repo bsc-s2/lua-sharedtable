@@ -222,7 +222,7 @@ static int st_pagepool_get_free_pages(st_pagepool_t *pool, int cnt,
     st_pagepool_page_t tmp = {.compound_page_cnt = cnt};
 
     //find equal or bigger free pages to allocate
-    n = st_rbtree_search_ge(&pool->free_pages, &tmp.rbnode);
+    n = st_rbtree_search(&pool->free_pages, &tmp.rbnode, ST_SIDE_RIGHT_EQ);
     if (n == NULL) {
         return ST_NOT_FOUND;
     }
