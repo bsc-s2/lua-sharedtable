@@ -196,13 +196,6 @@ st_test(rbtree, search) {
 
         /* greater */
 
-        obj = (test_object *)st_rbtree_search_next(&tree,  &tmp.rb_node);
-        if (c.right_key == -1) {
-            st_ut_eq(NULL, obj, "");
-        } else {
-            st_ut_eq(c.right_key, obj->key, "");
-        }
-
         obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_RIGHT);
         if (c.right_key == -1) {
             st_ut_eq(NULL, obj, "");

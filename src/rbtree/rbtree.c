@@ -490,13 +490,6 @@ st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, 
     return ler[st_side_strip_eq(expected_side)];
 }
 
-// node maybe not in tree, so need search node.
-st_rbtree_node_t *st_rbtree_search_next(st_rbtree_t *tree, st_rbtree_node_t *node) {
-    /* deprecated */
-    /* TODO if node->sentinel == tree->sentinel, find next with get_next instead of a tree traverse */
-    return st_rbtree_search(tree, node, ST_SIDE_RIGHT);
-}
-
 // node must be in tree, so need search node, just get node next.
 st_rbtree_node_t *st_rbtree_get_next(st_rbtree_t *tree, st_rbtree_node_t *node) {
 
