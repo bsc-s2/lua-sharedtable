@@ -13,11 +13,11 @@
 
 #ifdef ST_DEBUG_UNITTEST
 #   define OK_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST]  OK", ##__VA_ARGS__ )
-#   define BENCH_DEBUG( _fmt, ... ) st_log_printf( _fmt "\n", "[BENCH]", ##__VA_ARGS__ )
+#   define st_ut_bench_debug( _fmt, ... ) st_log_printf( _fmt "\n", "[BENCH]", ##__VA_ARGS__ )
 #   define st_ut_debug( _fmt, ... ) st_log_printf( _fmt "\n", "[UT-DEBUG]", ##__VA_ARGS__ )
 #else
 #   define OK_OUT( ... )
-#   define BENCH_DEBUG( _fmt, ... )
+#   define st_ut_bench_debug( _fmt, ... )
 #   define st_ut_debug( _fmt, ... )
 #endif /* ST_DEBUG_UNITTEST */
 
@@ -199,7 +199,7 @@ st_ut_run_bench(st_ut_bench_t *b) {
         spent_usec = (t1.tv_sec - t0.tv_sec);
         spent_usec = spent_usec*1000*1000 + (t1.tv_usec - t0.tv_usec);
 
-        BENCH_DEBUG("%s cost: %ld ms, n=%llu", b->name, spent_usec/1000, n);
+        st_ut_bench_debug("%s cost: %ld ms, n=%llu", b->name, spent_usec/1000, n);
         if (spent_usec > b->n_sec * 1000 * 1000) {
             double ns_per_call = (double)spent_usec * 1000 / n;
             BENCH_INFO(
