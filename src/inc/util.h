@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
 #include "inc/bit.h"
 
 
@@ -50,6 +51,18 @@
          ? (i)                                                                \
          : (((i) + (upto) - 1) & (~((upto) - 1)))                             \
         )
+
+/* align i to least 2^x >= n */
+#define st_align_pow2(i, n)                                                   \
+        ({                                                                    \
+         st_typeof(n) x_ = 1;                                                 \
+         st_autotype n_ = (n);                                                \
+         while (x_ != 0 && x_ < n_) {                                         \
+             x_ = x_<<1;                                                      \
+         }                                                                    \
+         st_align((i), x_);                                                   \
+        })
+
 
 #define st_offsetof(tp, field) ( (size_t)&((tp*)NULL)->field )
 #define st_by_offset(p, offset) &((char*)(p))[ (offset) ]

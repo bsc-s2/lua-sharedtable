@@ -49,6 +49,50 @@ st_test(util, st_align)
     }
 }
 
+st_test(util, st_align_pow2)
+{
+
+    struct case_s {
+        uint64_t inp;
+        uint64_t n;
+        uint64_t expected;
+    } cases[] = {
+        {0, 0, 0},
+        {0, 1, 0},
+        {0, 2, 0},
+        {0, 3, 0},
+        {1, 1, 1},
+        {1, 2, 2},
+        {1, 3, 4},
+        {1, 4, 4},
+        {1, 5, 8},
+        {1, 0x7fffffffffffffffULL, 0x8000000000000000ULL},
+        {1, 0x8000000000000000ULL, 0x8000000000000000ULL},
+        {1, 0x8000000000000001ULL, 1}, /* overflow */
+        {1, 0xffffffffffffffffULL, 1}, /* overflow */
+        {5, 1, 5},
+        {5, 2, 6},
+        {5, 3, 8},
+        {5, 4, 8},
+        {5, 5, 8},
+        {5, 0x7fffffffffffffffULL, 0x8000000000000000ULL},
+        {5, 0x8000000000000000ULL, 0x8000000000000000ULL},
+        {5, 0x8000000000000001ULL, 5}, /* overflow */
+        {5, 0xffffffffffffffffULL, 5}, /* overflow */
+    };
+
+    for (int i = 0; i < st_nelts(cases); i++) {
+        st_autotype   c = cases[i];
+        st_autotype rst = st_align_pow2(c.inp, c.n);
+
+        ddx(c.inp);
+        ddx(c.n);
+        ddx(rst);
+
+        st_ut_eq(c.expected, rst);
+    }
+}
+
 st_test(util, cmp_const)
 {
     st_ut_eq(-1, ST_LT, "");
