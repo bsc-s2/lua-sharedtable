@@ -169,13 +169,6 @@ st_test(rbtree, search) {
 
         /* less equal */
 
-        obj = (test_object *)st_rbtree_search_le(&tree,  &tmp.rb_node);
-        if (c.le_key == -1) {
-            st_ut_eq(NULL, obj, "");
-        } else {
-            st_ut_eq(c.le_key, obj->key, "");
-        }
-
         obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_LEFT_EQ);
         if (c.le_key == -1) {
             st_ut_eq(NULL, obj, "");

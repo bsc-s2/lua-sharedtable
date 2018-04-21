@@ -53,7 +53,6 @@ st_rbtree_node_t *st_rbtree_right_most(st_rbtree_t *tree);
 /* Search for a equal node or the nearest node on the <side> to <target> */
 st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, int expected_side);
 
-st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *st_rbtree_search_next(st_rbtree_t *tree, st_rbtree_node_t *node);
 st_rbtree_node_t *st_rbtree_get_next(st_rbtree_t *tree, st_rbtree_node_t *node);

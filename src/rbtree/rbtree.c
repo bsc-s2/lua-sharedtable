@@ -490,11 +490,6 @@ st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, 
     return ler[st_side_strip_eq(expected_side)];
 }
 
-st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node) {
-    /* deprecated */
-    return st_rbtree_search(tree, node, ST_SIDE_LEFT_EQ);
-}
-
 st_rbtree_node_t *st_rbtree_search_ge(st_rbtree_t *tree, st_rbtree_node_t *node) {
     /* deprecated */
     return st_rbtree_search(tree, node, ST_SIDE_RIGHT_EQ);
