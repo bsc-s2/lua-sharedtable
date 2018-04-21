@@ -21,6 +21,9 @@
 #   define st_ut_debug( _fmt, ... )
 #endif /* ST_DEBUG_UNITTEST */
 
+#define utddx(n) st_ut_debug(#n"=%s", st_ut_printf_(n))
+#define utdd     st_ut_debug
+
 #define ERR_OUT( _fmt, ... ) st_log_printf( _fmt "\n", "[TEST] ERR", ##__VA_ARGS__ )
 
 #define BENCH_INFO( _fmt, ... ) st_log_printf( _fmt "\n", "[BENCH]", ##__VA_ARGS__ )

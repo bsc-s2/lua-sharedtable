@@ -6,10 +6,10 @@ st_test(util, st_nelts)
 
     int n;
 
-    { int arr[10];       n = st_nelts(arr); ddx(n); st_ut_eq(10, n, ""); }
-    { int *arr[10];      n = st_nelts(arr); ddx(n); st_ut_eq(10, n, ""); }
-    { int arr[10][10];   n = st_nelts(arr); ddx(n); st_ut_eq(10, n, ""); }
-    { void *arr[10][10]; n = st_nelts(arr); ddx(n); st_ut_eq(10, n, ""); }
+    { int arr[10];       n = st_nelts(arr); utddx(n); st_ut_eq(10, n, ""); }
+    { int *arr[10];      n = st_nelts(arr); utddx(n); st_ut_eq(10, n, ""); }
+    { int arr[10][10];   n = st_nelts(arr); utddx(n); st_ut_eq(10, n, ""); }
+    { void *arr[10][10]; n = st_nelts(arr); utddx(n); st_ut_eq(10, n, ""); }
 }
 
 st_test(util, st_unused)
@@ -43,7 +43,7 @@ st_test(util, st_align)
         st_typeof(cases[0])   c = cases[i];
         st_typeof(c.expected) rst = st_align(c.inp, c.upto);
 
-        ddx(rst);
+        utddx(rst);
 
         st_ut_eq(c.expected, rst, "");
     }
@@ -85,9 +85,9 @@ st_test(util, st_align_pow2)
         st_autotype   c = cases[i];
         st_autotype rst = st_align_pow2(c.inp, c.n);
 
-        ddx(c.inp);
-        ddx(c.n);
-        ddx(rst);
+        utddx(c.inp);
+        utddx(c.n);
+        utddx(rst);
 
         st_ut_eq(c.expected, rst);
     }
@@ -121,7 +121,7 @@ st_test(util, cmp)
         st_typeof(cases[0])   c = cases[i];
         st_typeof(c.expected) rst = st_cmp(c.a, c.b);
 
-        ddx(rst);
+        utddx(rst);
 
         st_ut_eq(c.expected, rst, "");
     }
