@@ -442,7 +442,7 @@ int st_rbtree_delete(st_rbtree_t *tree, st_rbtree_node_t *node) {
 
 /* st_rbtree_search(tree, target, ST_SIDE_EQ)      looks for equal node or NULL.
  * st_rbtree_search(tree, target, ST_SIDE_LEFT)    looks for a unequal node on the left to `target`.
- * st_rbtree_search(tree, target, ST_SIDE_LEFT_EQ) looks for equal node or nearset node on the left to `target`.
+ * st_rbtree_search(tree, target, ST_SIDE_LEFT_EQ) looks for equal node or nearest node on the left to `target`.
  */
 st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, int expected_side) {
 
@@ -488,11 +488,6 @@ st_rbtree_node_t *st_rbtree_search(st_rbtree_t *tree, st_rbtree_node_t *target, 
     }
 
     return ler[st_side_strip_eq(expected_side)];
-}
-
-st_rbtree_node_t *st_rbtree_search_eq(st_rbtree_t *tree, st_rbtree_node_t *node) {
-    /* deprecated */
-    return st_rbtree_search(tree, node, ST_SIDE_EQ);
 }
 
 st_rbtree_node_t *st_rbtree_search_le(st_rbtree_t *tree, st_rbtree_node_t *node) {

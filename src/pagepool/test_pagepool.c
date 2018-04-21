@@ -217,7 +217,7 @@ st_test(pagepool, alloc) {
                                     ST_PAGEPOOL_PAGE_ALLOCATED), "");
 
         tmp.compound_page_cnt = c.remain;
-        st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+        st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
         st_pagepool_page_t *remain = st_owner(n, st_pagepool_page_t, rbnode);
         st_ut_eq(ST_OK, check_pages(remain, pool.regions_array_data[0], c.remain, ST_PAGEPOOL_PAGE_FREE),
                  "");
@@ -286,7 +286,7 @@ st_test(pagepool, free) {
 
         for (int j = 0; j < c.remain_cnt; j++) {
             tmp.compound_page_cnt = c.remain_pages[j];
-            st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+            st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
             st_pagepool_page_t *remain = st_owner(n, st_pagepool_page_t, rbnode);
 
             st_ut_ne(NULL, remain, "");
@@ -375,14 +375,14 @@ st_test(pagepool, free_and_alloc) {
 
         for (int j = 0; j < c.remain_cnt; j++) {
             tmp.compound_page_cnt = c.remain_pages[j];
-            st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+            st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
             st_pagepool_page_t *remain = st_owner(n, st_pagepool_page_t, rbnode);
             st_ut_eq(ST_OK, check_pages(remain, pool.regions_array_data[0], c.remain_pages[j],
                                         ST_PAGEPOOL_PAGE_FREE), "");
         }
 
         tmp.compound_page_cnt = c.not_remain_pages;
-        st_ut_eq(NULL, st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode), "");
+        st_ut_eq(NULL, st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ), "");
     }
 
     free_buf(buf, 655360);
@@ -415,7 +415,7 @@ st_test(pagepool, free_same_page_cnt) {
     }
 
     tmp.compound_page_cnt = 2;
-    st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+    st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
     st_pagepool_page_t *free_pages = st_owner(n, st_pagepool_page_t, rbnode);
 
     st_ut_eq(pages[0], free_pages, "");
@@ -482,7 +482,7 @@ st_test(pagepool, alloc_in_multi_region) {
     st_ut_eq(10, st_array_current_cnt(&pool.regions), "");
 
     tmp.compound_page_cnt = 5;
-    st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+    st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
 
     st_pagepool_page_t *free_pages = st_owner(n, st_pagepool_page_t, rbnode);
     st_ut_eq(ST_OK, check_pages(free_pages, pool.regions_array_data[0], 5, ST_PAGEPOOL_PAGE_FREE), "");
@@ -524,7 +524,7 @@ st_test(pagepool, free_in_multi_region) {
         }
 
         tmp.compound_page_cnt = 5;
-        st_rbtree_node_t *n = st_rbtree_search_eq(&pool.free_pages, &tmp.rbnode);
+        st_rbtree_node_t *n = st_rbtree_search(&pool.free_pages, &tmp.rbnode, ST_SIDE_EQ);
         st_pagepool_page_t *free_pages = st_owner(n, st_pagepool_page_t, rbnode);
 
         if (i < 9) {

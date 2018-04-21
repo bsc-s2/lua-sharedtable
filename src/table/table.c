@@ -83,7 +83,7 @@ static int st_table_get_element(st_table_t *table, st_str_t key, st_table_elemen
 
     st_table_element_t tmp = {.key = key};
 
-    st_rbtree_node_t *n = st_rbtree_search_eq(&table->elements, &tmp.rbnode);
+    st_rbtree_node_t *n = st_rbtree_search(&table->elements, &tmp.rbnode, ST_SIDE_EQ);
     if (n == NULL) {
         return ST_NOT_FOUND;
     }

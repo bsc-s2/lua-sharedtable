@@ -102,7 +102,7 @@ static void st_pagepool_init_region(st_pagepool_t *pool, uint8_t *region) {
 static void st_pagepool_add_pages(st_pagepool_t *pool, st_pagepool_page_t *master) {
     st_rbtree_node_t *n;
 
-    n = st_rbtree_search_eq(&pool->free_pages, &master->rbnode);
+    n = st_rbtree_search(&pool->free_pages, &master->rbnode, ST_SIDE_EQ);
 
     if (n == NULL) {
         st_rbtree_insert(&pool->free_pages, &master->rbnode, 1, NULL);

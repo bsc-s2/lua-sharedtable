@@ -185,13 +185,6 @@ st_test(rbtree, search) {
 
         /* equal */
 
-        obj = (test_object *)st_rbtree_search_eq(&tree,  &tmp.rb_node);
-        if (c.equal_key == -1) {
-            st_ut_eq(NULL, obj, "");
-        } else {
-            st_ut_eq(c.equal_key, obj->key, "");
-        }
-
         obj = (test_object *)st_rbtree_search(&tree,  &tmp.rb_node, ST_SIDE_EQ);
         if (c.equal_key == -1) {
             st_ut_eq(NULL, obj, "");
