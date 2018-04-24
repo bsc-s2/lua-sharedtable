@@ -4,21 +4,27 @@
 #include <inttypes.h>
 
 #define st_fmt_wrap(a, v, b) _Generic((v),                                    \
-    char:      a "%c"      b ,                                                \
-    int8_t:    a "%"PRIi8  b ,                                                \
-    int16_t:   a "%"PRIi16 b ,                                                \
-    int32_t:   a "%"PRIi32 b ,                                                \
-    int64_t:   a "%"PRIi64 b ,                                                \
-    uint8_t:   a "%"PRIu8  b ,                                                \
-    uint16_t:  a "%"PRIu16 b ,                                                \
-    uint32_t:  a "%"PRIu32 b ,                                                \
-    uint64_t:  a "%"PRIu64 b ,                                                \
-    void*:     a "%p"      b ,                                                \
-    default:   a "%p"      b                                                  \
+                 char      : a   "%c" b,                                      \
+        signed   char      : a   "%c" b,                                      \
+                 short     : a  "%hd" b,                                      \
+                 int       : a   "%d" b,                                      \
+                 long      : a  "%ld" b,                                      \
+                 long long : a "%lld" b,                                      \
+        unsigned char      : a   "%u" b,                                      \
+        unsigned short     : a  "%hu" b,                                      \
+        unsigned int       : a   "%u" b,                                      \
+        unsigned long      : a  "%lu" b,                                      \
+        unsigned long long : a "%llu" b,                                      \
+                 float     : a   "%f" b,                                      \
+                 double    : a   "%f" b,                                      \
+                 void*     : a   "%p" b,                                      \
+                 default   : a   "%p" b                                       \
 )
 
 
-/* In c standards: char, signed char and unsidned char are 3 distinct types! */
+/* NOTE:
+ * In c standards: char, signed char and unsidned char are 3 distinct types!
+ */
 
 #define st_fmt_map_                                                           \
                  char      :   "%c",                                          \
