@@ -36,7 +36,7 @@ static int st_gc_table_unknown_children_to_queue(st_gc_t *gc, st_table_t *table,
 
     while (1) {
         ret = st_table_iter_next(table, &iter, &key, &value);
-        if (ret == ST_NOT_FOUND) {
+        if (ret == ST_ITER_FINISH) {
             ret = ST_OK;
             goto quit;
         } else if (ret != ST_OK) {

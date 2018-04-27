@@ -270,7 +270,7 @@ static int check_table_children_reachable(st_table_t *table, st_gc_t *gc) {
     while (1) {
         ret = st_table_iter_next(table, &iter, &key, &value);
         if (ret != ST_OK) {
-            if (ret == ST_NOT_FOUND) {
+            if (ret == ST_ITER_FINISH) {
                 ret = ST_OK;
             }
             goto quit;

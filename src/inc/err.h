@@ -9,47 +9,48 @@
 #define _errs                 \
   (ST_ERR),                   \
                               \
-  (ST_BUG_UNINITED),          \
   (ST_AGAIN),                 \
-  (ST_CHKSUM),                \
-  (ST_DUP),                   \
-  (ST_EXISTED),               \
-  (ST_EMPTY),                 \
-  (ST_EOF),                   \
-  (ST_FIN),                   \
-  (ST_INITTWICE),             \
   (ST_ARG_INVALID),           \
-  (ST_STATE_INVALID),         \
-  (ST_TABLE_MODIFIED),        \
-  (ST_IO),                    \
-  (ST_NOT_FOUND),             \
-  (ST_NOT_READY),             \
-  (ST_NOT_EQUAL),             \
-  (ST_NOT_EMPTY),             \
-  (ST_NO_GC_DATA),            \
-  (ST_OUT_OF_ORDER),          \
-  (ST_OUT_OF_MEMORY),         \
-  (ST_OUT_OF_RANGE),          \
-  (ST_TIMEOUT),               \
-  (ST_UNSUPPORTED),           \
-  (ST_UNINITED),              \
   (ST_BUF_NOT_ENOUGH),        \
   (ST_BUF_OVERFLOW),          \
+  (ST_BUG_UNINITED),          \
+  (ST_CHKSUM),                \
   (ST_DISK_IN_ERR_STATE),     \
   (ST_DISK_OUT_OF_SPACE),     \
   (ST_DISK_UNAVAILABLE),      \
+  (ST_DUP),                   \
+  (ST_EMPTY),                 \
+  (ST_EOF),                   \
+  (ST_EXISTED),               \
+  (ST_FIN),                   \
   (ST_INDEX_OUT_OF_RANGE),    \
+  (ST_INITTWICE),             \
+  (ST_IO),                    \
+  (ST_ITER_FINISH),           \
   (ST_NET_AGAIN),             \
   (ST_NET_BIND),              \
   (ST_NET_CHKSUM),            \
   (ST_NET_CREATE),            \
   (ST_NET_LISTEN),            \
-  (ST_NET_TIMEOUT),           \
   (ST_NET_SOCKET_OPT),        \
+  (ST_NET_TIMEOUT),           \
+  (ST_NOT_EMPTY),             \
+  (ST_NOT_EQUAL),             \
+  (ST_NOT_FOUND),             \
+  (ST_NOT_READY),             \
+  (ST_NO_GC_DATA),            \
   (ST_NUM_OVERFLOW),          \
+  (ST_OUT_OF_MEMORY),         \
+  (ST_OUT_OF_ORDER),          \
+  (ST_OUT_OF_RANGE),          \
   (ST_RESP_DUP),              \
   (ST_RESP_LOST),             \
-  (ST_RESP_TIMEOUT)
+  (ST_RESP_TIMEOUT),          \
+  (ST_STATE_INVALID),         \
+  (ST_TABLE_MODIFIED),        \
+  (ST_TIMEOUT),               \
+  (ST_UNINITED),              \
+  (ST_UNSUPPORTED)
 
 enum st_error_t {
   ST_OK = 0,

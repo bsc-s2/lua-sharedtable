@@ -456,7 +456,7 @@ st_test(table, iter_next_key_value) {
         st_ut_eq(0, st_str_cmp(&v1, &v2), "");
     }
 
-    st_ut_eq(ST_NOT_FOUND, st_table_iter_next(t, &iter, &k, &v1), "");
+    st_ut_eq(ST_ITER_FINISH, st_table_iter_next(t, &iter, &k, &v1), "");
 
     st_str_t key = st_str_wrap_common(&i, ST_TYPES_INTEGER, sizeof(i));
     value_buf[0] = 100;

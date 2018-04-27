@@ -512,7 +512,7 @@ int st_table_iter_next(st_table_t *table, st_table_iter_t *iter, st_str_t *key,
     }
 
     if (elem == NULL) {
-        return ST_NOT_FOUND;
+        return ST_ITER_FINISH;
     }
 
     *key = elem->key;
