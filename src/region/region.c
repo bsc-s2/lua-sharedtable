@@ -8,8 +8,9 @@
 #include "region.h"
 
 
-#define ST_REGION_SHM_OBJ_PATH       "/st_shm_area"
-#define ST_REGION_SHM_OBJ_MODE       0660
+#define ST_REGION_MMAP_PROT       (PROT_READ | PROT_WRITE)
+#define ST_REGION_MMAP_FLAGS      MAP_SHARED;
+#define ST_REGION_SHM_OBJ_MODE    0660
 
 #define st_region_lock(rcb) do {                                              \
     st_typeof(rcb) _rcb = rcb;                                                \
@@ -39,6 +40,67 @@ is_reg_state_busy(const st_region_state_t state)
 }
 
 int
+st_region_shm_memcpy(const char *shm_fn, void *dst, ssize_t length)
+{
+    st_assert_nonull(shm_fn);
+    st_assert_nonull(dst);
+    st_assert(length > 0);
+
+
+    int shm_fd = shm_open(shm_fn, O_RDONLY, ST_REGION_SHM_OBJ_MODE);
+    if (shm_fd == -1) {
+        derrno("failed to shm_open");
+
+        return errno;
+    }
+
+    int ret = ST_OK;
+
+    void *addr = mmap(NULL, length, PROT_READ, MAP_SHARED, shm_fd, 0);
+    if (addr == MAP_FAILED) {
+        derrno("failed to mmap");
+
+        ret = errno;
+        goto quit;
+    }
+
+    memcpy(dst, addr, length);
+
+    ret = munmap(addr, length);
+    if (ret == -1) {
+        derrno("failed to munmap");
+
+        ret = errno;
+        goto quit;
+    }
+
+    ret = ST_OK;
+
+quit:
+    close(shm_fd);
+
+    return ret;
+}
+
+int
+st_region_shm_mmap(int shm_fd, ssize_t length, void **ret_addr)
+{
+    int prot  = ST_REGION_MMAP_PROT;
+    int flags = ST_REGION_MMAP_FLAGS;
+
+    void *addr = mmap(NULL, length, prot, flags, shm_fd, 0);
+    if (addr == MAP_FAILED) {
+        derrno("failed to mmap");
+
+        return errno;
+    }
+
+    *ret_addr = addr;
+
+    return ST_OK;
+}
+
+int
 st_region_shm_create(const char *shm_fn,
                      uint32_t length,
                      void **ret_addr,
@@ -48,7 +110,9 @@ st_region_shm_create(const char *shm_fn,
     st_must(ret_addr != NULL, ST_ARG_INVALID);
     st_must(ret_shm_fd != NULL, ST_ARG_INVALID);
 
-    int ret    = -1;
+    int ret = -1;
+    void *base_addr = MAP_FAILED;
+
     int shm_fd = shm_open(shm_fn,
                           O_CREAT | O_RDWR | O_TRUNC,
                           ST_REGION_SHM_OBJ_MODE);
@@ -66,14 +130,21 @@ st_region_shm_create(const char *shm_fn,
         goto err_quit;
     }
 
-    int prot  = PROT_READ | PROT_WRITE;
-    int flags = MAP_SHARED;
+    ret = st_region_shm_mmap(shm_fd, length, &base_addr);
+    if (ret != ST_OK) {
+        goto err_quit;
+    }
 
-    uint8_t *base_addr = mmap(NULL, length, prot, flags, shm_fd, 0);
-    if (base_addr == MAP_FAILED ) {
-        derrno("failed to mmap");
+    int flag = fcntl(shm_fd, F_GETFD);
+    if (flag == -1) {
+        derrno("failed to get shm fd flag");
 
-        ret = errno;
+        goto err_quit;
+    }
+
+    if (fcntl(shm_fd, F_SETFD, (flag &~ FD_CLOEXEC)) == -1) {
+        derrno("failed to set shm fd flag");
+
         goto err_quit;
     }
 
@@ -83,6 +154,10 @@ st_region_shm_create(const char *shm_fn,
     return ST_OK;
 
 err_quit:
+    if (base_addr != MAP_FAILED) {
+        munmap(base_addr, length);
+    }
+
     close(shm_fd);
 
     if (shm_unlink(shm_fn) != 0) {

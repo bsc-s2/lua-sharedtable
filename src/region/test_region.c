@@ -22,6 +22,13 @@
 #define ST_REGION_SHM_FN            "st_shm_area"
 #define ST_REGION_SHM_OBJ_REAL_PATH "/dev/shm/" ST_REGION_SHM_FN
 
+typedef struct st_test_region_s st_test_region_t;
+struct st_test_region_s {
+    int     shm_fd;
+    void    *addr;
+    ssize_t length;
+};
+
 
 /** check if fd represent file described by fpath */
 static void
@@ -397,6 +404,46 @@ st_test(st_region, op_multiple_processes)
 st_test(st_region, op_multiple_processes_use_lock)
 {
     test_st_region_op_multi_proc(1);
+}
+
+st_test(st_region, memcpy_and_remap)
+{
+    int shm_fd     = 0;
+    ssize_t length = PAGES_PER_REGION * REGION_NUM * st_page_size();
+    void *addr  = NULL;
+
+    test_st_region_shm_create(&shm_fd, (uint8_t **)&addr, length);
+
+    memset(addr, 0, length);
+    st_test_region_t *region_ptr = (st_test_region_t *)addr;
+
+    region_ptr->addr   = addr;
+    region_ptr->shm_fd = shm_fd;
+    region_ptr->length = length;
+
+    int flag = fcntl(shm_fd, F_GETFD);
+    st_ut_eq(0, flag & FD_CLOEXEC, "close-on-exec set");
+
+    munmap(addr, length);
+
+    st_test_region_t region = {0, NULL, 0};
+    ssize_t obj_len = sizeof(region);
+
+    int ret = st_region_shm_memcpy(ST_REGION_SHM_FN, &region, obj_len);
+    st_ut_eq(ST_OK, ret, "failed t0 shm memcpy");
+    st_ut_eq(addr, region.addr, "wrong addr");
+    st_ut_eq(shm_fd, region.shm_fd, "wrong shm_fd");
+    st_ut_eq(length, region.length, "wrong length");
+
+    ret = st_region_shm_mmap(region.shm_fd, region.length, &region.addr);
+    st_ut_eq(ST_OK, ret, "failed to shm map");
+
+    region_ptr = (st_test_region_t *)region.addr;
+    st_ut_eq(addr, region_ptr->addr, "wrong map addr");
+    st_ut_eq(shm_fd, region_ptr->shm_fd, "wrong map shm_fd");
+    st_ut_eq(length, region_ptr->length, "wrong map length");
+
+    test_st_region_shm_destroy(shm_fd, (void *)region_ptr, length);
 }
 
 st_ut_main;

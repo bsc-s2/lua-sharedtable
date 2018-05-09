@@ -55,6 +55,10 @@ int st_region_shm_destroy(int shm_fd,
                           void *addr,
                           uint32_t length);
 
+int st_region_shm_memcpy(const char *shm_fn, void *dst, ssize_t length);
+
+int st_region_shm_mmap(int shm_fd, ssize_t length, void **ret_addr);
+
 /* initialize shm reg control block */
 int st_region_init(st_region_t *rcb,
                    uint8_t     *base_addr,
