@@ -19,7 +19,8 @@
 #define CONFIG_REGION               10
 #define PAGES_PER_REGION            1024
 #define REGION_NUM                  10
-#define ST_REGION_SHM_OBJ_REAL_PATH "/dev/shm/st_shm_area"
+#define ST_REGION_SHM_FN            "st_shm_area"
+#define ST_REGION_SHM_OBJ_REAL_PATH "/dev/shm/" ST_REGION_SHM_FN
 
 
 /** check if fd represent file described by fpath */
@@ -49,7 +50,10 @@ static void
 test_st_region_shm_create(int *shm_fd, uint8_t **addr, int length)
 {
     *shm_fd = -1;
-    int ret = st_region_shm_create(length, (void **)addr, shm_fd);
+    int ret = st_region_shm_create(ST_REGION_SHM_FN,
+                                   length,
+                                   (void **)addr,
+                                   shm_fd);
 
     st_ut_eq(ST_OK, ret, "st_region_shm_create failed");
     st_ut_ne(MAP_FAILED, addr, "st_region_shm_create set addr wrong");
@@ -60,7 +64,7 @@ test_st_region_shm_create(int *shm_fd, uint8_t **addr, int length)
 static void
 test_st_region_shm_destroy(int shm_fd, uint8_t *addr, int length)
 {
-    int ret = st_region_shm_destroy(shm_fd, addr, length);
+    int ret = st_region_shm_destroy(shm_fd, ST_REGION_SHM_FN, addr, length);
 
     st_ut_eq(ST_OK, ret, "st_region_shm_destroy failed");
 

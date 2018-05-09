@@ -39,13 +39,17 @@ is_reg_state_busy(const st_region_state_t state)
 }
 
 int
-st_region_shm_create(uint32_t length, void **ret_addr, int *ret_shm_fd)
+st_region_shm_create(const char *shm_fn,
+                     uint32_t length,
+                     void **ret_addr,
+                     int *ret_shm_fd)
 {
-    st_must(ret_shm_fd != NULL, ST_ARG_INVALID);
+    st_must(shm_fn != NULL, ST_ARG_INVALID);
     st_must(ret_addr != NULL, ST_ARG_INVALID);
+    st_must(ret_shm_fd != NULL, ST_ARG_INVALID);
 
     int ret    = -1;
-    int shm_fd = shm_open(ST_REGION_SHM_OBJ_PATH,
+    int shm_fd = shm_open(shm_fn,
                           O_CREAT | O_RDWR | O_TRUNC,
                           ST_REGION_SHM_OBJ_MODE);
     if (shm_fd == -1) {
@@ -79,7 +83,9 @@ st_region_shm_create(uint32_t length, void **ret_addr, int *ret_shm_fd)
     return ST_OK;
 
 err_quit:
-    if (shm_unlink(ST_REGION_SHM_OBJ_PATH) != 0) {
+    close(shm_fd);
+
+    if (shm_unlink(shm_fn) != 0) {
         derrno("failed to shm_unlink in st_region_shm_create");
     }
 
@@ -87,9 +93,13 @@ err_quit:
 }
 
 int
-st_region_shm_destroy(int shm_fd, void *addr, uint32_t length)
+st_region_shm_destroy(int shm_fd,
+                      const char *shm_fn,
+                      void *addr,
+                      uint32_t length)
 {
     st_must(shm_fd > 0, ST_ARG_INVALID);
+    st_must(shm_fn != NULL, ST_ARG_INVALID);
     st_must(addr != NULL, ST_ARG_INVALID);
     st_must(length > 0, ST_ARG_INVALID);
 
@@ -108,7 +118,7 @@ st_region_shm_destroy(int shm_fd, void *addr, uint32_t length)
         ret = (ret == ST_OK ? errno : ret);
     }
 
-    if (shm_unlink(ST_REGION_SHM_OBJ_PATH) != 0) {
+    if (shm_unlink(shm_fn) != 0) {
         derrno("failed to unlink shm: %d, %p, %d", shm_fd, addr, length);
 
         ret = (ret == ST_OK ? errno : ret);

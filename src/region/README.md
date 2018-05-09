@@ -34,6 +34,7 @@ Usage of creating and destroying OSIX-based shared memory space.
 #define PAGES_PER_REGION            1024
 #define REGION_NUM                  10
 #define PAGE_SIZE                   sysconf(_SC_PAGESIZE)
+#define SHM_FN                      "my_shm_fn"
 
 
 int main()
@@ -46,7 +47,7 @@ int main()
     ssize_t length    = data_len + cfg_len;
 
     /** create shm area */
-    int ret = st_region_shm_create(length, (void **)&addr, &shm_fd);
+    int ret = st_region_shm_create(SHM_FN, length, (void **)&addr, &shm_fd);
     if (ret != ST_OK) {
         /** your error handling code */
         exit(1);
@@ -96,7 +97,7 @@ int main()
         exit(5);
     }
 
-    ret = st_region_shm_destroy(shm_fd, addr, length);
+    ret = st_region_shm_destroy(shm_fd, SHM_FN, addr, length);
     if (ret != ST_OK) {
         /** your error handling code */
         exit(6);

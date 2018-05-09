@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdlib.h>
 
+#define TEST_TABLE_SHM_FN "test_table_shm_fn"
 #define TEST_POOL_SIZE 100 * 1024 * 4096
 
 #ifdef _SEM_SEMUN_UNDEFINED
@@ -57,7 +58,8 @@ static ssize_t remain_element_cnt(st_table_pool_t *pool, uint64_t element_size) 
 static st_table_pool_t *alloc_table_pool(int* shm_fd) {
     st_table_pool_t *pool;
 
-    int ret = st_region_shm_create(TEST_POOL_SIZE,
+    int ret = st_region_shm_create(TEST_TABLE_SHM_FN,
+                                   TEST_POOL_SIZE,
                                    (void **)&pool,
                                    shm_fd);
     st_assert(ret == ST_OK);
@@ -98,6 +100,7 @@ static void free_table_pool(st_table_pool_t *pool, int shm_fd) {
     st_assert(ret == ST_OK);
 
     ret = st_region_shm_destroy(shm_fd,
+                                TEST_TABLE_SHM_FN,
                                 (void *)pool,
                                 TEST_POOL_SIZE);
     st_assert(ret == ST_OK);

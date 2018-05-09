@@ -25,6 +25,7 @@ typedef struct {
 } setup_info_t;
 
 
+#define ST_TEST_SLAB_SHM_FN              "slab_shm_fn"
 #define ST_TEST_SLAB_HUGE_OBJ_SIZE       (st_page_size() + 1)
 #define ST_TEST_SLAB_REGION_CNT          10
 #define ST_TEST_SLAB_SHARED_SPACE_LENGTH (1024 * 1024 * 200)
@@ -46,7 +47,8 @@ typedef struct {
 static void
 st_slab_setup(setup_info_t *info)
 {
-    int ret = st_region_shm_create(ST_TEST_SLAB_SHARED_SPACE_LENGTH,
+    int ret = st_region_shm_create(ST_TEST_SLAB_SHM_FN,
+                                   ST_TEST_SLAB_SHARED_SPACE_LENGTH,
                                    &info->base,
                                    &info->shm_fd);
     st_assert(ret == ST_OK);
@@ -90,6 +92,7 @@ st_slab_cleanup(setup_info_t *info, int must_ok)
     }
 
     ret = st_region_shm_destroy(info->shm_fd,
+                                ST_TEST_SLAB_SHM_FN,
                                 info->base,
                                 ST_TEST_SLAB_SHARED_SPACE_LENGTH);
     st_assert(ret == ST_OK);

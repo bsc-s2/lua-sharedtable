@@ -43,10 +43,17 @@ struct st_region_s {
 
 
 /* create a posix-shared-memory based mapped area */
-int st_region_shm_create(uint32_t length, void **ret_addr, int *ret_shm_fd);
+int
+st_region_shm_create(const char *shm_fn,
+                     uint32_t length,
+                     void **ret_addr,
+                     int *ret_shm_fd);
 
 /* destory posix-shared-memory area */
-int st_region_shm_destroy(int shm_fd, void *addr, uint32_t length);
+int st_region_shm_destroy(int shm_fd,
+                          const char *shm_fn,
+                          void *addr,
+                          uint32_t length);
 
 /* initialize shm reg control block */
 int st_region_init(st_region_t *rcb,
