@@ -5,6 +5,12 @@
 # usage:
 #     make ** build=release|test debug=0|1 debug_unittest=0|1 mem=small|normal
 #
+st_version_major = 0
+st_version_minor = 1
+st_version_release = 0
+st_version_soname = $(st_version_major)
+st_version_full = $(st_version_major).$(st_version_minor).$(st_version_release)
+
 DEBUG_FLAGS_1 = -fprofile-arcs -ftest-coverage -g -D ST_DEBUG -O2 -D DNDEBUG
 UNITTEST_FLAGS_1 = -D ST_DEBUG_UNITTEST
 MEM_FLAGS_normal = -D MEM_NORMAL
@@ -103,7 +109,8 @@ dylib: all
 ifeq ($(target_dylib),)
 	$(error no dynamic library name specific)
 endif
-	$(CC) -fPIC -shared -o $(target_dylib) \
+	$(CC) -fPIC -shared -o $(target_dylib).$(st_version_full)          \
+		-Wl,-soname,$(target_dylib).$(st_version_soname)               \
 		-Wl,--whole-archive $(target) $(deps_a) -Wl,--no-whole-archive
 
 valgrind: $(target) $(test_exec)
