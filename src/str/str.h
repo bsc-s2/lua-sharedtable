@@ -2,6 +2,7 @@
 #define ST_STR_
 
 #include <string.h>
+#include <limits.h>
 
 #include "inc/inc.h"
 
@@ -147,6 +148,8 @@ int st_str_seize(st_str_t *str, st_str_t *from);
 int st_str_cmp(const st_str_t *a, const st_str_t *b);
 
 struct st_Buf;
+
+int st_str_increment(st_str_t *str);
 
 /*
  * //note st_str_size is use for serialize buf size

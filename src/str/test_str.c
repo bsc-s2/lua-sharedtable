@@ -4,6 +4,7 @@
 #include <float.h>
 
 #define FOO "abc"
+#define ST_TEST_EXPECT_PANIC 1
 
 st_test(str, const) {
 
@@ -684,6 +685,89 @@ st_test(str, seize) {
 
     ret = st_str_destroy(&seize);
     st_ut_eq(ST_OK, ret, "destroy seize");
+}
+
+st_test(str, increment) {
+    int i_max          = INT_MAX;
+    int i_value        = 0;
+    uint64_t u64_max   = ULONG_MAX;
+    uint64_t u64_value = 0;
+
+
+    struct st_str_increment_test_s {
+        st_str_t str;
+        int expected_ret;
+    } cases[] = {
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_INTEGER, sizeof(i_value)),
+            ST_OK,
+        },
+        {
+            st_str_wrap_common(&i_max, ST_TYPES_INTEGER, sizeof(i_max)),
+            ST_NUM_OVERFLOW,
+        },
+        {
+            st_str_wrap_common(&u64_value, ST_TYPES_U64, sizeof(u64_value)),
+            ST_OK,
+        },
+        {
+            st_str_wrap_common(&u64_max, ST_TYPES_U64, sizeof(u64_max)),
+            ST_NUM_OVERFLOW,
+        },
+        {
+            st_str_wrap_common(NULL, ST_TYPES_NIL, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        /** to the following cases, the only thing matters is type */
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_UNKNOWN, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_NIL, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_NUMBER, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_BOOLEAN, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_STRING, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+        {
+            st_str_wrap_common(&i_value, ST_TYPES_TABLE, 0),
+            ST_TEST_EXPECT_PANIC,
+        },
+    };
+
+    int ret;
+    for (int idx = 0; idx < st_nelts(cases); idx++) {
+        if (cases[idx].expected_ret == ST_TEST_EXPECT_PANIC) {
+            st_ut_bug(st_str_increment(&cases[idx].str));
+        }
+        else {
+            ret = st_str_increment(&cases[idx].str);
+            st_ut_eq(ret, cases[idx].expected_ret, "wrong return value");
+
+            if (ret != ST_OK) {
+                continue;
+            }
+
+            if (cases[idx].str.type == ST_TYPES_INTEGER) {
+                st_ut_eq(1, i_value, "not increment");
+            }
+            else {
+                st_ut_eq(1, u64_value, "not increment");
+            }
+        }
+    }
+
+    st_ut_bug(st_str_increment(NULL));
 }
 
 /* TODO test n_arr */

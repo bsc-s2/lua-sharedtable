@@ -256,6 +256,35 @@ st_str_cmp(const st_str_t *a, const st_str_t *b) {
     return st_cmp(a->len, b->len);
 }
 
+int
+st_str_increment(st_str_t *str) {
+    st_assert_nonull(str);
+    st_assert_nonull(str->bytes);
+
+    switch (str->type) {
+        case ST_TYPES_INTEGER:
+            if (*(int *)str->bytes == INT_MAX) {
+                return ST_NUM_OVERFLOW;
+            }
+
+            *(int *)str->bytes += 1;
+
+            break;
+        case ST_TYPES_U64:
+            if (*(uint64_t *)str->bytes == ULONG_MAX) {
+                return ST_NUM_OVERFLOW;
+            }
+
+            *(uint64_t *)str->bytes += 1;
+
+            break;
+        default:
+            st_assert(0, "unsupport increment type: %" PRId64, str->type);
+    }
+
+    return ST_OK;
+}
+
 /*
  * int st_str_join_with_n(st_str_t *s, st_str_t *sep, int n, st_str_t **elts) {
  *
