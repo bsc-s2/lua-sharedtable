@@ -16,35 +16,39 @@
  * ctype is cvalue type, e.g int
  * stype is st type, e.g ST_TYPES_INTEGER
  */
-#define check_tvalue(tvalue, cvalue, ctype, length, stype) do {          \
-    int type = st_capi_get_type(cvalue);                                 \
-    st_ut_eq(stype, type, "failed to get " #ctype " type");              \
-    for (int cnt = 0; cnt < 3; cnt++) {                                  \
-        if (cnt == 0) {                                                  \
-            tvalue = st_capi_make_tvalue(cvalue);                        \
-        }                                                                \
-        else if (cnt == 1) {                                             \
-            tvalue = st_capi_make_tvalue(cvalue, length);                \
-        }                                                                \
-        else {                                                           \
-            if (stype != ST_TYPES_STRING) {                              \
-                st_ut_bug(st_capi_make_tvalue(cvalue, length+1));        \
-            }                                                            \
-            else {                                                       \
-                st_ut_nobug(st_capi_make_tvalue(cvalue, length-1));      \
-            }                                                            \
-            continue;                                                    \
-        }                                                                \
-                                                                         \
-        st_ut_eq(stype, tvalue.type, "wrong " #stype " type");           \
-        st_ut_eq(length, tvalue.len, "wrong" #stype " length");          \
-        if (stype != ST_TYPES_STRING) {                                  \
-            st_ut_eq(&cvalue, tvalue.bytes, "wrong" #stype " bytes");    \
-            st_ut_eq(cvalue,                                             \
-                     *((ctype *)tvalue.bytes),                           \
-                     "wrong " #stype " value");                          \
-        }                                                                \
-    }                                                                    \
+#define check_tvalue(tvalue, cvalue, ctype, length, stype) do {               \
+    int type = st_capi_get_type(cvalue);                                      \
+    st_ut_eq(stype, type, "failed to get " #ctype " type");                   \
+    for (int cnt = 0; cnt < 3; cnt++) {                                       \
+        if (cnt == 0) {                                                       \
+            tvalue = st_capi_make_tvalue(cvalue);                             \
+        }                                                                     \
+        else if (cnt == 1) {                                                  \
+            tvalue = st_capi_make_tvalue(cvalue, length);                     \
+        }                                                                     \
+        else {                                                                \
+            if (stype != ST_TYPES_STRING) {                                   \
+                st_ut_bug(st_capi_make_tvalue(cvalue, length+1));             \
+            }                                                                 \
+            else {                                                            \
+                st_ut_nobug(st_capi_make_tvalue(cvalue, length-1));           \
+            }                                                                 \
+            continue;                                                         \
+        }                                                                     \
+                                                                              \
+        st_ut_eq(stype, tvalue.type, "wrong " #stype " type");                \
+        st_ut_eq(length, tvalue.len, "wrong " #stype " length");              \
+        if (stype != ST_TYPES_STRING) {                                       \
+            st_ut_eq(&cvalue, tvalue.bytes, "wrong " #stype " bytes");        \
+            st_ut_eq(length, tvalue.capacity, "wrong " #stype " capacity");   \
+            st_ut_eq(cvalue,                                                  \
+                     *((ctype *)tvalue.bytes),                                \
+                     "wrong " #stype " value");                               \
+        }                                                                     \
+        else {                                                                \
+            st_ut_eq(length+1, tvalue.capacity, "wrong " #stype " capacity"); \
+        }                                                                     \
+    }                                                                         \
 } while(0)
 
 
@@ -81,7 +85,7 @@ st_test(st_capi, make_parse_tvalue)
 
     /** char* aka. string */
     char *str_val = "hello world";
-    tlen = strlen(str_val) + 1;
+    tlen = strlen(str_val);
     check_tvalue(tvalue, str_val, char *, tlen, ST_TYPES_STRING);
 
     st_ut_eq(str_val, tvalue.bytes, "wrong string tvalue bytes");
@@ -91,9 +95,10 @@ st_test(st_capi, make_parse_tvalue)
 
     /** char arry */
     char *content = "carray type test";
-    tlen = strlen(content) + 1;
+    tlen = strlen(content);
     char carray[100];
     strncpy(carray, content, tlen);
+    carray[tlen] = '\0';
 
     st_types_t type = st_capi_get_type((char *)carray);
     st_ut_eq(ST_TYPES_STRING, type, "failed to get char array type");
@@ -342,7 +347,7 @@ st_test(st_capi, set_add_get_remove_key)
         ret = st_capi_get(root, str_key, &check_value);
         st_ut_eq(ST_OK, ret, "failed to get str key value");
 
-        len = strlen(str_val) + 1;
+        len = strlen(str_val);
         st_ut_eq(ST_TYPES_STRING, check_value.type, "wrong str value type");
         st_ut_eq(len, check_value.len, "wrong len of str value");
         st_ut_eq(0,
@@ -663,6 +668,31 @@ st_test(st_capi, set_add_get_remove_key)
                  (uintptr_t)check_value.bytes,
                  "get must not touch bytes in failure");
 
+        /** use only part of the array and string */
+        memset(carray, 0, sizeof(carray));
+        char *str = "hello world";
+        strncpy(carray, str, strlen(str));
+        carray[strlen(str)] = '\0';
+        char *carray_tbl_value = (char *)carray;
+
+        st_tvalue_t key = st_capi_make_tvalue(str, 5);
+        st_tvalue_t value = st_capi_make_tvalue(carray_tbl_value, 4);
+        ret = st_capi_do_add(root, key, value, 1);
+        st_ut_eq(ST_OK, ret, "failed to set char array value");
+
+        check_value = (st_tvalue_t)st_str_null;
+        str_key = "hello";
+        ret = st_capi_get(root, str_key, &check_value);
+        st_ut_eq(ST_OK, ret, "failed to get char array value");
+        st_ut_eq(0, strcmp("hell", (char *)check_value.bytes), "wrong value");
+
+        ret = st_capi_remove_key(root, str_key);
+        st_ut_eq(ST_OK, ret, "failed to remove carray value");
+
+        ret = st_capi_get(root, str_key, &check_value);
+        st_ut_eq(ST_NOT_FOUND, ret, "failed to remove carray key");
+
+        st_ut_eq(0, root->element_cnt, "wrong element count");
         st_table_remove_all(root);
         st_table_free(root);
 

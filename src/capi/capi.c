@@ -38,7 +38,7 @@ st_capi_get_size_by_type(void *caddr, st_types_t type)
     ssize_t len = 0;
     switch (type) {
         case ST_TYPES_STRING:
-            len = strlen(*(char **)caddr) + 1;
+            len = strlen(*(char **)caddr);
 
             break;
         case ST_TYPES_NUMBER:

@@ -48,7 +48,12 @@ static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
             .bytes       =(uint8_t*)(_bytes)                                  \
         }
 
-#define st_str_wrap_common(_charptr, _type, _len) st_str_wrap_((_type), (_len), (_len), 0, (_charptr))
+#define st_str_wrap_common(_charptr, _type, _len)     \
+    st_str_wrap_((_type),                             \
+                 (_len),                              \
+                 (_len) + (_type == ST_TYPES_STRING), \
+                 0,                                   \
+                 (_charptr))
 
 /* lcb: len, capacity and bytes */
 #define st_str_wrap_lcb(_len, _capacity, _bytes) st_str_wrap_(ST_TYPES_STRING, (_len), (_capacity), 0, (_bytes))

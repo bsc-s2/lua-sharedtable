@@ -10,11 +10,13 @@ static int st_table_cmp_element(st_rbtree_node_t *a, st_rbtree_node_t *b) {
 
 static int st_table_new_element(st_table_t *table, st_str_t key,
                                 st_str_t value, st_table_element_t **elem) {
+    st_assert(key.len <= key.capacity);
+    st_assert(value.len <= value.capacity);
 
     st_table_pool_t *pool = table->pool;
     st_table_element_t *e = NULL;
 
-    ssize_t size = sizeof(st_table_element_t) + st_align(key.len, 8) + value.len;
+    ssize_t size = sizeof(st_table_element_t) + st_align(key.capacity, 8) + value.capacity;
 
     int ret = st_slab_obj_alloc(&pool->slab_pool, size, (void **)&e);
     if (ret != ST_OK) {
@@ -25,10 +27,16 @@ static int st_table_new_element(st_table_t *table, st_str_t key,
 
     st_memcpy(e->kv_data, key.bytes, key.len);
     e->key = (st_str_t)st_str_wrap_common(e->kv_data, key.type, key.len);
+    if (key.len < key.capacity) {
+        e->key.bytes[key.len] = 0;
+    }
 
-    uint8_t *value_start = e->kv_data + st_align(key.len, 8);
+    uint8_t *value_start = e->kv_data + st_align(key.capacity, 8);
     st_memcpy(value_start, value.bytes, value.len);
     e->value = (st_str_t)st_str_wrap_common(value_start, value.type, value.len);
+    if (value.len < value.capacity) {
+        e->value.bytes[value.len] = 0;
+    }
 
     *elem = e;
 
