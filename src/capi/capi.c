@@ -595,7 +595,7 @@ st_capi_make_proot_table_key(st_tvalue_t tbl_val)
 
 /** add or remove table reference in proot */
 static int
-st_capi_handle_table_ref(st_tvalue_t tbl_val, int do_add)
+st_capi_handle_table_ref_in_proot(st_tvalue_t tbl_val, int do_add)
 {
     st_assert_nonull(tbl_val.bytes);
 
@@ -625,73 +625,6 @@ st_capi_worker_init(void)
 }
 
 
-int
-st_capi_new(st_tvalue_t *ret_val)
-{
-    st_assert_nonull(ret_val);
-
-    st_table_t *table = NULL;
-    st_tvalue_t tvalue = st_str_wrap_common(NULL, ST_TYPES_TABLE, 0);
-    int ret = st_str_init(&tvalue, sizeof(st_table_t *));
-    if (ret != ST_OK) {
-        derr("failed to init st_tvalue_t: %d", ret);
-
-        return ret;
-    }
-
-    ret = st_table_new(&process_state->lib_state->table_pool, &table);
-    if (ret != ST_OK) {
-        derr("failed to create table: %d", ret);
-
-        goto err_quit;
-    }
-    *((st_table_t **)tvalue.bytes) = table;
-
-    /** add table ref in proot. */
-    ret = st_capi_handle_table_ref(tvalue, 1);
-    if (ret != ST_OK) {
-        derr("failed to set table: %d", ret);
-
-        goto err_quit;
-    }
-
-    *ret_val = tvalue;
-
-    return ST_OK;
-
-err_quit:
-    if (table != NULL) {
-        st_assert_ok(st_table_free(table), "failed to free table");
-    }
-    st_free(tvalue.bytes);
-
-    return ret;
-}
-
-
-int
-st_capi_free(st_tvalue_t *value)
-{
-    st_assert_nonull(value);
-    st_assert_nonull(value->bytes);
-
-    if (st_types_is_table(value->type)) {
-        /** remove table ref in proot */
-        int ret = st_capi_handle_table_ref(*value, 0);
-
-        if (ret != ST_OK) {
-            derr("failed to remove table reference: %d", ret);
-            return ret;
-        }
-    }
-
-    st_free(value->bytes);
-    *value = (st_tvalue_t)st_str_null;
-
-    return ST_OK;
-}
-
-
 static int
 st_capi_copy_out_tvalue(st_tvalue_t *dst, st_tvalue_t *src)
 {
@@ -708,7 +641,7 @@ st_capi_copy_out_tvalue(st_tvalue_t *dst, st_tvalue_t *src)
     }
 
     if (st_types_is_table(value.type)) {
-        ret = st_capi_handle_table_ref(value, 1);
+        ret = st_capi_handle_table_ref_in_proot(value, 1);
 
         if (ret != ST_OK) {
             derr("failed to add table ref key in proot: %d", ret);
@@ -727,6 +660,69 @@ err_quit:
     }
 
     return ret;
+}
+
+
+int
+st_capi_get_groot(st_tvalue_t *ret_val)
+{
+    st_assert_nonull(process_state);
+
+    st_tvalue_t tvalue = st_capi_make_tvalue(process_state->lib_state->groot);
+
+    /**
+     * reuse st_capi_copy_out_tvalue logic to st_malloc memory
+     * for st_tvalue_t.bytes and handle table reference in proot
+     */
+    return st_capi_copy_out_tvalue(ret_val, &tvalue);
+}
+
+
+int
+st_capi_new(st_tvalue_t *ret_val)
+{
+    st_table_t *table = NULL;
+    int ret = st_table_new(&process_state->lib_state->table_pool, &table);
+    if (ret != ST_OK) {
+        derr("failed to create table: %d", ret);
+
+        return ret;
+    }
+    st_tvalue_t tvalue = st_capi_make_tvalue(table);
+
+    /**
+     * reuse st_capi_copy_out_tvalue logic to st_malloc memory
+     * for st_tvalue_t.bytes and handle table reference in proot
+     */
+    ret = st_capi_copy_out_tvalue(ret_val, &tvalue);
+    if (ret != ST_OK) {
+        st_assert_ok(st_table_free(table), "failed to free table");
+    }
+
+    return ret;
+}
+
+
+int
+st_capi_free(st_tvalue_t *value)
+{
+    st_assert_nonull(value);
+    st_assert_nonull(value->bytes);
+
+    if (st_types_is_table(value->type)) {
+        /** remove table ref in proot */
+        int ret = st_capi_handle_table_ref_in_proot(*value, 0);
+
+        if (ret != ST_OK) {
+            derr("failed to remove table reference: %d", ret);
+            return ret;
+        }
+    }
+
+    st_free(value->bytes);
+    *value = (st_tvalue_t)st_str_null;
+
+    return ST_OK;
 }
 
 

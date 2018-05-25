@@ -177,4 +177,6 @@ int st_capi_next(st_capi_iter_t *iter,
 
 int st_capi_free_iterator(st_capi_iter_t *iter);
 
+int st_capi_get_groot(st_tvalue_t *ret_val);
+
 #endif
