@@ -103,10 +103,12 @@ st_str_ref(st_str_t *s, const st_str_t *target) {
 
 int
 st_str_copy(st_str_t *str, const st_str_t *from) {
-    st_must(str != NULL, ST_ARG_INVALID);
-    st_must(str->bytes_owned == 0, ST_INITTWICE);
-    st_must(from != NULL, ST_ARG_INVALID);
-    st_must(str != from, ST_ARG_INVALID);
+
+    st_assert_nonull(str);
+    st_assert_nonull(from);
+
+    st_assert(str->bytes_owned == 0, "str owns bytes, can not init twice");
+    st_assert(str != from, "str and from can not be the same");
 
     int ret;
 

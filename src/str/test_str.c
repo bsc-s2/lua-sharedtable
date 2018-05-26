@@ -553,10 +553,10 @@ st_test(str, copy) {
         st_str_t s = st_str_zero;
         st_str_t t = st_str_zero;
 
-        st_ut_eq(ST_ARG_INVALID, st_str_copy(NULL, NULL), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_copy(NULL, &s), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_copy(&s, NULL), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_copy(&s, &s), "");
+        st_ut_bug(st_str_copy(NULL, NULL), "");
+        st_ut_bug(st_str_copy(NULL, &s), "");
+        st_ut_bug(st_str_copy(&s, NULL), "");
+        st_ut_bug(st_str_copy(&s, &s), "");
 
         s.bytes_owned = 1;
         st_ut_bug(st_str_ref(&s, &t), "");
