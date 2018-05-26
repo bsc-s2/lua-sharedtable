@@ -104,7 +104,7 @@ static uint8_t *empty_str_ __attribute__((unused)) = (uint8_t *)"";
 int st_str_init(st_str_t *string, int64_t len);
 int st_str_init_0(st_str_t *string, int64_t len);
 
-int st_str_destroy(st_str_t *string);
+void st_str_destroy(st_str_t *string);
 
 int st_str_ref(st_str_t *s, const st_str_t *target);
 

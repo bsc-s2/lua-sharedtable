@@ -54,9 +54,9 @@ st_str_init_0(st_str_t *s, int64_t len) {
 }
 
 
-int
+void
 st_str_destroy(st_str_t *s) {
-    st_must(s != NULL, ST_ARG_INVALID);
+    st_assert_nonull(s);
 
     if (s->bytes_owned) {
         st_free(s->bytes);
@@ -67,8 +67,6 @@ st_str_destroy(st_str_t *s) {
     s->bytes_owned = 0;
     s->len = 0;
     s->capacity = 0;
-
-    return ST_OK;
 }
 
 int

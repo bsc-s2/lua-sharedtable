@@ -138,8 +138,7 @@ st_test(str, init) {
         st_ut_eq(0,               s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
 
         st_ut_eq(-1,   s.type,        "type is -1");
         st_ut_eq(0,    s.len,         "len is 0");
@@ -159,8 +158,7 @@ st_test(str, init) {
         st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
     }
 
     {
@@ -174,8 +172,7 @@ st_test(str, init) {
         st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
     }
 }
 
@@ -194,8 +191,7 @@ st_test(str, init_0) {
         st_ut_eq(1,               s.bytes_owned, "bytes_owned is 0, use pre-allocated empty c-string");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
     }
 
     {
@@ -209,8 +205,7 @@ st_test(str, init_0) {
         st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
     }
 
     {
@@ -224,8 +219,7 @@ st_test(str, init_0) {
         st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
         st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-        ret = st_str_destroy(&s);
-        st_ut_eq(ST_OK, ret, "destroy");
+        st_str_destroy(&s);
     }
 }
 
@@ -502,7 +496,7 @@ st_test(str, trailing_0) {
 st_test(str, destroy) {
 
     {
-        st_ut_eq(ST_ARG_INVALID, st_str_destroy(NULL), "destroy NULL");
+        st_ut_bug(st_str_destroy(NULL));
     }
 
     int ret;
@@ -517,8 +511,7 @@ st_test(str, destroy) {
     st_ut_eq(1,               s.bytes_owned, "bytes_owned is 1");
     st_ut_ne(NULL,            s.bytes,       "bytes is not NULL");
 
-    ret = st_str_destroy(&s);
-    st_ut_eq(ST_OK, ret, "destroy");
+    st_str_destroy(&s);
 
     st_ut_eq(-1,   s.type,        "type is -1");
     st_ut_eq(0,    s.len,         "len is 0");
@@ -561,11 +554,9 @@ st_test(str, ref) {
     st_ut_eq(0,               ref.bytes_owned, "bytes_owned is 0, ref does not need to free memory");
     st_ut_eq(s.bytes,         ref.bytes,       "bytes is shared");
 
-    ret = st_str_destroy(&s);
-    st_ut_eq(ST_OK, ret, "destroy s");
+    st_str_destroy(&s);
 
-    ret = st_str_destroy(&ref);
-    st_ut_eq(ST_OK, ret, "destroy ref");
+    st_str_destroy(&ref);
 }
 
 st_test(str, copy) {
@@ -605,11 +596,8 @@ st_test(str, copy) {
     ret = st_memcmp(s.bytes, cpy.bytes, s.capacity);
     st_ut_eq(0, ret, "cpy.bytes is same as s.bytes");
 
-    ret = st_str_destroy(&s);
-    st_ut_eq(ST_OK, ret, "destroy s");
-
-    ret = st_str_destroy(&cpy);
-    st_ut_eq(ST_OK, ret, "destroy cpy");
+    st_str_destroy(&s);
+    st_str_destroy(&cpy);
 }
 
 st_test(str, copy_cstr) {
@@ -642,8 +630,7 @@ st_test(str, copy_cstr) {
     st_ut_eq(0, ret, "s.bytes is same as FOO");
     st_ut_eq('\0', s.bytes[s.len], "s has trailing 0");
 
-    ret = st_str_destroy(&s);
-    st_ut_eq(ST_OK, ret, "destroy s");
+    st_str_destroy(&s);
 }
 
 st_test(str, seize) {
@@ -680,11 +667,8 @@ st_test(str, seize) {
     st_ut_eq(1,          seize.bytes_owned, "bytes_owned is 1");
     st_ut_eq(s.bytes,    seize.bytes,       "bytes is copied");
 
-    ret = st_str_destroy(&s);
-    st_ut_eq(ST_OK, ret, "destroy s");
-
-    ret = st_str_destroy(&seize);
-    st_ut_eq(ST_OK, ret, "destroy seize");
+    st_str_destroy(&s);
+    st_str_destroy(&seize);
 }
 
 st_test(str, increment) {
