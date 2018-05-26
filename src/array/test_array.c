@@ -39,12 +39,15 @@ st_test(array, static_array_init) {
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
 
-        st_ut_eq(c.expect_ret,
-                 st_array_init_static(c.array, 4, c.start_addr, c.total_count, compare),
-                 "test static init");
-
         if (c.expect_ret != ST_OK) {
+            st_ut_bug(st_array_init_static(c.array, 4, c.start_addr, c.total_count,
+                                           compare),
+                      "test static init with invalid arg");
             continue;
+        }
+        else {
+            st_array_init_static(c.array, 4, c.start_addr, c.total_count,
+                                 compare);
         }
 
         st_ut_eq(c.start_addr, array.start_addr, "start_addr ok");
@@ -123,7 +126,7 @@ st_test(array, destroy) {
         {&array, 1, 1, ST_OK},
     };
 
-    st_ut_eq(ST_UNINITED, st_array_destroy(&array), "destroy uninited array");
+    st_ut_nobug(st_array_destroy(&array), "destroy uninited");
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
@@ -131,14 +134,16 @@ st_test(array, destroy) {
         if (c.dynamic == 1) {
             st_ut_eq(ST_OK, st_array_init_dynamic(&array, 4, callback, compare), "init ok");
         } else {
-            st_ut_eq(ST_OK, st_array_init_static(&array, 4, array_buf, 10, compare), "init ok");
+            st_array_init_static(&array, 4, array_buf, 10, compare);
         }
 
         if (c.append == 1) {
             st_ut_eq(ST_OK, st_array_append(&array, &tmp), "append value");
         }
 
-        st_ut_eq(c.expect_ret, st_array_destroy(c.array), "destroy array ok");
+        if (c.array != NULL) {
+            st_ut_nobug(st_array_destroy(c.array), "destroy array ok");
+        }
 
         if (c.expect_ret != ST_OK) {
             continue;
@@ -337,7 +342,6 @@ st_test(array, dynamic_array_insert) {
 
 st_test(array, remove) {
     st_array_t array = {0};
-    int ret;
     int array_buf[20] = {0};
     int append_buf[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
@@ -346,42 +350,38 @@ st_test(array, remove) {
         int remove_num;
         int expect_curr_cnt;
         int expect_total_cnt;
-        int expect_status;
     } cases[] = {
-        {0, 1, 9, 20, ST_OK},
-        {5, 1, 9, 20, ST_OK},
-        {9, 1, 9, 20, ST_OK},
-
-        {0, 5, 5, 20, ST_OK},
-        {5, 5, 5, 20, ST_OK},
-        {8, 2, 8, 20, ST_OK},
-        {0, 10, 0, 20, ST_OK},
-
-        {10, 1, 10, 20, ST_INDEX_OUT_OF_RANGE},
-        {9, 10, 10, 20, ST_INDEX_OUT_OF_RANGE},
+        {0,  1,  9,  20},
+        {5,  1,  9,  20},
+        {9,  1,  9,  20},
+        {0,  5,  5,  20},
+        {5,  5,  5,  20},
+        {8,  2,  8,  20},
+        {0,  10, 0,  20},
+        {10, 1,  10, 20},
+        {9,  10, 9,  20},
     };
 
-    st_ut_eq(ST_UNINITED, st_array_remove(&array, 0), "remove uninited array");
+    st_ut_bug(st_array_remove(&array, 0), "remove uninited array");
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0]) c = cases[i];
 
         st_array_init_static(&array, 4, array_buf, 20, compare);
         st_ut_eq(ST_OK, st_array_append(&array, append_buf, 10), "append ok");
-
-        if (c.remove_num == 1) {
-            ret = st_array_remove(&array, c.remove_idx);
-        } else {
-            ret = st_array_remove(&array, c.remove_idx, c.remove_num);
+        st_ut_bug(st_array_remove(&array, -1), "remove out of index");
+        if (c.remove_idx < 0 || c.remove_idx >= array.current_cnt) {
+            st_ut_bug(st_array_remove(&array, c.remove_idx));
         }
+        else {
+            if (c.remove_num == 1) {
+                st_array_remove(&array, c.remove_idx);
+            } else {
+                st_array_remove(&array, c.remove_idx, c.remove_num);
+            }
 
-        st_ut_eq(c.expect_curr_cnt, array.current_cnt, "array current_cnt is right");
-        st_ut_eq(c.expect_total_cnt, array.total_cnt, "array total_cnt is right");
-        st_ut_eq(c.expect_status, ret, "array insert status is right");
-
-        if (c.expect_status != ST_OK) {
-            st_array_destroy(&array);
-            continue;
+            st_ut_eq(c.expect_curr_cnt, array.current_cnt, "array current_cnt is right");
+            st_ut_eq(c.expect_total_cnt, array.total_cnt, "array total_cnt is right");
         }
 
         for (int j = 0; j < array.current_cnt; j++) {
@@ -401,25 +401,25 @@ st_test(array, sort) {
     int array_buf[20] = {0};
     int append_buf[10] = {8, 7, 5, 3, 4, 1, 2, 6, 9, 0};
 
-    st_ut_eq(ST_UNINITED, st_array_sort(&array, NULL), "compare uninited array");
+    st_ut_bug(st_array_sort(&array, NULL), "compare uninited array");
 
     st_array_init_static(&array, 4, array_buf, 20, compare);
     st_ut_eq(ST_OK, st_array_append(&array, append_buf, 10), "append ok");
 
-    st_ut_eq(ST_OK, st_array_sort(&array, NULL), "sort ok");
+    st_ut_nobug(st_array_sort(&array, NULL), "sort ok");
     st_ut_eq(10, array.current_cnt, "current_cnt right");
 
     for (int i = 0; i < array.current_cnt; i++) {
         st_ut_eq(i, *(int *)st_array_get(&array, i), "array elements is right");
     }
 
-    st_ut_eq(ST_OK, st_array_sort(&array, compare_reverse), "sort ok");
+    st_ut_nobug(st_array_sort(&array, compare_reverse), "sort ok");
 
     for (int i = 0; i < array.current_cnt; i++) {
         st_ut_eq(array.current_cnt - i - 1, *(int *)st_array_get(&array, i), "array elements is right");
     }
 
-    st_ut_eq(ST_ARG_INVALID, st_array_sort(NULL, NULL), "sort array NULL");
+    st_ut_bug(st_array_sort(NULL, NULL), "sort array NULL");
 }
 
 st_test(array, bsearch_left_right) {

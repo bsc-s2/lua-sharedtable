@@ -137,7 +137,8 @@ void st_robustlock_unlock(pthread_mutex_t *lock) {
 
 
 int st_robustlock_destroy(pthread_mutex_t *lock) {
-    st_must(lock != NULL, ST_ARG_INVALID);
+
+    st_assert_nonull(lock);
 
     return pthread_mutex_destroy(lock);
 }

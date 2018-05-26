@@ -2,11 +2,13 @@
 
 static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt);
 
-int st_array_init_static(st_array_t *array, ssize_t element_size,
-                         void *start_addr, ssize_t total_cnt, st_array_compare_f compare) {
-    st_must(array != NULL, ST_ARG_INVALID);
-    st_must(start_addr != NULL, ST_ARG_INVALID);
-    st_must(total_cnt > 0, ST_ARG_INVALID);
+void
+st_array_init_static(st_array_t *array, ssize_t element_size,
+                     void *start_addr, ssize_t total_cnt, st_array_compare_f compare) {
+
+    st_assert_nonull(array);
+    st_assert_nonull(start_addr);
+    st_assert(total_cnt > 0, "total_cnt must > 0");
 
     array->dynamic = 0;
     array->start_addr = start_addr;
@@ -15,8 +17,6 @@ int st_array_init_static(st_array_t *array, ssize_t element_size,
     array->total_cnt = total_cnt;
     array->compare = compare;
     array->inited = 1;
-
-    return ST_OK;
 }
 
 int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
@@ -43,9 +43,11 @@ int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
     return ST_OK;
 }
 
-int st_array_destroy(st_array_t *array) {
-    st_must(array != NULL, ST_ARG_INVALID);
-    st_must(array->inited == 1, ST_UNINITED);
+void st_array_destroy(st_array_t *array) {
+
+    st_assert_nonull(array);
+
+    st_must(array->inited == 1);
 
     // if is static array, you must free memory space by yourself
     if (array->dynamic == 1 && array->start_addr != NULL) {
@@ -53,8 +55,6 @@ int st_array_destroy(st_array_t *array) {
     }
 
     memset(array, 0, sizeof(*array));
-
-    return ST_OK;
 }
 
 static int st_array_extend_when_needed(st_array_t *array, ssize_t incr_cnt) {
@@ -115,10 +115,17 @@ int st_array_append_many(st_array_t *array, void *elements, ssize_t cnt) {
     return st_array_insert_many(array, array->current_cnt, elements, cnt);
 }
 
-int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt) {
-    st_must(array != NULL, ST_ARG_INVALID);
-    st_must(array->inited == 1, ST_UNINITED);
-    st_must(idx >= 0 && idx + cnt <= array->current_cnt, ST_INDEX_OUT_OF_RANGE);
+void st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt) {
+
+    st_assert_nonull(array);
+    st_assert(array->inited == 1, "array must be inited");
+
+    st_assert(idx >= 0);
+    st_assert(idx < array->current_cnt);
+
+    if (idx + cnt > array->current_cnt) {
+        cnt = array->current_cnt - idx;
+    }
 
     if (idx + cnt != array->current_cnt) {
         memmove(st_array_get(array, idx),
@@ -128,20 +135,17 @@ int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt) {
     }
 
     array->current_cnt -= cnt;
-
-    return ST_OK;
 }
 
-int st_array_sort(st_array_t *array, st_array_compare_f compare) {
-    st_must(array != NULL, ST_ARG_INVALID);
-    st_must(array->inited == 1, ST_UNINITED);
+void st_array_sort(st_array_t *array, st_array_compare_f compare) {
+
+    st_assert_nonull(array);
+    st_assert(array->inited == 1, "array must be inited");
 
     st_array_compare_f cmp = compare != NULL ? compare : array->compare;
-    st_must(cmp != NULL, ST_ARG_INVALID);
+    st_assert_nonull(cmp, "compare or array->compare must be specified");
 
     qsort(array->start_addr, array->current_cnt, array->element_size, cmp);
-
-    return ST_OK;
 }
 
 int st_array_indexof(st_array_t *array, void *element,

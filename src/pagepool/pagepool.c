@@ -38,7 +38,7 @@ static int st_pagepool_remove_region(st_pagepool_t *pool, uint8_t *region) {
         goto quit;
     }
 
-    ret = st_array_remove(&pool->regions, idx);
+    st_array_remove(&pool->regions, idx);
 
 quit:
     st_robustlock_unlock(&pool->regions_lock);
@@ -272,11 +272,8 @@ int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size) {
         return ret;
     }
 
-    ret = st_array_init_static(&pool->regions, sizeof(uint8_t *), pool->regions_array_data,
-                               ST_PAGEPOOL_MAX_REGION_CNT, st_pagepool_cmp_region_addr);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_init_static(&pool->regions, sizeof(uint8_t *), pool->regions_array_data,
+                         ST_PAGEPOOL_MAX_REGION_CNT, st_pagepool_cmp_region_addr);
 
     ret = st_robustlock_init(&pool->regions_lock);
     if (ret != ST_OK) {
@@ -294,15 +291,16 @@ int st_pagepool_init(st_pagepool_t *pool, ssize_t page_size) {
 }
 
 int st_pagepool_destroy(st_pagepool_t *pool) {
+
     int ret, err = ST_OK;
 
-    st_must(pool != NULL, ST_ARG_INVALID);
+    st_assert_nonull(pool);
 
-    ret = st_array_destroy(&pool->regions);
-    if (ret != ST_OK) {
-        derr("st_array_destroy error %d\n", ret);
-        err = ret;
+    if (pool->regions.inited == 0) {
+        return ST_UNINITED;
     }
+
+    st_array_destroy(&pool->regions);
 
     ret = st_robustlock_destroy(&pool->regions_lock);
     if (ret != ST_OK) {

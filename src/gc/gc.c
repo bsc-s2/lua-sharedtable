@@ -374,7 +374,7 @@ int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head) {
         goto quit;
     }
 
-    ret = st_array_remove(&gc->roots, idx);
+    st_array_remove(&gc->roots, idx);
 
 quit:
     st_robustlock_unlock(&gc->lock);
@@ -405,11 +405,8 @@ int st_gc_init(st_gc_t *gc) {
         return ret;
     }
 
-    ret = st_array_init_static(&gc->roots, sizeof(st_gc_head_t *),
-                               gc->roots_data, ST_GC_MAX_ROOTS, st_gc_cmp_gc_head);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_init_static(&gc->roots, sizeof(st_gc_head_t *),
+                         gc->roots_data, ST_GC_MAX_ROOTS, st_gc_cmp_gc_head);
 
     ret = st_robustlock_init(&gc->lock);
     if (ret != ST_OK) {
@@ -449,10 +446,7 @@ int st_gc_destroy(st_gc_t *gc) {
         return ST_STATE_INVALID;
     }
 
-    ret = st_array_destroy(&gc->roots);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_destroy(&gc->roots);
 
     return st_robustlock_destroy(&gc->lock);
 }

@@ -166,7 +166,7 @@ st_test(pagepool, destroy) {
 
     st_ut_eq(ST_OK, st_pagepool_destroy(&pool), "");
 
-    st_ut_eq(ST_ARG_INVALID, st_pagepool_destroy(NULL), "");
+    st_ut_bug(st_pagepool_destroy(NULL), "");
 
     free_buf(buf, 655360);
 }

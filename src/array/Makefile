@@ -1,6 +1,7 @@
-
 src       = array.c
 target    = array.a
+deps      = \
+	    util \
 
 test_exec = test_array
 

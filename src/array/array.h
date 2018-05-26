@@ -48,13 +48,13 @@ static inline ssize_t st_array_current_cnt(st_array_t *array) {
     return array->current_cnt;
 }
 
-int st_array_init_static(st_array_t *array, ssize_t element_size,
-                         void *start_addr, ssize_t total_cnt, st_array_compare_f compare);
+void st_array_init_static(st_array_t *array, ssize_t element_size,
+                          void *start_addr, ssize_t total_cnt, st_array_compare_f compare);
 
 int st_array_init_dynamic(st_array_t *array, ssize_t element_size,
                           st_callback_memory_t callback, st_array_compare_f compare);
 
-int st_array_destroy(st_array_t *array);
+void st_array_destroy(st_array_t *array);
 
 
 #define st_array_insert(array, idx, elts, ...) \
@@ -66,7 +66,7 @@ int st_array_insert_many(st_array_t *array, ssize_t idx, void *elements, ssize_t
 #define st_array_remove(array, idx, ...) \
         st_array_remove_many(array, idx, st_arg2(xx, ##__VA_ARGS__, 1))
 
-int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt);
+void st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt);
 
 
 #define st_array_append(array, elts, ...) \
@@ -74,7 +74,7 @@ int st_array_remove_many(st_array_t *array, ssize_t idx, ssize_t cnt);
 
 int st_array_append_many(st_array_t *array, void *elements, ssize_t cnt);
 
-int st_array_sort(st_array_t *array, st_array_compare_f compare);
+void st_array_sort(st_array_t *array, st_array_compare_f compare);
 
 int st_array_indexof(st_array_t *array, void *element,
                      st_array_compare_f compare, ssize_t *idx);

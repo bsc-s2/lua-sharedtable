@@ -35,10 +35,7 @@ int main()
     st_array_t array = {0};
     int array_buf[10];
 
-    int ret = st_array_init_static(&array, sizeof(int), array_buf, 10, NULL);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_init_static(&array, sizeof(int), array_buf, 10, NULL);
 
     int append_v = 2;
 
@@ -54,15 +51,9 @@ int main()
         return ret;
     }
 
-    ret = st_array_remove(&array, 0);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_remove(&array, 0);
 
-    ret = st_array_destroy(&array);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_destroy(&array);
 
     return ret;
 }
@@ -101,10 +92,7 @@ int main()
         return ret;
     }
 
-    ret = st_array_sort(&array, NULL);
-    if (ret != ST_OK) {
-        return ret;
-    }
+    st_array_sort(&array, NULL);
 
     int value = 6;
     ssize_t idx;
