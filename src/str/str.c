@@ -6,9 +6,9 @@
 int
 st_str_init(st_str_t *s, int64_t len) {
 
-    st_must(s != NULL, ST_ARG_INVALID);
-    st_must(len >= 0, ST_ARG_INVALID);
-    st_must(s->bytes_owned == 0, ST_INITTWICE);
+    st_assert_nonull(s);
+    st_assert(len >= 0, "len must >= 0");
+    st_assert(s->bytes_owned == 0, "s has already been inited");
 
     int ret = ST_BUG_UNINITED;
 
@@ -38,9 +38,7 @@ err_return:
 int
 st_str_init_0(st_str_t *s, int64_t len) {
 
-    st_must(s != NULL, ST_ARG_INVALID);
-    st_must(len >= 0, ST_ARG_INVALID);
-    st_must(s->bytes_owned == 0, ST_INITTWICE);
+    st_assert(len >= 0, "len must >= 0");
 
     int ret = st_str_init(s, len + 1);
 
@@ -56,6 +54,7 @@ st_str_init_0(st_str_t *s, int64_t len) {
 
 void
 st_str_destroy(st_str_t *s) {
+
     st_assert_nonull(s);
 
     if (s->bytes_owned) {

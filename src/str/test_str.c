@@ -90,29 +90,23 @@ st_test(str, const) {
 st_test(str, init_invalid) {
 
     {
-        int ret = st_str_init(NULL, 1);
-        st_ut_eq(ST_ARG_INVALID, ret, "s is NULL");
+        st_ut_bug(st_str_init(NULL, 1), "s is NULL");
     }
 
     struct case_s {
         int64_t inp;
-        int expected;
     } cases[] = {
-        {-1, ST_ARG_INVALID},
-        {-2, ST_ARG_INVALID},
-        {-1024, ST_ARG_INVALID},
+        {-1, },
+        {-2, },
+        {-1024, },
     };
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0])   c = cases[i];
-        st_typeof(c.expected) rst;
 
         st_str_t s = {{0}};
 
-        rst = st_str_init(&s, c.inp);
-        ddx(rst);
-
-        st_ut_eq(c.expected, rst, "");
+        st_ut_bug(st_str_init(&s, c.inp));
 
         st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(NULL, s.right,       "right is NULL");
@@ -226,29 +220,24 @@ st_test(str, init_0) {
 st_test(str, init_0_invalid) {
 
     {
-        int ret = st_str_init_0(NULL, 1);
-        st_ut_eq(ST_ARG_INVALID, ret, "s is NULL");
+        st_ut_bug(st_str_init_0(NULL, 1));
     }
 
 
     struct case_s {
         int64_t inp;
-        int expected;
     } cases[] = {
-        {-1, ST_ARG_INVALID},
-        {-2, ST_ARG_INVALID},
-        {-1024, ST_ARG_INVALID},
+        {-1, },
+        {-2, },
+        {-1024, },
     };
 
     for (int i = 0; i < st_nelts(cases); i++) {
         st_typeof(cases[0])   c = cases[i];
-        st_typeof(c.expected) rst;
 
         st_str_t s = {{0}};
 
-        rst = st_str_init_0(&s, c.inp);
-
-        st_ut_eq(c.expected, rst, "");
+        st_ut_bug(st_str_init_0(&s, c.inp));
 
         st_ut_eq(0,    s.type,        "type is 0");
         st_ut_eq(NULL, s.right,       "right is NULL");
