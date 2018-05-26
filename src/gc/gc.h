@@ -114,6 +114,6 @@ int st_gc_push_to_sweep(st_gc_t *gc, st_gc_head_t *gc_head);
 
 int st_gc_add_root(st_gc_t *gc, st_gc_head_t *gc_head);
 
-int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head);
+int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head, int do_free);
 
 #endif /* _GC_H_INCLUDED_ */

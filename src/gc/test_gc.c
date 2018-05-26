@@ -120,7 +120,7 @@ static void clean_root_table(st_table_t *root) {
 
     gc_clean_all(table_pool);
 
-    st_assert(st_gc_remove_root(&table_pool->gc, &root->gc_head) == ST_OK);
+    st_assert(st_gc_remove_root(&table_pool->gc, &root->gc_head, 0) == ST_OK);
     st_assert(st_table_free(root) == ST_OK);
 
     st_assert(remain_table_cnt(table_pool) == 0);
@@ -597,7 +597,7 @@ st_test(table, destroy_gc) {
 
     st_ut_eq(ST_OK, st_table_remove_all(root), "");
 
-    st_ut_eq(ST_OK, st_gc_remove_root(&table_pool->gc, &root->gc_head), "");
+    st_ut_eq(ST_OK, st_gc_remove_root(&table_pool->gc, &root->gc_head, 0), "");
     st_ut_eq(ST_OK, st_table_free(root), "");
 
     st_ut_eq(ST_OK, st_gc_destroy(&table_pool->gc), "");

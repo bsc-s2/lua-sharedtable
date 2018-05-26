@@ -1012,4 +1012,119 @@ st_test(st_capi, iterator)
 }
 
 
+st_test(capi, groot_and_clean_dead_proot)
+{
+    st_capi_prepare_ut();
+
+    /** 
+     * to each worker process, do the following:
+     *     new a table;
+     *     groot[self_pid] = table;
+     *     table[self_pid] = pid;
+     */
+    int
+    st_capi_test_groot_and_clean_dead_proot(void)
+    {
+        st_capi_process_t *pstate = st_capi_get_process_state();
+
+        st_tvalue_t tbl_tval = st_str_null;
+        int ret = st_capi_new(&tbl_tval);
+        st_ut_eq(ST_OK, ret, "failed to new table");
+        st_table_t *table = st_table_get_table_addr_from_value(tbl_tval);
+
+        pid_t pid = getpid();
+        ret = st_capi_add(table, pid, pid);
+        st_ut_eq(ST_OK, ret, "failed to add key value to table");
+
+        st_tvalue_t groot_tval = st_str_null;
+        ret = st_capi_get_groot(&groot_tval);
+        st_ut_eq(ST_OK, ret, "failed to get groot");
+
+        st_table_t *groot = st_table_get_table_addr_from_value(groot_tval);
+        ret = st_capi_add(groot, pid, table);
+        st_ut_eq(ST_OK, ret, "failed to set value to groot");
+
+        st_ut_eq(2, pstate->proot->element_cnt, "failed to add table ref");
+
+        ret = st_capi_free(&tbl_tval);
+        st_ut_eq(ST_OK, ret, "failed to free table_tval");
+        ret = st_capi_free(&groot_tval);
+        st_ut_eq(ST_OK, ret, "failed to free groot_tval");
+
+        st_ut_eq(0, pstate->proot->element_cnt, "failed to remove table ref");
+
+        return ST_OK;
+    }
+
+    st_capi_test_fork_wrapper(st_capi_test_groot_and_clean_dead_proot);
+
+    st_capi_process_t *pstate = st_capi_get_process_state();
+
+    /** get pids of all the worker processes */
+    int cnt = 0;
+    st_list_t *node;
+    pid_t worker_pids[ST_CAPI_TEST_PROCS_CNT];
+    st_list_for_each(node, &pstate->lib_state->proots) {
+        st_capi_process_t *worker = st_owner(node, st_capi_process_t, node);
+        if (worker->pid == getpid()) {
+            continue;
+        }
+        worker_pids[cnt++] = worker->pid;
+    }
+
+    /** clean half dead worker processes and check */
+    int cleaned = -1;
+    int ret = st_capi_clean_dead_proot(ST_CAPI_TEST_PROCS_CNT / 2, &cleaned);
+    st_ut_eq(ST_OK, ret, "failed to clean dead proot");
+    st_ut_eq(ST_CAPI_TEST_PROCS_CNT / 2, cleaned, "wrong cleaned value");
+
+    cnt = 0;
+    st_list_for_each(node, &pstate->lib_state->proots) {
+        cnt ++;
+    }
+    st_ut_eq(1 + ST_CAPI_TEST_PROCS_CNT - cleaned, cnt, "wrong cnt value");
+
+    /** force gc to clean up data of the cleaned worker processes */
+    while (1) {
+        ret = st_gc_run(&pstate->lib_state->table_pool.gc);
+        if (ret == ST_NO_GC_DATA) {
+            break;
+        }
+        else {
+            st_ut_eq(ST_OK, ret, "failed to run gc");
+        }
+    }
+
+    /** check groot */
+    st_table_t *groot      = pstate->lib_state->groot;
+    st_tvalue_t groot_tval = st_str_null;
+
+    ret = st_capi_get_groot(&groot_tval);
+    st_ut_eq(ST_OK, ret, "failed to get groot after gc");
+    st_ut_eq(groot, *((st_table_t **)groot_tval.bytes), "wrong groot addr");
+
+    for (cnt = 0; cnt < ST_CAPI_TEST_PROCS_CNT; cnt++) {
+        pid_t pid = worker_pids[cnt];
+
+        st_tvalue_t tbl_tval = st_str_null;
+        ret = st_capi_get(groot, pid, &tbl_tval);
+        st_ut_eq(ST_OK, ret, "failed to get pid in groot");
+
+        st_table_t *table = st_table_get_table_addr_from_value(tbl_tval);
+
+        st_tvalue_t pid_tval = st_str_null;
+        ret = st_capi_get(table, pid, &pid_tval);
+        st_ut_eq(ST_OK, ret, "failed to get pid in table");
+        st_ut_eq(ST_TYPES_INTEGER, pid_tval.type, "wrong pid type");
+        st_ut_eq(pid, *(pid_t *)pid_tval.bytes, "wrong pid value");
+
+        st_ut_eq(ST_OK, st_capi_free(&pid_tval), "failed to free pid_tval");
+        st_ut_eq(ST_OK, st_capi_free(&tbl_tval), "failed to free tbl_tval");
+    }
+    st_ut_eq(ST_OK, st_capi_free(&groot_tval), "failed to free groot_tval");
+
+    st_capi_tear_down_ut();
+}
+
+
 st_ut_main;

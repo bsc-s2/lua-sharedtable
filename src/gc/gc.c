@@ -15,7 +15,10 @@ static void st_gc_roots_to_mark_queue(st_gc_t *gc) {
     for (int i = 0; i < st_array_current_cnt(&gc->roots); i++) {
         gc_head = *(st_gc_head_t **)st_array_get(&gc->roots, i);
 
-        st_list_insert_last(&gc->mark_queue, &gc_head->mark_lnode);
+        /** root table could be already in mark_queue */
+        if (!st_list_is_inited(&gc_head->mark_lnode)) {
+            st_list_insert_last(&gc->mark_queue, &gc_head->mark_lnode);
+        }
     }
 }
 
@@ -359,7 +362,7 @@ quit:
     return ret;
 }
 
-int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head) {
+int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head, int do_free) {
 
     ssize_t idx;
 
@@ -375,6 +378,14 @@ int st_gc_remove_root(st_gc_t *gc, st_gc_head_t *gc_head) {
     }
 
     st_array_remove(&gc->roots, idx);
+
+    if (!!do_free) {
+        /**
+         * the table which owns gc_head could be in sweep or prev_swepp queue,
+         * so put it into sweep queue instead of st_table_free
+         */
+        ret = st_gc_push_to_sweep(gc, gc_head);
+    }
 
 quit:
     st_robustlock_unlock(&gc->lock);

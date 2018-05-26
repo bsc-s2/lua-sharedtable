@@ -109,14 +109,12 @@ st_capi_remove_gc_root(st_capi_t *state, st_table_t *table)
         return ret;
     }
 
-    ret = st_gc_remove_root(&state->table_pool.gc, &table->gc_head);
+    ret = st_gc_remove_root(&state->table_pool.gc, &table->gc_head, 1);
     if (ret != ST_OK) {
         derr("failed to remove root from gc: %d", ret);
-
-        return ret;
     }
 
-    return st_table_free(table);
+    return ret;
 }
 
 
@@ -413,10 +411,10 @@ st_capi_init_process_state(st_capi_process_t **pstate)
 
 err_quit:
     if (new_pstate->proot != NULL) {
-        st_gc_remove_root(&table_pool->gc, &new_pstate->proot->gc_head);
-
-        st_assert_ok(st_table_free(new_pstate->proot),
-                     "failed to free process root: %d", new_pstate->pid);
+        st_assert_ok(st_gc_remove_root(&table_pool->gc,
+                                       &new_pstate->proot->gc_head, 1),
+                     "failed to free process root: %d",
+                     new_pstate->pid);
     }
 
     st_assert_ok(st_slab_obj_free(slab_pool, new_pstate),

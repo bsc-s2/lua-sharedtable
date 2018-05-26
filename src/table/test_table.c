@@ -530,7 +530,7 @@ st_test(table, add_remove_table) {
     st_ut_eq(ST_OK, st_table_remove_all(root), "");
     run_gc_one_round(&table_pool->gc);
 
-    st_ut_eq(ST_OK, st_gc_remove_root(&table_pool->gc, &root->gc_head), "");
+    st_ut_eq(ST_OK, st_gc_remove_root(&table_pool->gc, &root->gc_head, 0), "");
     st_ut_eq(ST_OK, st_table_free(root), "");
 
     st_ut_eq(0, remain_table_cnt(table_pool), "");
@@ -722,7 +722,7 @@ st_test(table, test_table_in_processes) {
     st_ut_eq(ST_OK, st_table_remove_all(root), "");
     run_gc_one_round(&table_pool->gc);
 
-    st_ut_eq(st_gc_remove_root(&table_pool->gc, &root->gc_head), ST_OK, "");
+    st_ut_eq(st_gc_remove_root(&table_pool->gc, &root->gc_head, 0), ST_OK, "");
     st_ut_eq(ST_OK, st_table_free(root), "");
 
     st_ut_eq(0, remain_table_cnt(table_pool), "");
@@ -770,7 +770,7 @@ st_test(table, clear_circular_ref_in_same_table) {
     st_ut_eq(1, remain_table_cnt(table_pool), "");
     st_ut_eq(0, remain_element_cnt(table_pool, element_size), "");
 
-    st_ut_eq(st_gc_remove_root(&table_pool->gc, &root->gc_head), ST_OK, "");
+    st_ut_eq(st_gc_remove_root(&table_pool->gc, &root->gc_head, 0), ST_OK, "");
     st_ut_eq(ST_OK, st_table_free(root), "");
 
     st_ut_eq(0, remain_table_cnt(table_pool), "");
@@ -837,7 +837,7 @@ static int test_circular_ref(int process_id, st_table_pool_t *table_pool) {
         }
     }
 
-    ret = st_gc_remove_root(&table_pool->gc, &root->gc_head);
+    ret = st_gc_remove_root(&table_pool->gc, &root->gc_head, 0);
     if (ret != ST_OK) {
         return ret;
     }
@@ -1037,7 +1037,7 @@ static void st_bench_table(st_table_prof_t *prof)
     st_table_remove_all(prof->table);
     st_table_remove_all(prof->root);
 
-    st_gc_remove_root(&prof->table_pool->gc, &prof->root->gc_head);
+    st_gc_remove_root(&prof->table_pool->gc, &prof->root->gc_head, 0);
     st_table_free(prof->table);
     st_table_free(prof->root);
 
