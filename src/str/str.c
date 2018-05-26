@@ -69,19 +69,17 @@ st_str_destroy(st_str_t *s) {
     s->capacity = 0;
 }
 
-int
+void
 st_str_ref(st_str_t *s, const st_str_t *target) {
-    st_must(s != NULL, ST_ARG_INVALID);
-    st_must(s->bytes_owned == 0, ST_INITTWICE);
-    st_must(s != target, ST_ARG_INVALID);
-    st_must(target != NULL, ST_ARG_INVALID);
 
-    int ret = ST_OK;
+    st_assert_nonull(s);
+    st_assert_nonull(target);
+
+    st_assert(s->bytes_owned == 0, "s has owned bytes can not init twice");
+    st_assert(s != target, "s and target can not be the same");
 
     *s = *target;
     s->bytes_owned = 0;
-
-    return ret;
 }
 
 /*

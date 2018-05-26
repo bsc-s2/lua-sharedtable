@@ -526,13 +526,13 @@ st_test(str, ref) {
         st_str_t s = st_str_zero;
         st_str_t t = st_str_zero;
 
-        st_ut_eq(ST_ARG_INVALID, st_str_ref(NULL, NULL), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_ref(NULL, &s), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_ref(&s, NULL), "");
-        st_ut_eq(ST_ARG_INVALID, st_str_ref(&s, &s), "");
+        st_ut_bug(st_str_ref(NULL, NULL), "");
+        st_ut_bug(st_str_ref(NULL, &s), "");
+        st_ut_bug(st_str_ref(&s, NULL), "");
+        st_ut_bug(st_str_ref(&s, &s), "");
 
         s.bytes_owned = 1;
-        st_ut_eq(ST_INITTWICE, st_str_ref(&s, &t), "");
+        st_ut_bug(st_str_ref(&s, &t), "");
     }
 
     int ret;
@@ -543,8 +543,7 @@ st_test(str, ref) {
 
     st_str_t ref = st_str_zero;
 
-    ret = st_str_ref(&ref, &s);
-    st_ut_eq(ST_OK, ret, "");
+    st_str_ref(&ref, &s);
 
     st_ut_eq(1, s.bytes_owned, "target bytes_owned does not change");
 
@@ -571,7 +570,7 @@ st_test(str, copy) {
         st_ut_eq(ST_ARG_INVALID, st_str_copy(&s, &s), "");
 
         s.bytes_owned = 1;
-        st_ut_eq(ST_INITTWICE, st_str_ref(&s, &t), "");
+        st_ut_bug(st_str_ref(&s, &t), "");
     }
 
     int ret;
@@ -645,7 +644,7 @@ st_test(str, seize) {
         st_ut_eq(ST_ARG_INVALID, st_str_seize(&s, &s), "");
 
         s.bytes_owned = 1;
-        st_ut_eq(ST_INITTWICE, st_str_ref(&s, &t), "");
+        st_ut_bug(st_str_ref(&s, &t), "");
     }
 
     int ret;

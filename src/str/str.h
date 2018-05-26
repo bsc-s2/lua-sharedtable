@@ -106,7 +106,7 @@ int st_str_init_0(st_str_t *string, int64_t len);
 
 void st_str_destroy(st_str_t *string);
 
-int st_str_ref(st_str_t *s, const st_str_t *target);
+void st_str_ref(st_str_t *s, const st_str_t *target);
 
 int st_str_copy(st_str_t *str, const st_str_t *from);
 int st_str_copy_cstr(st_str_t *str, const char *s);
