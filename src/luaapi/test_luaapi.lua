@@ -26,17 +26,15 @@ local function test_luast_module_init()
         module_init          = 'function',
         worker_init          = 'function',
         destroy              = 'function',
-        get                  = 'function',
-        register             = 'function',
-        unregister           = 'function',
+        get_registry         = 'function',
         new                  = 'function',
-        set                  = 'function',
-        remove               = 'function',
         ipairs               = 'function',
         pairs                = 'function',
-        collectgarbage       = 'function',
+        gc                   = 'function',
         proc_crash_detection = 'function',
     }
+
+    assert(#module_protype, #luast, "wrong fields number")
 
     for key, value in pairs(luast) do
         local vtype = type(value)
@@ -279,7 +277,7 @@ local function test_luast_table_op()
 end
 
 
-local function test_luast_register_get_crash()
+local function test_luast_registry_and_crash()
     print('Test Start: ' ..debug.getinfo(1, "n").name)
 
     -- double module init makes no effect
@@ -295,10 +293,20 @@ local function test_luast_register_get_crash()
             local self = unistd.getpid()
             local stbl = luast.new()
             stbl[self] = self
-            luast.register(self, stbl)
 
-            if idx % 2 == 0 then
-                luast.register(self, nil)
+            local registry = luast.get_registry()
+            registry[self] = stbl
+
+            local mode = idx % 3
+            if mode == 0 then
+                registry[self] = stbl
+
+            elseif mode == 1 then
+                registry[self] = nil
+
+            else
+                registry[self] = registry
+
             end
 
             os.exit(0)
@@ -315,12 +323,18 @@ local function test_luast_register_get_crash()
     assert(recycle_num == 10, 'failed to recycle all the crashed process')
 
     for idx, pid in ipairs(pids) do
-        local stable = luast.get(pid)
-        if idx % 2 == 0 then
-            assert(stable == nil, 'failed to unregister')
-        else
+        local registry = luast.get_registry()
+        local stable = registry[pid]
+        local mode = idx % 3
+        if mode == 0 then
             assert(type(stable) == 'userdata', 'no userdata')
             assert(stable[pid] == pid, 'wrong pid value')
+
+        elseif mode == 1 then
+            assert(stable == nil, 'failed to remove table in registry')
+
+        else
+            assert(stable == registry, 'failed to refer to registry')
         end
     end
 
@@ -334,13 +348,13 @@ local function test_luast_main()
 
     test_luast_table_op()
 
-    test_luast_register_get_crash()
+    test_luast_registry_and_crash()
 
     test_luast_module_destroy()
+
+    return 0
 end
 
 
 -- main entry point
 test_luast_main()
-
-os.exit(0)

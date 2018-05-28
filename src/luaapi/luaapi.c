@@ -6,7 +6,7 @@
 #include "capi/capi.h"
 
 
-typedef struct st_luaapi_ud_s    st_luaapi_ud_t;
+typedef struct st_luaapi_ud_s st_luaapi_ud_t;
 /**
  * userdata for each c share table.
  *
@@ -28,9 +28,9 @@ typedef union {
 #define ST_LUA_ITER_METATABLE  "luast_iter_metatable"
 #define ST_LUA_TABLE_METATABLE "luast_table_metatable"
 
-#define st_luaapi_get_ud_err_ret(L, ud, index, mt_name) do {          \
-    ud = luaL_checkudata(L, index, mt_name);                          \
-    luaL_argcheck(L, ud != NULL, index, "type " mt_name " expected"); \
+#define st_luaapi_get_ud_err_ret(L, ud, index, mt_name) do {                \
+    ud = luaL_checkudata((L), (index), (mt_name));                          \
+    luaL_argcheck((L), (ud) != NULL, (index), "type " mt_name " expected"); \
 } while (0);
 
 
@@ -76,6 +76,11 @@ st_luaapi_table_len(lua_State *L)
     st_tvalue_t key = st_capi_make_tvalue(search_key);
 
     int table_len = 0;
+    /**
+     * use st_capi_foreach to lock table, handle return value
+     * and do error handling. st_luaapi_get_array_len_cb would
+     * be called only once.
+     */
     int ret = st_capi_foreach(table,
                               &key,
                               ST_SIDE_LEFT_EQ,
@@ -94,58 +99,58 @@ st_luaapi_table_len(lua_State *L)
 static int
 st_luaapi_get_stack_value_info(lua_State *L,
                                int index,
-                               st_luaapi_values_t *value,
-                               st_tvalue_t *carg)
+                               st_luaapi_values_t *vbuf,
+                               st_tvalue_t *value)
 {
-    st_must(L != NULL, ST_ARG_INVALID);
-    st_must(value != NULL, ST_ARG_INVALID);
-    st_must(carg != NULL, ST_ARG_INVALID);
-    st_must(index >= 1, ST_ARG_INVALID);
+    st_assert_nonull(L);
+    st_assert_nonull(vbuf);
+    st_assert_nonull(value);
+    st_assert(index >= 1);
 
-    int iarg;
-    double darg;
+    int i_value;
+    double d_value;
 
-    int arg_type = lua_type(L, index);
-    switch (arg_type) {
+    int vtype = lua_type(L, index);
+    switch (vtype) {
         case LUA_TNIL:
         case LUA_TNONE:
-            carg->type = ST_TYPES_NIL;
+            value->type = ST_TYPES_NIL;
 
             break;
         case LUA_TNUMBER:
-            iarg = luaL_checkint(L, index);
-            darg = luaL_checknumber(L, index);
+            i_value = luaL_checkint(L, index);
+            d_value = luaL_checknumber(L, index);
 
-            if (iarg == darg) {
-                value->i_value = iarg;
-                *carg = st_capi_make_tvalue(value->i_value);
+            if (i_value == d_value) {
+                vbuf->i_value = i_value;
+                *value = st_capi_make_tvalue(vbuf->i_value);
             }
             else {
-                value->d_value = darg;
-                *carg = st_capi_make_tvalue(value->d_value);
+                vbuf->d_value = d_value;
+                *value = st_capi_make_tvalue(vbuf->d_value);
             }
 
             break;
         case LUA_TBOOLEAN:
-            value->b_value = (st_bool)lua_toboolean(L, index);
-            *carg = st_capi_make_tvalue(value->b_value);
+            vbuf->b_value = (st_bool)lua_toboolean(L, index);
+            *value = st_capi_make_tvalue(vbuf->b_value);
 
             break;
         case LUA_TSTRING:
-            value->s_value = (char *)luaL_checkstring(L, index);
-            *carg = st_capi_make_tvalue(value->s_value);
+            vbuf->s_value = (char *)luaL_checkstring(L, index);
+            *value = st_capi_make_tvalue(vbuf->s_value);
 
             break;
         case LUA_TUSERDATA:
             st_luaapi_get_ud_err_ret(L,
-                                     value->u_value,
+                                     vbuf->u_value,
                                      index,
                                      ST_LUA_TABLE_METATABLE);
-            *carg = value->u_value->table;
+            *value = vbuf->u_value->table;
 
             break;
         default:
-            derr("type %d is not supported", arg_type);
+            derr("type %d is not supported", vtype);
 
             return ST_ARG_INVALID;
     }
@@ -175,7 +180,7 @@ st_luaapi_push_value_to_stack(lua_State *L, st_tvalue_t *tvalue)
 
             break;
         case ST_TYPES_STRING:
-            lua_pushlstring(L, (const char *)tvalue->bytes, tvalue->len - 1);
+            lua_pushlstring(L, (const char *)tvalue->bytes, tvalue->len);
 
             break;
         case ST_TYPES_BOOLEAN:
@@ -205,19 +210,19 @@ st_luaapi_push_value_to_stack(lua_State *L, st_tvalue_t *tvalue)
 static int
 st_luaapi_get_key(lua_State *L, st_table_t *table, int index)
 {
-    st_tvalue_t carg;
+    st_tvalue_t key;
     st_tvalue_t value;
-    st_luaapi_values_t key;
+    st_luaapi_values_t kbuf;
 
-    int ret = st_luaapi_get_stack_value_info(L, index, &key, &carg);
+    int ret = st_luaapi_get_stack_value_info(L, index, &kbuf, &key);
     if (ret != ST_OK) {
         derr("invalid key type for index: %d", ret);
 
         return ret;
     }
 
-    if (carg.type != ST_TYPES_NIL) {
-        ret = st_capi_do_get(table, carg, &value);
+    if (key.type != ST_TYPES_NIL) {
+        ret = st_capi_do_get(table, key, &value);
 
         if (ret == ST_NOT_FOUND) {
             value.type = ST_TYPES_NIL;
@@ -265,36 +270,37 @@ st_luaapi_table_index(lua_State *L)
 }
 
 
+/** if the value to set is nil, this function removes key in table */
 static int
-st_luaapi_set_remove(lua_State *L, st_table_t *table, int index)
+st_luaapi_set_key(lua_State *L, st_table_t *table, int index)
 {
-    st_tvalue_t kcarg;
-    st_tvalue_t vcarg;
-    st_luaapi_values_t key;
-    st_luaapi_values_t value;
+    st_tvalue_t key;
+    st_tvalue_t value;
+    st_luaapi_values_t kbuf;
+    st_luaapi_values_t vbuf;
 
-    int ret = st_luaapi_get_stack_value_info(L, index, &key, &kcarg);
-    if (ret != ST_OK || kcarg.type == ST_TYPES_NIL) {
+    int ret = st_luaapi_get_stack_value_info(L, index, &kbuf, &key);
+    if (ret != ST_OK || key.type == ST_TYPES_NIL) {
         derr("invalid key type for index: %d", ret);
 
         return luaL_argerror(L, index, "invalid key type");
     }
 
-    ret = st_luaapi_get_stack_value_info(L, index + 1, &value, &vcarg);
+    ret = st_luaapi_get_stack_value_info(L, index + 1, &vbuf, &value);
     if (ret != ST_OK) {
         derr("failed to get value from stack: %d", ret);
 
         return luaL_argerror(L, index+1, "failed to get value from stack");
     }
 
-    if (vcarg.type == ST_TYPES_NIL) {
+    if (value.type == ST_TYPES_NIL) {
         /** remove */
-        ret = st_capi_do_remove_key(table, kcarg);
+        ret = st_capi_do_remove_key(table, key);
         ret = (ret == ST_NOT_FOUND ? ST_OK : ret);
     }
     else {
         /** set */
-        ret = st_capi_do_add(table, kcarg, vcarg, 1);
+        ret = st_capi_do_add(table, key, value, 1);
     }
 
     return ret;
@@ -310,7 +316,7 @@ st_luaapi_table_newindex(lua_State *L)
     st_table_t *table = st_table_get_table_addr_from_value(ud->table);
 
     /** the position of key on stack is 2 */
-    int ret = st_luaapi_set_remove(L, table, 2);
+    int ret = st_luaapi_set_key(L, table, 2);
     if (ret != ST_OK) {
         derr("failed to add or remove key/value: %d", ret);
 
@@ -378,51 +384,15 @@ st_luaapi_destroy(lua_State *L)
 
 
 int
-st_luaapi_get(lua_State *L)
-{
-    st_capi_process_t *pstate = st_capi_get_process_state();
-    st_table_t *g_root = pstate->lib_state->groot;
-
-    /** the position of key on stack is 1 */
-    int ret = st_luaapi_get_key(L, g_root, 1);
-    if (ret != ST_OK) {
-        return luaL_error(L, "failed to get key: %d", ret);
-    }
-
-    return 1;
-}
-
-
-int
-st_luaapi_register(lua_State *L)
-{
-    st_capi_process_t *pstate = st_capi_get_process_state();
-    st_table_t *g_root = pstate->lib_state->groot;
-
-    /** the position of kye/value on stack starts from 1 */
-    int ret = st_luaapi_set_remove(L, g_root, 1);
-    if (ret != ST_OK) {
-        return luaL_error(L, "failed to register key/value: %d", ret);
-    }
-
-    return 0;
-}
-
-
-int
 st_luaapi_new(lua_State *L)
 {
     st_tvalue_t table = st_str_null;
 
     int ret = st_capi_new(&table);
     if (ret != ST_OK) {
-        char *err_msg = "failed to new table";
-
-        derr("%s: %d", err_msg, ret);
-
         lua_pushnil(L);
         lua_pushnumber(L, ret);
-        lua_pushlstring(L, err_msg, strlen(err_msg));
+        lua_pushliteral(L, "failed to new table");
 
         return 3;
     }
@@ -533,7 +503,7 @@ st_luaapi_pairs(lua_State *L)
 
 
 int
-st_luaapi_collect_garbage(lua_State *L)
+st_luaapi_gc(lua_State *L)
 {
     st_capi_process_t *pstate = st_capi_get_process_state();
 
@@ -629,6 +599,27 @@ st_luaapi_module_init(lua_State *L)
 }
 
 
+int
+st_luaapi_get_registry(lua_State *L)
+{
+    st_tvalue_t groot = st_str_null;
+
+    int ret = st_capi_get_groot(&groot);
+    if (ret != ST_OK) {
+        return luaL_error(L, "failed to get registry: %d", ret);
+    }
+
+    ret = st_luaapi_push_value_to_stack(L, &groot);
+    if (ret != ST_OK) {
+        st_assert_ok(st_capi_free(&groot), "failed to release registry");
+
+        return luaL_error(L, "failed to push registry to stack: %d", ret);
+    }
+
+    return 1;
+}
+
+
 /** module methods */
 static const luaL_Reg st_luaapi_module_methods[] = {
     /** module init */
@@ -637,10 +628,8 @@ static const luaL_Reg st_luaapi_module_methods[] = {
     { "worker_init",          st_luaapi_worker_init          },
     /** destroy the whole module */
     { "destroy",              st_luaapi_destroy              },
-    /** get from groot */
-    { "get",                  st_luaapi_get                  },
-    /** add/remove key from/to groot */
-    { "register",             st_luaapi_register             },
+    /** get groot */
+    { "get_registry",         st_luaapi_get_registry         },
     /** create a table */
     { "new",                  st_luaapi_new                  },
     /** iterate array */
@@ -648,11 +637,11 @@ static const luaL_Reg st_luaapi_module_methods[] = {
     /** iterate dictionary */
     { "pairs",                st_luaapi_pairs                },
     /** force triger gc */
-    { "collectgarbage",       st_luaapi_collect_garbage      },
+    { "gc",                   st_luaapi_gc                   },
     /** monitor process crash */
     { "proc_crash_detection", st_luaapi_proc_crash_detection },
 
-    { NULL,                   NULL                        },
+    { NULL,                   NULL                           },
 };
 
 
