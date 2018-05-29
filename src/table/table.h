@@ -113,4 +113,22 @@ int st_table_pool_init(st_table_pool_t *pool, int run_gc_periodical);
 
 int st_table_pool_destroy(st_table_pool_t *pool);
 
+/**
+ * callback used to make memory space for coping st_str_t
+ * and handle table reference
+ */
+typedef int (*copy_str_cb_t) (st_str_t *dst, st_str_t *src);
+
+int
+st_table_popleft(st_table_t *table,
+                 st_str_t *key,
+                 st_str_t *value,
+                 copy_str_cb_t copy_cb);
+
+int
+st_table_append(st_table_t *table,
+                st_str_t value,
+                st_str_t *ret_key,
+                copy_str_cb_t copy_cb);
+
 #endif /* _TABLE_H_INCLUDED_ */
