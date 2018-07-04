@@ -50,7 +50,7 @@ Features:
 
 #   Status
 
-This library is in alpha phase.
+This library is in development phase.
 
 It has been used in our object storage service.
 
